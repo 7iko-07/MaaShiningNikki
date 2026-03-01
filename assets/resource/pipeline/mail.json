@@ -1,0 +1,64 @@
+{
+    "进入邮件界面": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"next": ["点击邮件", "[JumpBack]点击菜单"],
+		"timeout": 2000
+    },
+    "点击邮件": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [529, 0, 191, 1054],
+				"expected": ["邮件"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 2000,
+		"next": ["点击一键领取邮件"],
+		"timeout": 2000
+    },
+    "点击一键领取邮件": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[60, 680, 605, 366],
+				"expected": ["一键领取","键领取"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 2000,
+		"next": ["点击一键领取邮件"],
+		"timeout": 2000
+    },
+    "退出邮件列表": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+                "target": [227, 1, 168, 98]
+            }
+		},
+		"post_delay": 1000,
+		"next": [],
+		"timeout": 2000,
+        "repeat": 5,
+        "repeat_delay": 500
+	}
+}

@@ -1,0 +1,85 @@
+{
+    "点击返回": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000
+    },
+    "点击菜单": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [670, 144]
+            }
+        },
+        "timeout": 1000
+    },
+    "下划菜单": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [670, 144],
+                "begin_offset": [0, 150, 0, 0],
+                "end_offset": [0, 650, 0, 0]
+            }
+        },
+        "timeout": 1000
+    },
+    "点击菜单并下划": {
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [670, 144]
+            }
+        },
+        "timeout": 1000,
+		"next": ["下划菜单"]
+	},
+    "点击底部菜单并左划": {
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [700, 1150]
+            }
+        },
+        "timeout": 1000,
+		"next": ["左划底部菜单"]
+	},
+    "左划底部菜单": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [700, 1150],
+                "begin_offset": [-100, 0, 0, 0],
+                "end_offset": [-600, 0, 0, 0]
+            }
+        },
+        "timeout": 1000
+    }
+}

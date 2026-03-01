@@ -1,0 +1,189 @@
+{
+	"进入联盟": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [518, 197, 202, 307],
+				"expected": ["联盟"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["点击机密任务"]
+	},
+	"点击机密任务": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [198, 579, 508, 596],
+				"expected": ["机密任务"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["点击执行五次", "点击返回联盟"],
+		"timeout": 2000
+	},
+	"点击执行五次": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 1034, 720, 246],
+				"expected": ["执行五次"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"timeout": 5000
+	},
+    "点击返回联盟": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 91, 86, 87]
+            }
+        },
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["点击联盟捐献"],
+		"timeout": 2000
+    },
+	"点击联盟捐献": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [198, 579, 508, 596],
+				"expected": ["联盟捐献"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["点击免费捐献", "点击10次金币捐献"],
+		"timeout": 2000
+	},
+	"点击免费捐献": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [63, 763, 612, 220],
+				"expected": ["免费"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["点击10次金币捐献"],
+		"timeout": 2000
+	},
+	"点击10次金币捐献": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": "gold_corn.png",
+                "roi": [0, 742, 720, 185]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+        "repeat": 10,
+        "repeat_delay": 500,
+		"post_delay": 1000,
+		"next": ["退出联盟捐献"],
+		"timeout": 2000
+	},
+    "退出联盟捐献": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+                "target": [227, 1, 168, 98]
+            }
+		},
+		"post_delay": 1000,
+		"next": ["点击联盟福利"],
+		"timeout": 2000,
+        "repeat": 5,
+        "repeat_delay": 500
+	},
+    "点击联盟福利": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 944, 319, 336],
+				"expected": ["联盟福利", "福利"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["点击领取联盟福利"],
+		"timeout": 2000
+	},
+    "点击领取联盟福利": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 753, 720, 527],
+				"expected": ["一键领取", "领取"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["退出联盟福利"],
+		"timeout": 2000
+	},
+    "退出联盟福利": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+                "target": [227, 1, 168, 98]
+            }
+		},
+		"post_delay": 1000,
+		"next": ["点击返回"],
+		"timeout": 2000,
+        "repeat": 5,
+        "repeat_delay": 500
+	}
+}
