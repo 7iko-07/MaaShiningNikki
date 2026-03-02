@@ -88,7 +88,7 @@
         "repeat": 10,
         "repeat_delay": 500,
 		"post_delay": 1000,
-		"next": ["退出联盟捐献"],
+		"next": [],
 		"timeout": 2000
     }
     // "点击一键领取体力": {

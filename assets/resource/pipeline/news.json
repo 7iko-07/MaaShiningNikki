@@ -1,0 +1,29 @@
+{
+    "点击今日不再提示": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "no_news_anymore.png",
+                "roi": [369, 884, 351, 222]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "next": ["关闭启动公告"],
+        "timeout": 5000
+    },
+    "关闭启动公告": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": ["[JumpBack]点击叉号"],
+        "timeout": 5000
+    },
+}

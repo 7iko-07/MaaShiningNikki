@@ -1,0 +1,15 @@
+{
+    "点击开始": {
+		"recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+                "target": [235, 1090, 266, 51]
+            }
+		},
+		"timeout": 2000
+	}
+}

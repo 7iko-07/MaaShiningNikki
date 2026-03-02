@@ -84,5 +84,19 @@
     },
     "stop": {
 		"action": "StopTask"
-	}
+	},
+    "点击叉号": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "close_news.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000
+    }
 }

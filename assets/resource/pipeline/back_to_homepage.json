@@ -15,20 +15,6 @@
         },
         "next": []
     },
-    "点击叉号": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": "close_news.png",
-                "roi": [0, 0, 379, 404]
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {}
-        },
-        "timeout": 5000
-    },
     "点击主页空白区域": {
         "recognition": {
             "type": "TemplateMatch",
