@@ -1,15 +1,23 @@
 {
-    "进入回家界面": {
-        "recognition": {
-			"type": "DirectHit",
-			"param": {}
-		},
-		"action": {
-			"type": "DoNothing",
-			"param": {}
-		},
-		"next": ["点击回家", "[JumpBack]点击底部菜单并左划"],
+    "回家任务链入口": {
+		"next": ["回家任务链准备", "[JumpBack]返回主页面"],
 		"timeout": 2000
+    },
+	"回家任务链准备": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": ["点击回家", "[JumpBack]点击底部菜单并左划"]
     },
     "点击回家": {
         "recognition": {
@@ -24,10 +32,26 @@
 			"param": {}
 		},
 		"post_wait_freezes": 5000,
-		"next": ["点击日常采购"],
+		"next": ["点击前往采购小物", "点击日常采购"],
 		"timeout": 2000
     },
-    "点击日常采购": {
+    "点击前往采购小物": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["前往"],
+				"roi": [99, 568, 526, 276]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击采购零食"],
+		"timeout": 2000
+    },
+	"点击日常采购": {
         "recognition": {
 			"type": "OCR",
 			"param": {
@@ -85,43 +109,136 @@
 			"type": "Click",
 			"param": {}
 		},
-        "repeat": 10,
+        "repeat": 3,
         "repeat_delay": 500,
 		"post_delay": 1000,
-		"next": [],
+		"next": ["点击采购小物"],
+		"timeout": 2000
+    },
+    "点击采购小物": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [30, 263, 670, 141],
+				"expected": ["小物"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击电影票"],
+		"timeout": 2000
+    },
+    "点击电影票": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 555, 720, 360],
+				"expected": ["电影票", "影票"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"next": ["点击购买电影票"],
+		"timeout": 2000
+    },
+    "点击购买电影票": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": "home_gold_corn.png",
+                "roi": [351, 936, 369, 145]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+        "repeat": 2,
+        "repeat_delay": 500,
+		"post_delay": 1000,
+		"next": ["点击缤纷调色板"],
+		"timeout": 2000
+    },
+	"点击缤纷调色板": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 555, 720, 360],
+				"expected": ["缤纷调色板", "调色板"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"next": ["点击购买缤纷调色板"],
+		"timeout": 2000
+    },
+    "点击购买缤纷调色板": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": "home_gold_corn.png",
+                "roi": [351, 936, 369, 145]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+        "repeat": 2,
+        "repeat_delay": 500,
+		"post_delay": 1000,
+		"next": ["上划日常采购"],
+		"timeout": 2000
+    },
+    "上划日常采购": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [362, 906],
+                "end": [360, 660]
+            }
+        },
+		"next": ["点击晴雨伞"],
+        "timeout": 1000
+    },
+	"点击晴雨伞": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 555, 720, 360],
+				"expected": ["晴雨伞", "雨伞"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"next": ["点击购买晴雨伞"],
+		"timeout": 2000
+    },
+    "点击购买晴雨伞": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": "home_gold_corn.png",
+                "roi": [351, 936, 369, 145]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"next": ["返回主页面"],
 		"timeout": 2000
     }
-    // "点击一键领取体力": {
-    //     "recognition": {
-	// 		"type": "OCR",
-	// 		"param": {
-	// 			"roi": [57, 324, 608, 726],
-	// 			"expected": ["一键领取", "键领取"]
-	// 		}
-	// 	},
-	// 	"action": {
-	// 		"type": "Click",
-	// 		"param": {}
-	// 	},
-	// 	"post_delay": 2000,
-	// 	"next": ["点击退出领取体力"],
-	// 	"timeout": 2000
-    // },
-    // "点击退出领取体力": {
-	// 	"recognition": {
-	// 		"type": "DirectHit",
-	// 		"param": {}
-	// 	},
-	// 	"action": {
-	// 		"type": "Click",
-	// 		"param": {
-    //             "target": [227, 1, 168, 98]
-    //         }
-	// 	},
-	// 	"post_delay": 1000,
-	// 	"next": ["点击返回"],
-	// 	"timeout": 2000,
-    //     "repeat": 5,
-    //     "repeat_delay": 500
-    // }
 }

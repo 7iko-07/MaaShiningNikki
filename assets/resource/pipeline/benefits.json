@@ -1,0 +1,127 @@
+{
+    "福利任务链入口": {
+		"next": ["福利任务链准备", "[JumpBack]返回主页面"],
+		"timeout": 2000
+    },
+	"福利任务链准备": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": ["点击福利", "[JumpBack]点击菜单"]
+    },
+    "点击福利": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [521, 217, 199, 1063],
+				"expected": ["福利"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 2000,
+		"next": ["点击每日签到", "点击方舟补给", "返回主页面"],
+		"timeout": 2000
+    },
+    "点击每日签到": {
+        "recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"roi":[251, 180, 209, 76],
+				"template": [
+                    "红点.png"
+                ],
+                "green_mask": true,
+                "threshold": [0.5]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 500,
+		"next": ["点击感叹号所在位置"],
+		"timeout": 2000
+    },
+    "点击感叹号所在位置": {
+        "recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"roi":[0, 655, 720, 625],
+				"template": [
+                    "签到感叹号.png"
+                ]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+                "target_offset": [-60, 60, 0, 0]
+            }
+		},
+		"next": ["退出签到"],
+		"timeout": 2000
+    },
+    "退出签到":{
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [555, 177, 165, 95]
+            }
+        },	
+        "next": ["点击方舟补给", "返回主页面"],
+		"timeout": 2000
+    },
+     "点击方舟补给": {
+        "recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"roi":[555, 177, 165, 95],
+				"template": [
+                    "红点.png"
+                ],
+                "green_mask": true,
+                "threshold": [0.5]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 500,
+		"next": ["点击领取方舟体力"],
+		"timeout": 2000
+    },
+    "点击领取方舟体力": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [418, 415, 302, 620],
+				"expected": ["领取"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 2000,
+		"next": ["返回主页面"],
+		"timeout": 2000
+    }
+}

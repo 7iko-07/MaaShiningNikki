@@ -1,5 +1,25 @@
 {
-	"进入联盟": {
+    "联盟任务链入口": {
+		"next": ["联盟任务链准备", "[JumpBack]返回主页面"],
+		"timeout": 2000
+    },
+	"联盟任务链准备": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": ["点击联盟", "[JumpBack]点击菜单并下划"]
+    },
+	"点击联盟": {
 		"recognition": {
 			"type": "OCR",
 			"param": {
@@ -28,8 +48,24 @@
 			"param": {}
 		},
 		"post_delay": 1000,
-		"next": ["点击执行五次", "点击返回联盟"],
+		"next": ["点击前往当前目标", "点击执行五次", "点击返回联盟"],
 		"timeout": 2000
+	},
+	"点击前往当前目标": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 1034, 720, 246],
+				"expected": ["前往当前目标", "当前目标"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"timeout": 5000
 	},
 	"点击执行五次": {
 		"pre_delay": 1000,
@@ -44,8 +80,22 @@
 			"type": "Click",
 			"param": {}
 		},
+		"next": ["点击关闭联盟奖励"],
 		"post_delay": 1000,
 		"timeout": 5000
+	},
+	"点击关闭联盟奖励": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [242, 0, 288, 110]
+            }
+        },
+		"next": ["点击返回联盟"]
 	},
     "点击返回联盟": {
         "recognition": {

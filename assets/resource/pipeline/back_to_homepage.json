@@ -25,10 +25,9 @@
         },
         "action": {
             "type": "Click",
-            "param": {
-                "target": [242, 0, 288, 110]
-            }
-        }
+            "param": {}
+        },
+        "post_wait_freezes": 1000
     },
     "点击空白区域": {
         "recognition": {
@@ -38,7 +37,7 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [242, 0, 288, 110]
+                "target": [265, 116, 227, 61]
             }
         }
     },
@@ -50,8 +49,7 @@
 			"是否是主页面",
 			"[JumpBack]点击叉号",
 			"[JumpBack]点击返回",
-            "[JumpBack]点击主页空白区域",
-            "[JumpBack]点击空白区域"
+            "[JumpBack]点击主页空白区域"
 		]
     }
 }

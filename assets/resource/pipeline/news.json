@@ -23,7 +23,7 @@
             "type": "DoNothing",
             "param": {}
         },
-        "next": ["[JumpBack]点击叉号"],
+        "next": ["是否是主页面", "[JumpBack]点击叉号", "[JumpBack]点击空白区域"],
         "timeout": 5000
     },
 }

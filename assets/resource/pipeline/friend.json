@@ -1,15 +1,23 @@
 {
-    "进入好友界面": {
-        "recognition": {
-			"type": "DirectHit",
-			"param": {}
-		},
-		"action": {
-			"type": "DoNothing",
-			"param": {}
-		},
-		"next": ["点击好友", "[JumpBack]点击菜单并下划"],
+    "好友任务链入口": {
+		"next": ["好友任务链准备", "[JumpBack]返回主页面"],
 		"timeout": 2000
+    },
+	"好友任务链准备": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": ["点击好友", "[JumpBack]点击菜单并下划"]
     },
     "点击好友": {
         "recognition": {

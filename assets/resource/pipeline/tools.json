@@ -11,7 +11,8 @@
             "type": "Click",
             "param": {}
         },
-        "timeout": 5000
+        "timeout": 5000,
+        "post_wait_freezes": 1000
     },
     "点击菜单": {
         "recognition": {
@@ -87,10 +88,10 @@
 	},
     "点击叉号": {
         "recognition": {
-            "type": "TemplateMatch",
+            "type": "FeatureMatch",
             "param": {
                 "template": "close_news.png",
-                "roi": [0, 0, 379, 404]
+                "green_mask": true
             }
         },
         "action": {
