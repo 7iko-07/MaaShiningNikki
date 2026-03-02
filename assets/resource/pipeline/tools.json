@@ -81,5 +81,8 @@
             }
         },
         "timeout": 1000
-    }
+    },
+    "stop": {
+		"action": "StopTask"
+	}
 }

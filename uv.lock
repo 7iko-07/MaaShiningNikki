@@ -591,6 +591,15 @@ wheels = [
 ]
 
 [[package]]
+name = "json-with-comments"
+version = "1.2.10"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bf/6d/638e8adbb2b92bb0803c092dd8ae6482945961c8545fc7e2f21c48233928/json_with_comments-1.2.10.tar.gz", hash = "sha256:0020b321cf6c80963c85f95ce985e71332f1797ed49abfd1cd675b3bdee24a28", size = 6788, upload-time = "2024-12-10T05:46:37.415Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/00/8a/f67dadb0648f00ac2249d3ef32532f0d5a2e72016f8426290ce6fe575870/json_with_comments-1.2.10-py3-none-any.whl", hash = "sha256:d7989c2577b1f8cbba735209f8d388d21017feb42ef30c29c230040f86b42700", size = 6533, upload-time = "2024-12-10T05:46:34.856Z" },
+]
+
+[[package]]
 name = "maaagentbinary"
 version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
@@ -641,11 +650,15 @@ name = "maashiningnikki"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "json-with-comments" },
     { name = "maadebugger" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "maadebugger", specifier = ">=1.19.5" }]
+requires-dist = [
+    { name = "json-with-comments", specifier = ">=1.2.10" },
+    { name = "maadebugger", specifier = ">=1.19.5" },
+]
 
 [[package]]
 name = "markdown2"

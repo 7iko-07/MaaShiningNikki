@@ -4,6 +4,4 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">= 3.9,<=3.13"
-dependencies = [
-    "maadebugger>=1.19.5",
-]
+dependencies = ["json-with-comments>=1.2.10", "maadebugger>=1.19.5"]

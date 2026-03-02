@@ -1,0 +1,71 @@
+{
+    "是否是主页面": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": []
+    },
+    "点击叉号": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "close_news.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000
+    },
+    "点击主页空白区域": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "主页货币栏.png",
+                "roi": [103, 53, 72, 69]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [242, 0, 288, 110]
+            }
+        }
+    },
+    "点击空白区域": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [242, 0, 288, 110]
+            }
+        }
+    },
+    "返回主页面": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "post_wait_freezes": 2000,
+        "next": [
+			"是否是主页面",
+			"[JumpBack]点击叉号",
+			"[JumpBack]点击返回",
+            "[JumpBack]点击主页空白区域",
+            "[JumpBack]点击空白区域"
+		]
+    }
+}

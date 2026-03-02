@@ -1,0 +1,1 @@
+call uv run .\tools\install.py v0.0.1 win x86_64

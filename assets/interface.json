@@ -4,14 +4,14 @@
     // 文档：https://maafw.xyz/docs/3.3-ProjectInterfaceV2
     // 示例：https://github.com/MaaXYZ/MaaFramework/blob/main/sample/interface.json
     "interface_version": 2,
-    "name": "MaaXXX",
-    "description": "这是一个使用 MaaFramework 创建的新项目。",
-    "contact": "QQ群: 123456789",
+    "name": "MaaShiningNikki",
+    "description": "闪耀暖暖小助手",
+    "contact": "",
     "license": "MIT",
     "welcome": "首次使用！欢迎使用 MAA!",
     // 填写项目地址和版本号可实现自动更新功能
-    "github": "https://github.com/MaaXYZ/MaaPracticeBoilerplate",
-    "version": "1.0.0",
+    "github": "https://github.com/MaaXYZ/MaaPracticeBoilerplate/",
+    "version": "0.0.1",
     // Mirror酱为第三方分发服务，新项目默认关闭
     // 若有需要请联系 Mirror酱 开通，直接自行开启是无法使用的
     // "mirrorchyan_rid": "MaaXXX",
@@ -60,28 +60,28 @@
     // },
     "task": [
         {
-            "name": "普通任务",
-            "entry": "MyTask1"
+            "name": "好友",
+            "entry": "进入好友界面"
         },
         {
-            "name": "选项任务",
-            "entry": "MyTask2",
+            "name": "邮件",
+            "entry": "进入邮件界面",
             "option": [
                 "任务选项1"
             ]
         },
         {
-            "name": "参数任务",
-            "entry": "MyTask3",
+            "name": "联盟",
+            "entry": "进入联盟",
             "option": [
                 "任务选项1"
             ],
             "pipeline_override": {}
-        },
-        {
-            "name": "带Custom的任务",
-            "entry": "MyTask4"
         }
+        // {
+        //     "name": "带Custom的任务",
+        //     "entry": "MyTask4"
+        // }
     ],
     "option": {
         "任务选项1": {
