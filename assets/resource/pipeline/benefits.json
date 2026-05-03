@@ -32,19 +32,34 @@
 			"param": {}
 		},
 		"post_wait_freezes": 2000,
-		"next": ["点击每日签到", "点击方舟补给", "返回主页面"],
+		"next": ["查找每日签到", "[JumpBack]左划福利菜单"],
+		"timeout": 2000
+    },
+	"查找每日签到": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[1, 185, 719, 70],
+				"expected": ["每日签到","每日","签到"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 500,
+		"next": ["点击每日签到", "查找方舟补给", "返回主页面"],
 		"timeout": 2000
     },
     "点击每日签到": {
         "recognition": {
-			"type": "TemplateMatch",
+			"type": "ColorMatch",
 			"param": {
-				"roi":[251, 180, 209, 76],
-				"template": [
-                    "红点.png"
-                ],
-                "green_mask": true,
-                "threshold": [0.5]
+				"roi":"查找每日签到",
+				"roi_offset": [80, -20, 0, 0],
+				"lower": [254, 70, 66],
+				"upper": [256, 72, 68],
+				"count": 20
 			}
 		},
 		"action": {
@@ -85,19 +100,34 @@
                 "target": [555, 177, 165, 95]
             }
         },	
-        "next": ["点击方舟补给", "返回主页面"],
+        "next": ["查找方舟补给", "[JumpBack]左划福利菜单"],
 		"timeout": 2000
     },
-     "点击方舟补给": {
+	"查找方舟补给": {
         "recognition": {
-			"type": "TemplateMatch",
+			"type": "OCR",
 			"param": {
-				"roi":[555, 177, 165, 95],
-				"template": [
-                    "红点.png"
-                ],
-                "green_mask": true,
-                "threshold": [0.5]
+				"roi":[1, 185, 719, 70],
+				"expected": ["方舟补给","方舟","补给"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 500,
+		"next": ["点击方舟补给", "返回主页面"],
+		"timeout": 2000
+    },
+    "点击方舟补给": {
+        "recognition": {
+			"type": "ColorMatch",
+			"param": {
+				"roi":"查找方舟补给",
+				"roi_offset": [80, -20, 0, 0],
+				"lower": [254, 70, 66],
+				"upper": [256, 72, 68],
+				"count": 20
 			}
 		},
 		"action": {
@@ -123,5 +153,31 @@
 		"post_wait_freezes": 2000,
 		"next": ["返回主页面"],
 		"timeout": 2000
+    },
+	"左划福利菜单": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [598, 221],
+                "end": [152, 219]
+            }
+        },
+        "timeout": 1000
+    },
+	"右划福利菜单": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "end": [598, 221],
+                "begin": [152, 219]
+            }
+        },
+        "timeout": 1000
     }
 }

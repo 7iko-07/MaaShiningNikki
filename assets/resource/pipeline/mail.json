@@ -48,25 +48,7 @@
 			"param": {}
 		},
 		"post_wait_freezes": 2000,
-		"next": ["退出邮件列表"],
+		"next": ["返回主页面"],
 		"timeout": 2000
-    },
-    "退出邮件列表": {
-		"pre_delay": 1000,
-		"recognition": {
-			"type": "DirectHit",
-			"param": {}
-		},
-		"action": {
-			"type": "Click",
-			"param": {
-                "target": [227, 1, 168, 98]
-            }
-		},
-		"post_delay": 1000,
-		"next": ["stop"],
-		"timeout": 2000,
-        "repeat": 5,
-        "repeat_delay": 500
-	}
+    }
 }

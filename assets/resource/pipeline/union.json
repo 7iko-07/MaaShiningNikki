@@ -92,9 +92,10 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [242, 0, 288, 110]
+                "target": [268, 4, 192, 54]
             }
         },
+		"repeat": 3,
 		"next": ["点击返回联盟"]
 	},
     "点击返回联盟": {
@@ -110,7 +111,7 @@
 			"param": {}
 		},
 		"post_delay": 1000,
-		"next": ["点击联盟捐献"],
+		"next": ["点击联盟捐献", "[JumpBack]返回联盟页面"],
 		"timeout": 2000
     },
 	"点击联盟捐献": {
@@ -231,9 +232,75 @@
             }
 		},
 		"post_delay": 1000,
-		"next": ["点击返回"],
+		"next": ["返回主页面"],
 		"timeout": 2000,
         "repeat": 5,
         "repeat_delay": 500
+	},
+	"在联盟页面": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": "联盟眼睛.png",
+                "roi": [125, 433, 104, 90]
+			}
+		},
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"timeout": 2000
+	},
+	"返回联盟页面": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"next": [
+			"在联盟页面",
+			"[JumpBack]返回主页面2"
+		]
+	},
+	"返回主页面2": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "post_wait_freezes": 2000,
+        "next": [
+			"是否是主页面2",
+			"[JumpBack]点击叉号",
+			"[JumpBack]点击返回",
+            "[JumpBack]点击主页空白区域"
+		]
+    },
+	"是否是主页面2": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": ["点击联盟2"]
+    },
+	"点击联盟2": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [518, 197, 202, 307],
+				"expected": ["联盟"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000
 	}
 }

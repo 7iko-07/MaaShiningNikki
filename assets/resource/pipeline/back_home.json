@@ -70,8 +70,8 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [30, 263, 670, 141],
-				"expected": ["零食"]
+				"roi": [369, 275, 140, 76],
+				"expected": ["零食", "食", "零"]
 			}
 		},
 		"action": {
