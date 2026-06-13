@@ -47,7 +47,7 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_delay": 1000,
+		"post_wait_freezes": 1000,
 		"next": ["点击前往当前目标", "点击执行五次", "点击返回联盟"],
 		"timeout": 2000
 	},
@@ -72,8 +72,8 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [0, 1034, 720, 246],
-				"expected": ["执行五次"]
+				"roi": [11, 1133, 390, 138],
+				"expected": ["执行五次","五次"]
 			}
 		},
 		"action": {
@@ -81,7 +81,7 @@
 			"param": {}
 		},
 		"next": ["点击关闭联盟奖励"],
-		"post_delay": 1000,
+		"post_delay": 1500,
 		"timeout": 5000
 	},
 	"点击关闭联盟奖励": {

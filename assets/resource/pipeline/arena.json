@@ -1,0 +1,302 @@
+{
+    "竞技场任务链入口": {
+        "next": ["竞技场任务链准备", "[JumpBack]返回主页面"],
+        "timeout": 2000
+    },
+    "竞技场任务链准备": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": ["点击独自", "[JumpBack]点击菜单并下划"]
+    },
+    "点击独自": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["独自"],
+				"roi": [24, 1118, 368, 162]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击钻石竞技场"],
+		"timeout": 2000
+    },
+    "点击钻石竞技场": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [250, 621, 431, 193],
+                "expected": ["钻石竞技场", "竞技场", "竞技"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_wait_freezes": 2000,
+        "next": ["我的搭配"],
+        "timeout": 2000
+    },
+    "我的搭配": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["我的搭配"],
+				"roi": [441, 522, 279, 100]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["推荐搭配"],
+		"timeout": 2000
+    },
+    "推荐搭配": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["推荐搭配"],
+				"roi": [559, 1122, 161, 95]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["确认推荐搭配"],
+		"timeout": 2000
+    },
+    "确认推荐搭配": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["确认"],
+				"roi": [372, 717, 251, 128]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 10000,
+		"next": ["确认推荐搭配下一步1"],
+		"timeout": 2000
+    },
+    "确认推荐搭配下一步1": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["下一步"],
+				"roi": [32, 1118, 239, 93]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 10000,
+		"next": ["确定竞技场影召1"],
+		"timeout": 2000
+    },
+    "确定竞技场影召1": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["确定"],
+				"roi": [223, 1083, 277, 102]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 10000,
+		"next": ["确认推荐搭配下一步2"],
+		"timeout": 2000
+    },
+    "确认推荐搭配下一步2": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["下一步"],
+				"roi": [32, 1118, 239, 93]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 10000,
+		"next": ["确定竞技场影召2"],
+		"timeout": 2000
+    },
+    "确定竞技场影召2": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["确定"],
+				"roi": [223, 1083, 277, 102]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 10000,
+		"next": ["确认推荐搭配下一步3"],
+		"timeout": 2000
+    },
+    "确认推荐搭配下一步3": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["下一步"],
+				"roi": [32, 1118, 239, 93]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 10000,
+		"next": ["确定竞技场影召3"],
+		"timeout": 2000
+    },
+    "确定竞技场影召3": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["确定"],
+				"roi": [223, 1083, 277, 102]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 10000,
+		"next": ["返回竞技场战力对比页面"],
+		"timeout": 2000
+    },
+
+    "返回竞技场战力对比页面": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 10000,
+		"next": ["竞技场战力对比"],
+		"timeout": 2000
+    },
+    "竞技场战力对比": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "arena_compare",
+                "custom_action_param": {
+                    "area_a": [350, 643, 90, 28],
+                    "area_b": [
+                        [139, 1016, 88, 27],
+                        [380, 1016, 92, 27],
+                        [619, 1016, 89, 25]
+                    ],
+                    "refresh": [139, 1072, 118, 48],
+                    "max_rounds": 5
+                }
+            }
+        },
+        "next": ["点击竞技场空白"],
+        "timeout": 120000
+    },
+    "点击竞技场空白": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [538, 133, 33, 19]
+            }
+        },
+        "repeat": 5,
+        "repeat_delay": 1000,
+        "next": ["点击印象旅航返回"]
+    },
+    "点击开始挑战": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["开始", "挑战", "开始挑战"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "next": ["开始竞技场战斗"],
+        "timeout": 5000
+    },
+    "开始竞技场战斗": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["等待战斗结束"],
+        "post_delay": 2000
+    },
+    "等待战斗结束": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["退出竞技场结算"],
+        "timeout": 180000
+    },
+    "退出竞技场结算": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["点击竞技场结算确定", "点击返回"],
+        "timeout": 30000
+    },
+    "点击竞技场结算确定": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["确定"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "repeat": 5,
+        "repeat_delay": 1000,
+        "next": ["返回主页面"],
+        "timeout": 5000
+    }
+}

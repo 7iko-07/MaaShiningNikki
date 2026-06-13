@@ -83,6 +83,33 @@
         },
         "timeout": 1000
     },
+    "点击底部菜单并右划": {
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [700, 1150]
+            }
+        },
+        "timeout": 1000,
+		"next": ["右划底部菜单"]
+	},
+    "右划底部菜单": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [98, 1145],
+                "end_offset": [600, 0, 0, 0]
+            }
+        },
+        "timeout": 1000
+    },
     "stop": {
 		"action": "StopTask"
 	},
@@ -99,5 +126,18 @@
             "param": {}
         },
         "timeout": 5000
+    },
+    "上划活动条": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [54, 604],
+                "end": [58, 285,0,0]
+            }
+        },
+        "timeout": 1000
     }
 }

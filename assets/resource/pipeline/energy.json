@@ -48,8 +48,13 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["点击时光钟表铺", "[JumpBack]返回结伴页面"],
+		"next": ["时光钟表铺入口"],
 		"timeout": 2000
+    },
+	"时光钟表铺入口": {
+		"recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["点击时光钟表铺", "[JumpBack]返回结伴页面"]
     },
 	"点击时光钟表铺": {
         "recognition": {
@@ -126,6 +131,11 @@
         },
         "timeout": 5000,
         "post_wait_freezes": 1000,
+        "next": ["不落的帷幕入口"]
+    },
+	"不落的帷幕入口": {
+		"recognition": "DirectHit",
+        "action": "DoNothing",
         "next": ["点击不落的帷幕", "[JumpBack]返回结伴页面"]
     },
     "点击不落的帷幕": {
@@ -140,7 +150,7 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_delay": 2000,
+		"post_wait_freezes": 1000,
 		"next": ["点击上演中"],
 		"timeout": 2000
     },
@@ -154,7 +164,9 @@
 		},
 		"action": {
 			"type": "Click",
-			"param": {}
+			"param": {
+				"target_offset": [0, -40, 0, 0]
+			}
 		},
 		"next": ["点击高难度"],
 		"timeout": 2000
@@ -236,9 +248,14 @@
         "post_wait_freezes": 1000,
         "repeat": 2,
         "repeat_delay": 2000,
+        "next": ["印象旅航入口"]
+    },
+	"印象旅航入口": {
+		"recognition": "DirectHit",
+        "action": "DoNothing",
         "next": ["点击印象旅航", "[JumpBack]返回结伴页面"]
     },
-    "点击印象旅航": {
+	"点击印象旅航": {
         "recognition": {
 			"type": "OCR",
 			"param": {
@@ -358,7 +375,7 @@
 	"返回主页面3": {
         "recognition": "DirectHit",
         "action": "DoNothing",
-        "post_wait_freezes": 2000,
+        "post_wait_freezes": 200,
         "next": [
 			"是否是主页面3",
 			"[JumpBack]点击叉号",
@@ -427,6 +444,6 @@
 		},
 		"post_delay": 500,
 		"timeout": 2000
-    },
+    }
 
 }

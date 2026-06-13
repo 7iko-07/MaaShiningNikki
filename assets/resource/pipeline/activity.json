@@ -1,0 +1,141 @@
+{
+    "活动任务链入口": {
+		"next": ["活动任务链准备", "[JumpBack]返回主页面"],
+		"timeout": 2000
+    },
+	"活动任务链准备": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": ["点击活动名称","[JumpBack]上划活动条"]
+    },
+    "点击活动名称": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 240, 122, 75],
+				"expected": ["织吻为拥"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 2000,
+		"next": ["点击活动剧情名称"],
+		"timeout": 2000
+    },
+	"点击活动剧情名称": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["行宫回声"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 500,
+		"next": ["点击活动剧情"],
+		"timeout": 2000
+    },
+    "点击活动剧情": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_region",
+				"custom_action_param": {
+					"step": 40,
+					"delay": 50,
+					"random": true,
+					"roi": [0, 0, 720, 1280],
+					"max_points": 20000,
+					"change_detection": true,
+					"exclude": [[0, 74, 124, 126], [545, 74, 175, 179]],
+					"stop_on_no_change": true
+				}
+			}
+		},
+		"post_wait_freezes": 500,
+		"next": ["在活动剧情页面"],
+		"timeout": 2000,
+        "anchor": "点击活动剧情"
+    },
+	"在活动剧情页面": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"post_wait_freezes": 500,
+		"next": ["[JumpBack]点击聊天框", "[JumpBack]点击剧情叉号","[Anchor]点击活动剧情"],
+		"timeout": 2000
+    },
+    "点击聊天框":{
+        "recognition": {
+			"type": "Or",
+			"param": {
+				"any_of": [
+					{
+						"recognition":{
+							"type": "OCR",
+							"param": {
+								"roi": [568, 113, 152, 134],
+								"expected": ["自动播放","自动","播放","文字速度","文字","速度"]
+							}
+						}
+					},
+					{
+						"recognition":{
+							"type": "ColorMatch",
+							"param": {
+								"roi": [568, 113, 152, 134],
+								"lower": [0, 0, 0],
+								"upper": [0, 0, 0],
+								"count": 3000,
+								"connected": true
+							}
+						}
+					}
+				]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [0, 301, 720, 804]
+			}
+		},
+        "post_delay": 100,
+		"timeout": 2000
+    },
+	"点击剧情叉号":{
+		"recognition": {
+            "type": "FeatureMatch",
+            "param": {
+                "template": "剧情叉号.png",
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+		"repeat": 3,
+        "timeout": 5000
+	}
+}

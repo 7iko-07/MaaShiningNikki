@@ -32,10 +32,26 @@
 			"param": {}
 		},
 		"post_wait_freezes": 5000,
-		"next": ["点击前往采购小物", "点击日常采购"],
+		"next": ["点击收起日程表","点击前往采购小物", "点击日常采购"],
 		"timeout": 2000
     },
-    "点击前往采购小物": {
+    "点击收起日程表": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["收起日程表"],
+				"roi": [0, 647, 720, 304]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击前往采购小物"],
+		"timeout": 2000
+    },
+	"点击前往采购小物": {
         "recognition": {
 			"type": "OCR",
 			"param": {

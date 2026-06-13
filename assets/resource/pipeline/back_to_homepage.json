@@ -44,7 +44,6 @@
     "返回主页面": {
         "recognition": "DirectHit",
         "action": "DoNothing",
-        "post_wait_freezes": 2000,
         "next": [
 			"是否是主页面",
 			"[JumpBack]点击叉号",

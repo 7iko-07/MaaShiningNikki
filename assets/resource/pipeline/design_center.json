@@ -1,0 +1,81 @@
+{
+    "设计中心任务链入口": {
+		"next": ["设计中心任务调度美甲"],
+		"timeout": 2000
+    },
+    "设计中心任务调度美甲": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"next": ["设计中心运行美甲", "设计中心任务调度制作目标服装"],
+		"timeout": 2000
+    },
+    "设计中心运行美甲": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"next": ["美甲任务链入口"],
+		"timeout": 2000,
+        "enabled": false
+    },
+    "设计中心任务调度制作目标服装": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"next": ["设计中心运行制作目标服装", "设计中心任务调度情报屋"],
+		"timeout": 2000
+    },
+    "设计中心运行制作目标服装": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"next": ["制作目标服装任务链入口"],
+		"timeout": 2000,
+        "enabled": false
+    },
+    "设计中心任务调度情报屋": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"next": ["设计中心运行情报屋", "stop"],
+		"timeout": 2000
+    },
+    "设计中心运行情报屋": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"next": ["情报屋任务链入口"],
+		"timeout": 2000,
+        "enabled": false
+    }
+}

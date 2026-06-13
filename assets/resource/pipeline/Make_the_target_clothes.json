@@ -1,0 +1,202 @@
+{
+    "制作目标服装任务链入口": {
+		"next": ["制作目标服装准备", "[JumpBack]返回主页面"],
+		"timeout": 2000
+    },
+    "制作目标服装准备": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": ["点击设计中心-制作目标服装", "[JumpBack]点击底部菜单并右划"]
+    },
+    "点击设计中心-制作目标服装": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 1062, 720, 218],
+				"expected": ["设计中心", "设计", "中心"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 5000,
+		"next": ["点击制衣引导"],
+		"timeout": 2000
+    },
+    "点击制衣引导": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [433, 162, 195, 82],
+				"expected": ["制衣引导","制衣","引导"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 2000,
+		"next": ["点击全部材料"],
+		"timeout": 2000
+    },
+    "点击全部材料": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [159, 1095, 206, 65],
+				"expected": ["全部材料","全部","材料"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击前往获取时空回廊制衣材料", "点击前往制作", "点击返回-制衣2"],
+		"timeout": 2000
+    },
+    "点击前往制作":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [284, 746, 145, 62],
+				"expected": ["前往制作", "前往", "制作"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击返回-制衣2"],
+		"timeout": 2000
+    },
+    "点击返回-制衣2":{
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000,
+        "post_wait_freezes": 1000,
+        "next": ["左划制衣页面"]
+    },
+    "点击前往获取时空回廊制衣材料": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [162, 410, 327, 574],
+				"expected": ["时空回廊"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {"target_offset": [330,-30,-130,0]}
+		},
+		"post_delay": 2000,
+		"next": ["计算并挑战时空回廊制衣材料"],
+		"timeout": 2000
+    },
+    "计算并挑战时空回廊制衣材料": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+                "custom_action": "make_target_clothes_challenge",
+                "custom_action_param": {
+                    "challenge_count_roi": [504, 863, 27, 24],
+                    "stamina_roi": [130, 72, 46, 25],
+                    "once_button": [63, 914, 116, 39],
+                    "multi_button": [223, 915, 111, 36],
+                    "stamina_cost": 5,
+                    "max_multi": 10,
+                    "click_delay": 1.2
+                }
+            }
+		},
+		"post_delay": 2000,
+		"next": ["返回制衣页面"],
+		"timeout": 2000
+    },
+    "返回制衣页面":{
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["在制衣页面1", "[JumpBack]点击返回-制衣"]
+    },
+    "点击返回-制衣":{
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000,
+        "post_wait_freezes": 1000
+    },
+    "在制衣页面1":{
+        "recognition": {
+            "type": "OCR",
+            "param":{
+                "roi": [283, 576, 156, 42],
+                "expected": ["制衣", "目标", "添加"]
+            }
+        },
+        "action": "DoNothing",
+        "next": ["左划制衣页面"]
+    },
+    "左划制衣页面":{
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_swipe_page",
+                "custom_action_param": {
+                    "begin": [630, 823],
+                    "end": [314, 823],
+                    "duration": 6000,
+                    "end_hold": 2000,
+                    "wait_after_swipe": 1.0,
+                    "pixel_threshold": 25,
+                    "change_threshold": 0.01,
+                    "final_click_roi": [539, 1106, 128, 39],
+                    "changed_next": ["点击全部材料"],
+                    "unchanged_next": ["点击前往获取时空回廊制衣材料", "点击前往制作", "制衣末尾占位"],
+                    "final_challenge_node": "计算并挑战时空回廊制衣材料",
+                    "final_challenge_next": ["返回主页面"]
+                }
+            }
+        },
+        "timeout": 1000
+    },
+    "制衣末尾占位":{
+        "next": ["设计中心任务调度情报屋"]
+    }
+}

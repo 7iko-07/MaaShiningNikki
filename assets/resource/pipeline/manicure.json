@@ -1,0 +1,228 @@
+{
+	"美甲任务链入口": {
+		"next": ["美甲任务链准备", "[JumpBack]返回主页面"],
+		"timeout": 2000
+    },
+	"美甲任务链准备": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": ["点击设计中心-美甲", "[JumpBack]点击底部菜单并右划"]
+    },
+    "点击设计中心-美甲": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 1062, 720, 218],
+				"expected": ["设计中心", "设计", "中心"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 5000,
+		"next": ["点击美甲"],
+		"timeout": 2000
+    },
+    "点击美甲": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["美甲"],
+				"roi": [67, 1030, 120, 95]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击我的店铺"],
+		"timeout": 2000
+    },
+	"点击我的店铺": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["我的店铺"],
+				"roi": [25, 983, 190, 192]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击雇佣店员","[JumpBack]点击我的店铺空白"],
+		"timeout": 2000
+    },
+	"点击雇佣店员": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["雇佣店员", "店员"],
+                "roi": [70, 604, 575, 186]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击免费雇佣"],
+		"timeout": 2000
+    },
+    "点击免费雇佣": {
+         "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [85, 819, 547, 108],
+				"expected": ["免费雇佣","免费"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击我的店铺空白"],
+		"timeout": 2000
+    },
+    "点击我的店铺空白": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [152, 127, 194, 91]
+            }
+        },
+        "repeat": 3,
+        "next": ["点击提取心意币"],
+		"timeout": 2000
+    },
+    "点击提取心意币": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [447, 1073, 257, 106],
+				"expected": ["提取"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"next": ["点击我的店铺空白2"],
+		"timeout": 2000
+    },
+    "点击我的店铺空白2": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [152, 127, 194, 91]
+            }
+        },
+        "repeat": 3,
+        "next": ["点击返回美甲页面"],
+		"timeout": 2000
+    },
+    "点击返回美甲页面":{
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000,
+        "post_wait_freezes": 1000,
+        "next": ["点击此刻投稿"]
+    },
+    "点击此刻投稿": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [168, 709, 210, 199],
+				"expected": ["此刻投稿"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"next": ["点击浏览点赞"],
+		"timeout": 2000
+    },
+    "点击浏览点赞": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [392, 1092, 173, 162],
+				"expected": ["浏览点赞"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+        "post_delay": 10000,
+		"next": ["点击美甲完美评价"],
+		"timeout": 2000
+    },
+    "点击美甲完美评价": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [377, 1151, 124, 109],
+				"expected": ["完美"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+        "repeat": 5,
+        "repeat_delay": 5000,
+		"next": ["点击返回点赞美甲页面"],
+		"timeout": 2000
+    },
+    "点击返回点赞美甲页面": {
+		"recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "repeat": 2,
+        "timeout": 5000,
+        "post_wait_freezes": 1000,
+		"next": ["设计中心任务调度制作目标服装"]
+    }
+}
