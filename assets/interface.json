@@ -1,26 +1,21 @@
 {
-    // 本文件主要定义了通用 UI 的行为和显示内容
-    // 可参考文档和示例添加更多您需要的功能
-    // 文档：https://maafw.xyz/docs/3.3-ProjectInterfaceV2
-    // 示例：https://github.com/MaaXYZ/MaaFramework/blob/main/sample/interface.json
     "interface_version": 2,
     "name": "MaaShiningNikki",
     "description": "闪耀暖暖小助手",
     "contact": "",
     "license": "MIT",
     "welcome": "首次使用！欢迎使用 MAA!",
-    // 填写项目地址和版本号可实现自动更新功能
     "github": "https://github.com/MaaXYZ/MaaPracticeBoilerplate/",
     "version": "0.0.1",
-    // Mirror酱为第三方分发服务，新项目默认关闭
-    // 若有需要请联系 Mirror酱 开通，直接自行开启是无法使用的
-    // "mirrorchyan_rid": "MaaXXX",
-    // "mirrorchyan_multiplatform": true,
+    "agent": {
+        "child_exec": "uv",
+        "child_args": ["run", "python", "../agent/main.py"]
+    },
     "controller": [
         {
             "name": "安卓端",
             "type": "Adb",
-            "display_short_side": 720 // 默认缩放分辨率的短边长度
+            "display_short_side": 720
         },
         {
             "name": "桌面端",
@@ -28,11 +23,9 @@
             "win32": {
                 "class_regex": ".*",
                 "window_regex": "Visual Studio",
-                // 截图及控制方式，请根据项目实际情况修改
-                // 文档: https://maafw.xyz/docs/2.4-ControlMethods
-                "screencap": "PrintWindow", // 截图方式
-                "mouse": "PostMessageWithCursorPos", // 鼠标控制方式
-                "keyboard": "PostMessageWithCursorPos" // 键盘控制方式
+                "screencap": "PrintWindow",
+                "mouse": "PostMessageWithCursorPos",
+                "keyboard": "PostMessageWithCursorPos"
             }
         }
     ],
@@ -51,59 +44,147 @@
             ]
         }
     ],
-    // 可选的 agent 示例
-    // "agent": {
-    //     "child_exec": "python",
-    //     "child_args": [
-    //         "./agent/main.py"
-    //     ]
-    // },
     "task": [
         {
-            "name": "好友",
-            "entry": "进入好友界面"
-        },
-        {
-            "name": "邮件",
-            "entry": "进入邮件界面",
-            "option": [
-                "任务选项1"
-            ]
+            "name": "好友一键送心及领取体力",
+            "entry": "好友任务链入口"
         },
         {
             "name": "联盟",
-            "entry": "进入联盟",
+            "entry": "联盟任务链入口",
             "option": [
                 "任务选项1"
             ],
             "pipeline_override": {}
+        },
+        {
+            "name": "邮件",
+            "entry": "邮件任务链入口",
+            "option": [
+                "任务选项1"
+            ]
+        },
+        {
+            "name": "福利",
+            "entry": "福利任务链入口",
+            "option": [
+                "任务选项1"
+            ],
+            "pipeline_override": {}
+        },
+        {
+            "name": "回家",
+            "entry": "回家任务链入口",
+            "option": [
+                "任务选项1"
+            ],
+            "pipeline_override": {}
+        },
+        {
+            "name": "美甲",
+            "entry": "美甲任务链入口",
+            "option": [
+                "任务选项1"
+            ],
+            "pipeline_override": {}
+        },
+        {
+            "name": "设计中心",
+            "entry": "设计中心任务链入口",
+            "option": [
+                "设计中心任务选择"
+            ],
+            "pipeline_override": {}
+        },
+        {
+            "name": "体力",
+            "entry": "体力任务链入口",
+            "option": [
+                "任务选项1"
+            ],
+            "pipeline_override": {}
+        },
+        {
+            "name": "竞技场",
+            "entry": "竞技场任务链入口",
+            "option": [
+                "竞技场对比次数"
+            ],
+            "pipeline_override": {}
         }
-        // {
-        //     "name": "带Custom的任务",
-        //     "entry": "MyTask4"
-        // }
     ],
     "option": {
-        "任务选项1": {
-            "type": "select",
+        "设计中心任务选择": {
+            "type": "checkbox",
+            "label": "设计中心任务",
+            "description": "选择本次进入设计中心后要运行的子任务。情报屋目前仅保留入口占位。",
+            "default_case": [
+                "美甲",
+                "制作目标服装"
+            ],
             "cases": [
                 {
-                    "name": "文本1",
+                    "name": "美甲",
                     "pipeline_override": {
-                        "OcrTask": {
-                            "text": "文本1"
+                        "设计中心运行美甲": {
+                            "enabled": true
                         }
                     }
                 },
                 {
-                    "name": "文本2",
+                    "name": "制作目标服装",
                     "pipeline_override": {
-                        "OcrTask": {
-                            "text": "文本2"
+                        "设计中心运行制作目标服装": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "情报屋",
+                    "description": "暂未编写具体流程，当前选中后会直接结束设计中心任务。",
+                    "pipeline_override": {
+                        "设计中心运行情报屋": {
+                            "enabled": true
                         }
                     }
                 }
             ]
+        },
+        "竞技场对比次数": {
+            "type": "input",
+            "label": "竞技场对比设置",
+            "description": "调整竞技场战力对比的最大轮数。对比从左到右进行，玩家战力大于对方则自动挑战",
+            "inputs": [
+                {
+                    "name": "max_rounds",
+                    "label": "最大对比轮数",
+                    "description": "查找弱对手的最大轮数，每轮对比3个对手",
+                    "default": "5",
+                    "pipeline_type": "int",
+                    "verify": "^[1-9]$|^1[0-9]$|^20$",
+                    "pattern_msg": "请输入1-20之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "竞技场战力对比": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "arena_compare",
+                            "custom_action_param": {
+                                "area_a": [0, 0, 200, 60],
+                                "area_b": [
+                                    [0, 200, 200, 60],
+                                    [0, 400, 200, 60],
+                                    [0, 600, 200, 60]
+                                ],
+                                "refresh": [500, 1100, 200, 60],
+                                "max_rounds": "{{max_rounds}}"
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

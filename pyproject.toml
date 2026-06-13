@@ -3,5 +3,11 @@ name = "maashiningnikki"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">= 3.9,<=3.13"
-dependencies = ["json-with-comments>=1.2.10", "maadebugger>=1.19.5"]
+requires-python = ">=3.12"
+dependencies = [
+    "json-with-comments>=1.2.10",
+    "jsonschema>=4.26.0",
+    "loguru>=0.7.3",
+    "maafw>=5.10.4",
+    "pip>=26.1.1",
+]

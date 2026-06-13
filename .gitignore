@@ -1,4 +1,14 @@
-# docs
+# Local docs and demo files
+docs/
+MFA/
+.maa/
+AGENTS.md
+CLAUDE.md
+assets/interface_demo.json
+*_demo.json
+*demo*.json
+
+# docs build outputs
 docs/node_modules
 docs/.vuepress/.temp
 # Prerequisites

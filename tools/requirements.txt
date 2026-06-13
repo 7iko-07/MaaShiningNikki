@@ -1,1 +1,1 @@
-json-with-comments
+json-with-comments>=1.2.10
