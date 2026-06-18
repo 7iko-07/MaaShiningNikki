@@ -172,6 +172,8 @@ jobs:
           
           echo "Building for platform: ${platform_tag}"
           
+          python -m pip install -r ./tools/requirements.txt
+
           # 运行安装脚本，传入版本号、系统和架构
           python ./tools/install.py ${{ needs.meta.outputs.tag }} win ${{ matrix.arch }}
 
@@ -244,6 +246,8 @@ jobs:
           platform_tag="${os_name}-${arch_name}"
           echo "Building for platform: ${platform_tag}"
           
+          python -m pip install -r ./tools/requirements.txt
+
           # 运行安装脚本，传入版本号、系统和架构
           if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
             install_os="linux"
