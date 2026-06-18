@@ -77,5 +77,74 @@
 		"next": ["情报屋任务链入口"],
 		"timeout": 2000,
         "enabled": false
+    },
+	    "进入设计中心":{
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param":{
+                "target": [62, 1118, 37, 33]
+            }
+        },
+        "post_delay": 2000,
+        "next": ["在设计中心页面", "[JumpBack]点击底部菜单并右划-点击设计中心-入口"]
+    },
+    "在设计中心页面":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["美甲"],
+				"roi": [67, 1030, 120, 95]
+			}
+		},
+        "action": "DoNothing",
+        "next": []
+    },
+    "点击底部菜单并右划-点击设计中心-入口":{
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["点击底部菜单并右划-点击设计中心", "[JumpBack]返回主页面"]
+    },
+    "点击底部菜单并右划-点击设计中心":{
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": [
+                    "活动一览按钮.png"
+                ],
+                "roi": [13, 841, 79, 76]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [700, 1150]
+            }
+        },
+        "timeout": 1000,
+		"next": ["右划底部菜单-点击设计中心"]
+    },
+    "右划底部菜单-点击设计中心":{
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [98, 1145],
+                "end_offset": [600, 0, 0, 0]
+            }
+        },
+        "timeout": 1000,
+        "next": ["点击设计中心"]
+    },
+    "点击设计中心": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param":{
+                "target": [62, 1118, 37, 33]
+            }
+        }
     }
 }

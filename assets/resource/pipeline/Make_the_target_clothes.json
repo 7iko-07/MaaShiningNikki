@@ -1,38 +1,6 @@
 {
     "制作目标服装任务链入口": {
-		"next": ["制作目标服装准备", "[JumpBack]返回主页面"],
-		"timeout": 2000
-    },
-    "制作目标服装准备": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
-            }
-        },
-        "action": {
-            "type": "DoNothing",
-            "param": {}
-        },
-        "next": ["点击设计中心-制作目标服装", "[JumpBack]点击底部菜单并右划"]
-    },
-    "点击设计中心-制作目标服装": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [0, 1062, 720, 218],
-				"expected": ["设计中心", "设计", "中心"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_wait_freezes": 5000,
-		"next": ["点击制衣引导"],
+		"next": ["点击制衣引导", "[JumpBack]进入设计中心"],
 		"timeout": 2000
     },
     "点击制衣引导": {

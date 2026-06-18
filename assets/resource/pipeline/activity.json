@@ -39,7 +39,8 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["行宫回声"]
+				"expected": ["宾客入席"],
+				"roi": [561, 1013, 82, 71]
 			}
 		},
 		"action": {
@@ -66,7 +67,7 @@
 					"roi": [0, 0, 720, 1280],
 					"max_points": 20000,
 					"change_detection": true,
-					"exclude": [[0, 74, 124, 126], [545, 74, 175, 179]],
+					"exclude": [[0, 74, 124, 126], [546, 48, 174, 226],[436, 1033, 284, 129]],
 					"stop_on_no_change": true
 				}
 			}
@@ -128,7 +129,7 @@
 		"recognition": {
             "type": "FeatureMatch",
             "param": {
-                "template": "剧情叉号.png",
+                "template": "剧情叉号.png"
             }
         },
         "action": {

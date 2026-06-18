@@ -139,5 +139,29 @@
             }
         },
         "timeout": 1000
-    }
+    },
+    "在加载页面":{
+		"recognition": {
+			"type": "ColorMatch",
+			"param":{
+				"roi": [27, 1183, 10, 7],
+				"upper": [255, 216, 164],
+				"lower": [254, 200, 129],
+				"count": 10
+			}
+		},
+		"action": "DoNothing",
+		"post_delay": 1000
+	},
+    "在接受投稿页面":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [230, 590, 259, 113],
+				"expected": ["正在接收投稿", "正在", "接收", "投稿"]
+			}
+		},
+		"action": "DoNothing",
+		"post_delay": 1000
+	}
 }

@@ -7,9 +7,14 @@
     "welcome": "首次使用！欢迎使用 MAA!",
     "github": "https://github.com/MaaXYZ/MaaPracticeBoilerplate/",
     "version": "0.0.1",
+    "title": "小灰毛",
+    "icon": "logo.ico",
     "agent": {
-        "child_exec": "uv",
-        "child_args": ["run", "python", "../agent/main.py"]
+        "child_exec": "python",
+        "child_args": [
+        "-u",
+        "./../agent/main.py"
+        ]
     },
     "controller": [
         {
@@ -35,82 +40,59 @@
             "path": [
                 "./resource"
             ]
-        },
-        {
-            "name": "B 服",
-            "path": [
-                "./resource",
-                "./resource_bilibili"
-            ]
         }
     ],
     "task": [
         {
-            "name": "好友一键送心及领取体力",
+            "name": "好友",
             "entry": "好友任务链入口"
         },
         {
             "name": "联盟",
-            "entry": "联盟任务链入口",
-            "option": [
-                "任务选项1"
-            ],
-            "pipeline_override": {}
+            "entry": "联盟任务链入口"
         },
         {
             "name": "邮件",
-            "entry": "邮件任务链入口",
-            "option": [
-                "任务选项1"
-            ]
+            "entry": "邮件任务链入口"
         },
         {
             "name": "福利",
-            "entry": "福利任务链入口",
-            "option": [
-                "任务选项1"
-            ],
-            "pipeline_override": {}
+            "entry": "福利任务链入口"
         },
         {
             "name": "回家",
-            "entry": "回家任务链入口",
-            "option": [
-                "任务选项1"
-            ],
-            "pipeline_override": {}
-        },
-        {
-            "name": "美甲",
-            "entry": "美甲任务链入口",
-            "option": [
-                "任务选项1"
-            ],
-            "pipeline_override": {}
+            "entry": "回家任务链入口"
         },
         {
             "name": "设计中心",
             "entry": "设计中心任务链入口",
             "option": [
                 "设计中心任务选择"
-            ],
-            "pipeline_override": {}
+            ]
         },
         {
-            "name": "体力",
-            "entry": "体力任务链入口",
-            "option": [
-                "任务选项1"
-            ],
-            "pipeline_override": {}
+            "name": "结伴",
+            "entry": "体力任务链入口"
         },
         {
             "name": "竞技场",
             "entry": "竞技场任务链入口",
             "option": [
-                "竞技场对比次数"
-            ],
-            "pipeline_override": {}
+                "竞技场刷新次数",
+                "竞技场是否搭配服装"
+            ]
+        },
+        {
+            "name": "搭配评选赛",
+            "entry": "搭配评选赛任务链入口"
+        },
+        {
+            "name": "一键领取",
+            "entry": "一键领取任务链入口"
+        },
+        {
+            "name": "织吻为拥",
+            "entry": "活动任务链入口"
         }
     ],
     "option": {
@@ -150,14 +132,14 @@
                 }
             ]
         },
-        "竞技场对比次数": {
+        "竞技场刷新次数": {
             "type": "input",
-            "label": "竞技场对比设置",
-            "description": "调整竞技场战力对比的最大轮数。对比从左到右进行，玩家战力大于对方则自动挑战",
+            "label": "竞技场刷新设置",
+            "description": "调整竞技场战力刷新的最大轮数。对比从左到右进行，玩家战力大于对方则自动挑战",
             "inputs": [
                 {
                     "name": "max_rounds",
-                    "label": "最大对比轮数",
+                    "label": "最大刷新轮数",
                     "description": "查找弱对手的最大轮数，每轮对比3个对手",
                     "default": "5",
                     "pipeline_type": "int",
@@ -168,9 +150,7 @@
             "pipeline_override": {
                 "竞技场战力对比": {
                     "action": {
-                        "type": "Custom",
                         "param": {
-                            "custom_action": "arena_compare",
                             "custom_action_param": {
                                 "area_a": [0, 0, 200, 60],
                                 "area_b": [
@@ -185,6 +165,23 @@
                     }
                 }
             }
+        },
+        "竞技场是否搭配服装":{
+            "type": "switch",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {}
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "点击钻石竞技场":{
+                            "next": ["竞技场战力对比", "[JumpBack]在加载页面", "[JumpBack]点击OK-竞技场"]
+                        }
+                    }
+                }
+            ]
         }
     }
 }

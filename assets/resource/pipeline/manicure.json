@@ -1,38 +1,6 @@
 {
 	"美甲任务链入口": {
-		"next": ["美甲任务链准备", "[JumpBack]返回主页面"],
-		"timeout": 2000
-    },
-	"美甲任务链准备": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
-            }
-        },
-        "action": {
-            "type": "DoNothing",
-            "param": {}
-        },
-        "next": ["点击设计中心-美甲", "[JumpBack]点击底部菜单并右划"]
-    },
-    "点击设计中心-美甲": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [0, 1062, 720, 218],
-				"expected": ["设计中心", "设计", "中心"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_wait_freezes": 5000,
-		"next": ["点击美甲"],
+		"next": ["点击美甲", "[JumpBack]进入设计中心"],
 		"timeout": 2000
     },
     "点击美甲": {
@@ -64,8 +32,24 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["点击雇佣店员","[JumpBack]点击我的店铺空白"],
+		"next": ["点击空白-雇佣店员"],
 		"timeout": 2000
+    },
+	"点击空白-雇佣店员":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [151, 131, 73, 44]
+            }
+        },
+		"repeat": 3,
+        "next": ["点击雇佣店员","点击提取心意币"],
+		"timeout": 2000,
+		"post_delay": 1000
     },
 	"点击雇佣店员": {
         "recognition": {
@@ -107,26 +91,27 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [152, 127, 194, 91]
+                "target": [143, 136, 86, 62]
             }
         },
         "repeat": 3,
+		"repeat_delay": 400,
         "next": ["点击提取心意币"],
 		"timeout": 2000
     },
     "点击提取心意币": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [447, 1073, 257, 106],
-				"expected": ["提取"]
-			}
+			"type": "DirectHit",
+			"param": {}
 		},
 		"action": {
 			"type": "Click",
-			"param": {}
+			"param": {
+				"target": [544, 1126, 72, 33]
+			}
 		},
 		"next": ["点击我的店铺空白2"],
+		"post_delay": 2000,
 		"timeout": 2000
     },
     "点击我的店铺空白2": {
@@ -137,13 +122,173 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [152, 127, 194, 91]
+                "target": [143, 136, 86, 62]
             }
         },
         "repeat": 3,
-        "next": ["点击返回美甲页面"],
+		"repeat_delay": 400,
+        "next": ["点击特约顾客"],
 		"timeout": 2000
     },
+	"点击特约顾客": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [50, 856, 80, 63]
+            }
+        },
+		"post_delay": 2000,
+        "next": ["点击私人设计","点击返回美甲页面"],
+		"timeout": 2000
+    },
+	"点击私人设计": {
+        "recognition":{
+		"type": "ColorMatch",
+			"param":{
+				"roi": [575, 441, 19, 16],
+				"upper": [138, 174, 237],
+				"lower": [137, 173, 236],
+				"count": 10
+			}
+		},
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [575, 441, 19, 16]
+            }
+        },
+		"post_delay": 1000,
+        "next": ["点击开始设计"],
+		"timeout": 2000
+    },
+	"点击开始设计": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [254, 829, 206, 54]
+            }
+        },
+        "next": ["搭配拇指"],
+		"post_wait_freezes": 3000,
+		"timeout": 2000
+    },
+	"搭配拇指": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "select_same_text_after_thumb",
+				"custom_action_param": {
+					"source_roi": [433, 215, 47, 24],
+					"thumb_roi": [568, 739, 26, 26]
+				}
+			}
+		},
+		"post_delay": 2000,
+		"next": ["拇指甲油"]
+	},
+	"拇指甲油":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param":{
+				"custom_action": "click_nail_tabs_sequence",
+				"custom_action_param": {
+					"delay": 1.0
+				}
+			}
+		},
+		"next": ["搭配食指"],
+		"post_delay": 2000
+	},
+	"搭配食指":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "select_same_text_after_thumb",
+				"custom_action_param": {
+					"source_roi": [528, 215, 46, 23],
+					"thumb_roi": [536, 470, 24, 25]
+				}
+			}
+		},
+		"next": ["食指甲油"]
+	},
+	"食指甲油":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param":{
+				"custom_action": "click_nail_tabs_sequence",
+				"custom_action_param": {
+					"delay": 1.0
+				}
+			}
+		},
+		"next": ["搭配中指"]
+	},
+	"搭配中指":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "select_same_text_after_thumb",
+				"custom_action_param": {
+					"source_roi": [621, 214, 47, 24],
+					"thumb_roi": [491, 404, 19, 18]
+				}
+			}
+		},
+		"next": ["中指甲油"]
+	},
+	"中指甲油":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param":{
+				"custom_action": "click_nail_tabs_sequence",
+				"custom_action_param": {
+					"delay": 1.0
+				}
+			}
+		},
+		"next": ["点击完成搭配"]
+	},
+	"点击完成搭配":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Click",
+			"param":{
+				"target": [78, 879, 111, 35]
+			}
+		},
+		"timeout": 2000,
+		"post_wait_freezes": 4000,
+		"next": ["点击完成搭配空白"]
+	},
+	"点击完成搭配空白":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Click",
+			"param":{
+				"target": [254, 1120, 149, 76]
+			}
+		},
+		"repeat": 5,
+		"repeat_delay": 1000,
+		"timeout": 2000,
+		"post_wait_freezes": 2000,
+		"next": ["点击特约顾客"]
+	},
     "点击返回美甲页面":{
         "recognition": {
             "type": "TemplateMatch",
@@ -156,6 +301,8 @@
             "type": "Click",
             "param": {}
         },
+		"repeat": 2,
+		"repeat_delay": 1000,
         "timeout": 5000,
         "post_wait_freezes": 1000,
         "next": ["点击此刻投稿"]
@@ -173,6 +320,7 @@
 			"param": {}
 		},
 		"next": ["点击浏览点赞"],
+		"post_delay": 2000,
 		"timeout": 2000
     },
     "点击浏览点赞": {
@@ -187,11 +335,11 @@
 			"type": "Click",
 			"param": {}
 		},
-        "post_delay": 10000,
-		"next": ["点击美甲完美评价"],
+        "post_wait_freezes": 1000,
+		"next": ["点击美甲完美评价1", "[JumpBack]在加载页面"],
 		"timeout": 2000
     },
-    "点击美甲完美评价": {
+    "点击美甲完美评价1": {
 		"recognition": {
 			"type": "OCR",
 			"param": {
@@ -203,9 +351,72 @@
 			"type": "Click",
 			"param": {}
 		},
-        "repeat": 5,
-        "repeat_delay": 5000,
-		"next": ["点击返回点赞美甲页面"],
+		"post_delay": 5000,
+		"next": ["点击美甲完美评价2", "[JumpBack]在接受投稿页面"],
+		"timeout": 2000
+    },
+	"点击美甲完美评价2": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [377, 1151, 124, 109],
+				"expected": ["完美"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 5000,
+		"next": ["点击美甲完美评价3", "[JumpBack]在接受投稿页面"],
+		"timeout": 2000
+    },
+	"点击美甲完美评价3": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [377, 1151, 124, 109],
+				"expected": ["完美"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 5000,
+		"next": ["点击美甲完美评价4", "[JumpBack]在接受投稿页面"],
+		"timeout": 2000
+    },
+	"点击美甲完美评价4": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [377, 1151, 124, 109],
+				"expected": ["完美"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 5000,
+		"next": ["点击美甲完美评价5", "[JumpBack]在接受投稿页面"],
+		"timeout": 2000
+    },
+	"点击美甲完美评价5": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [377, 1151, 124, 109],
+				"expected": ["完美"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 5000,
+		"next": ["点击返回点赞美甲页面", "[JumpBack]在接受投稿页面"],
 		"timeout": 2000
     },
     "点击返回点赞美甲页面": {

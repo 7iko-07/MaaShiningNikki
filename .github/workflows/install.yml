@@ -19,16 +19,21 @@ on:
       - "**.py"
   workflow_dispatch:
 
+permissions:
+  contents: write
+  actions: write
+
 jobs:
   meta:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - id: set_tag
         run: |
-          # 检查标签格式
           is_release=${{ startsWith(github.ref, 'refs/tags/v') }}
           tag=$(git describe --tags --match "v*" ${{ github.ref }} || true)
           if [[ $tag != v* ]]; then
@@ -38,18 +43,14 @@ jobs:
             fi
             tag=$(date "+$tag-%y%m%d-$(git rev-parse --short HEAD)")
           fi
-
-          if ! $($is_release) ; then
+          if [[ "$is_release" != "true" ]]; then
             prefix=${tag%-*-*}
             suffix=${tag#$prefix-}
             tag="$prefix-ci.$suffix"
           fi
-
-          # 检查是否为预发布版本
           is_prerelease=false
           if [[ $tag =~ .*alpha.* || $tag =~ .*beta.* || $tag =~ .*rc.* || $tag =~ .*dev.* || $tag =~ .*-ci.* ]]; then
             is_prerelease=true
-            echo "This is a pre-release version"
           fi
 
           echo tag=$tag | tee -a $GITHUB_OUTPUT
@@ -60,89 +61,216 @@ jobs:
       is_release: ${{ steps.set_tag.outputs.is_release }}
       is_prerelease: ${{ steps.set_tag.outputs.is_prerelease }}
 
-  install:
+  windows:
     needs: meta
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     strategy:
       matrix:
-        os: [win, macos, linux, android]
         arch: [aarch64, x86_64]
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
+
+      - name: Download MFAAvalonia
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: MaaXYZ/MFAAvalonia
+          fileName: "MFAAvalonia-*-win-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }}*"
+          latest: true
+          out-file-path: "install"
+          extract: true
 
       - name: Download MaaFramework
         uses: robinraju/release-downloader@v1
         with:
           repository: MaaXYZ/MaaFramework
-          fileName: "MAA-${{ matrix.os }}-${{ matrix.arch }}*"
+          fileName: "MAA-win-${{ matrix.arch }}*"
           latest: true
           out-file-path: "deps"
           extract: true
 
-      - name: Download MFAAvalonia
-        if: matrix.os != 'android'
-        id: download_mfa
-        uses: robinraju/release-downloader@v1
-        with:
-          repository: SweetSmellFox/MFAAvalonia
-          fileName: "MFAAvalonia-*-${{ (matrix.os == 'win' && 'win') || (matrix.os == 'macos' && 'osx') || (matrix.os == 'linux' && 'linux') }}-${{ (matrix.arch == 'x86_64' && 'x64') || (matrix.arch == 'aarch64' && 'arm64') }}*"
-          latest: true
-          out-file-path: "MFA"
-          extract: true
+      - name: Setup Embed Python
+        shell: powershell
+        run: |
+          ./tools/ci/setup_embed_python.ps1 ${{ matrix.arch }}
 
-      - name: Clean up MFAAvalonia archive
-        if: matrix.os != 'android'
+      - name: Rename MFAAvalonia to MaaShiningNikki
         shell: bash
         run: |
-          ARCHIVE_FILE_PATH="${{ fromJson(steps.download_mfa.outputs.downloaded_files)[0] }}"
-          rm -f "${ARCHIVE_FILE_PATH}"
-          echo "Archive cleanup command executed for MFAAvalonia."
+          # 查找 MFAAvalonia.exe 的位置
+          exe_path=$(find install -name "MFAAvalonia.exe" | head -n 1)
+          
+          if [ -z "$exe_path" ]; then
+            echo "Warning: MFAAvalonia.exe not found in install directory."
+            exit 1
+          fi
+          
+          echo "Found MFAAvalonia.exe at: $exe_path"
+          
+          # 获取目录路径
+          exe_dir=$(dirname "$exe_path")
+          
+          # 重命名为 MaaShiningNikki.exe
+          mv "$exe_path" "$exe_dir/MaaShiningNikki.exe"
+          
+          if [ $? -eq 0 ]; then
+            echo "MFAAvalonia.exe renamed to MaaShiningNikki.exe successfully"
+          else
+            echo "Failed to rename MFAAvalonia.exe"
+            exit 1
+          fi
 
-      - name: Remove built-in runtime in MFA
-        if: matrix.os != 'android'
+      - name: Modify MaaShiningNikki exe icon
         shell: bash
         run: |
-          rm -rf MFA/runtimes
-      
+          # 根据架构选择 rcedit 版本
+          if [ "${{ matrix.arch }}" == "x86_64" ]; then
+            rcedit_url="https://github.com/electron/rcedit/releases/download/v2.0.0/rcedit-x64.exe"
+          else
+            echo "Skipping icon update for Windows ARM64."
+            exit 0
+          fi
+
+          # 下载 rcedit
+          echo "Downloading rcedit for ${{ matrix.arch }}..."
+          curl -L "$rcedit_url" -o rcedit.exe
+
+          # 查找 MaaShiningNikki.exe 的位置
+          exe_path=$(find install -name "MaaShiningNikki.exe" | head -n 1)
+
+          if [ -z "$exe_path" ]; then
+            echo "Warning: MaaShiningNikki.exe not found in install directory."
+            exit 0
+          fi
+
+          echo "Found MaaShiningNikki.exe at: $exe_path"
+
+          # 修改 exe 图标
+          ./rcedit.exe "$exe_path" --set-icon "logo.ico"
+
+          if [ $? -eq 0 ]; then
+            echo "MaaShiningNikki icon modified successfully"
+          else
+            echo "Failed to modify MaaShiningNikki icon"
+            exit 1
+          fi
+
       - name: Install
         shell: bash
         run: |
-          if [[ "${{ matrix.os }}" != "android" ]]; then
-            if [ -d "MFA" ]; then
-              echo "Copying MFA files to install directory..."
-              mkdir -p install
-              rsync -av --ignore-existing MFA/ install/
-              echo "MFA files copied successfully."
-            else
-              echo "MFA directory not found, skipping copy."
-            fi
+          # 确定平台标签
+          if [ "${{ matrix.arch }}" == "x86_64" ]; then
+            platform_tag="win-x64"
           else
-            echo "Skipping copy MFA for Android."
+            platform_tag="win-arm64"
           fi
+          
+          echo "Building for platform: ${platform_tag}"
+          
+          # 运行安装脚本，传入版本号、系统和架构
+          python ./tools/install.py ${{ needs.meta.outputs.tag }} win ${{ matrix.arch }}
 
-          cd tools/
-          python -m pip install -r ./requirements.txt
-          python ./install.py ${{ needs.meta.outputs.tag }} ${{ matrix.os }} ${{ matrix.arch }}
-          cd ..
+          # 清理zip文件
+          echo "Cleaning up zip files..."
+          find install -name "MFAAvalonia-*.zip" -delete 2>/dev/null || true
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
-          name: MaaXXX-${{ matrix.os }}-${{ matrix.arch }}
+          name: MaaShiningNikki-win-${{ matrix.arch }}
+          path: "install"
+
+  unix:
+    needs: meta
+    runs-on: ${{ matrix.os }}
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        arch: [aarch64, x86_64]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Download MFAAvalonia
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: MaaXYZ/MFAAvalonia
+          fileName: "MFAAvalonia-*-${{ matrix.os == 'ubuntu-latest' && 'linux' || 'osx' }}-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }}*"
+          latest: true
+          out-file-path: "install"
+          extract: true
+
+      - name: Download MaaFramework
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: MaaXYZ/MaaFramework
+          fileName: "MAA-${{ matrix.os == 'ubuntu-latest' && 'linux' || 'macos' }}-${{ matrix.arch }}*"
+          latest: true
+          out-file-path: "deps"
+          extract: true
+
+      - name: Setup Embed Python (macOS)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          chmod +x ./tools/ci/setup_embed_python.sh
+          ./tools/ci/setup_embed_python.sh ${{ matrix.arch }}
+
+      - name: Install
+        shell: bash
+        run: |
+          # 确定平台标签
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            os_name="linux"
+          else
+            os_name="osx"
+          fi
+          
+          if [ "${{ matrix.arch }}" == "x86_64" ]; then
+            arch_name="x64"
+          else
+            arch_name="arm64"
+          fi
+          
+          platform_tag="${os_name}-${arch_name}"
+          echo "Building for platform: ${platform_tag}"
+          
+          # 运行安装脚本，传入版本号、系统和架构
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            install_os="linux"
+          else
+            install_os="macos"
+          fi
+          python ./tools/install.py ${{ needs.meta.outputs.tag }} ${install_os} ${{ matrix.arch }}
+
+          # 清理zip文件
+          echo "Cleaning up zip files..."
+          find install -name "MFAAvalonia-*.zip" -delete 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: MaaShiningNikki-${{ matrix.os == 'ubuntu-latest' && 'linux' || 'macos' }}-${{ matrix.arch }}
           path: "install"
 
   changelog:
     name: Generate changelog
-    needs: meta
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     outputs:
       release_body: ${{ steps.git-cliff.outputs.content }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -151,47 +279,60 @@ jobs:
         id: git-cliff
         with:
           config: .github/cliff.toml
-          # 正式版：使用 tag-pattern 只匹配正式版标签，包含所有从上一个正式版以来的提交
-          # 预发布版：正常生成，只包含从上一个标签以来的提交
-          args: >-
-            -vv --latest --strip header
-            ${{ needs.meta.outputs.is_prerelease == 'false' && '--tag-pattern "^v[0-9]+\\.[0-9]+\\.[0-9]+$"' || '' }}
+          args: -vv --latest --strip header
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
 
   release:
     if: ${{ needs.meta.outputs.is_release == 'true' }}
-    needs: [meta, install, changelog]
+    needs: [meta, windows, unix, changelog]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: assets
 
-      - run: |
+      - name: Check assets directory
+        run: |
+          ls -la assets
+          if [ -z "$(ls -A assets)" ]; then
+            echo "assets directory is empty"
+            exit 1
+          fi
+
+      - name: Compress and generate checksums
+        run: |
           cd assets
+          echo "Generating checksums for all zip files..."
+          checksum_file="checksums.sha256"
+          touch "$checksum_file"
+
           for f in *; do
-            (cd $f && zip -r ../$f-${{ needs.meta.outputs.tag }}.zip .)
+            if [ -d "$f" ]; then
+              echo "Processing directory: $f"
+              zip_file="$f-${{ needs.meta.outputs.tag }}.zip"
+              (cd "$f" && zip -r "../$zip_file" .)
+              if [ $? -eq 0 ]; then
+                echo "ZIP file created: ../$zip_file"
+                echo "Processing directory: $f"
+                sha256sum "$zip_file" >> "$checksum_file"
+                echo "" >> "$checksum_file"
+              else
+                echo "Failed to create ZIP file: ../$zip_file"
+                exit 1
+              fi
+            else
+              echo "Skipping non-directory: $f"
+            fi
           done
-          
+
       - uses: softprops/action-gh-release@v2
         with:
-          files: assets/*
+          files: |
+            assets/*.zip
+            assets/checksums.sha256
           tag_name: ${{ needs.meta.outputs.tag }}
           body: ${{ needs.changelog.outputs.release_body }}
           draft: false
           prerelease: ${{ needs.meta.outputs.is_prerelease == 'true' }}
-
-        # Mirror酱为第三方分发服务，新项目默认关闭
-        # 若有需要请联系 Mirror酱 开通，直接自行开启是无法使用的
-        # https://mirrorchyan.com/
-      - name: Trigger MirrorChyanUploading
-        if: false
-        # if: ${{ github.repository_owner == 'MaaXYZ' }}
-        shell: bash
-        run: |
-          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release.yml -f tag=${{ needs.meta.outputs.tag }}
-          gh workflow run --repo $GITHUB_REPOSITORY mirrorchyan_release_note.yml -f tag=${{ needs.meta.outputs.tag }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

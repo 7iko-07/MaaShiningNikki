@@ -206,7 +206,7 @@ def check_and_install_dependencies():
         logger.info("跳过依赖安装")
 
 
-def read_interface_version(interface_file="./assets/interface.json") -> str:
+def read_interface_version(interface_file="interface.json") -> str:
     """
     读取 interface.json 文件中的版本信息
     """

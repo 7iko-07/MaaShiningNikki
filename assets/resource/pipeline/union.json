@@ -72,8 +72,8 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [11, 1133, 390, 138],
-				"expected": ["执行五次","五次"]
+				"roi": [255, 1183, 105, 35],
+				"expected": ["执行五次", "五次", "执行"]
 			}
 		},
 		"action": {
@@ -82,6 +82,8 @@
 		},
 		"next": ["点击关闭联盟奖励"],
 		"post_delay": 1500,
+		"repeat": 2,
+		"repeat_delay": 2000,
 		"timeout": 5000
 	},
 	"点击关闭联盟奖励": {
