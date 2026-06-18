@@ -68,7 +68,9 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     strategy:
       matrix:
-        arch: [aarch64, x86_64]
+        # windows-latest is x64 and cannot execute the ARM64 embedded Python
+        # needed by setup_embed_python.ps1.
+        arch: [x86_64]
       fail-fast: false
 
     steps:

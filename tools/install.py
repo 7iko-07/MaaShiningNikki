@@ -29,6 +29,14 @@ os_name = sys.argv[2]
 arch = sys.argv[3]
 
 
+def get_agent_exec():
+    if os_name == "win":
+        return "./python/python.exe"
+    if os_name == "macos":
+        return "./python/bin/python3"
+    return "python3"
+
+
 def get_dotnet_platform_tag():
     """自动检测当前平台并返回对应的dotnet平台标签"""
     if os_name == "win" and arch == "x86_64":
@@ -117,6 +125,13 @@ def install_resource():
         interface = jsonc.load(f)
 
     interface["version"] = version
+    interface["agent"] = {
+        "child_exec": get_agent_exec(),
+        "child_args": [
+            "-u",
+            "./agent/main.py",
+        ],
+    }
 
     with open(install_path / "interface.json", "w", encoding="utf-8") as f:
         jsonc.dump(interface, f, ensure_ascii=False, indent=4)
