@@ -31,7 +31,7 @@ class ClickAndWaitChangeAction(CustomAction):
         change_threshold = params.get("change_threshold", params.get("threshold", 0.3))
         timeout = params.get("timeout", params.get("wait_timeout", 5000))
         interval = params.get("interval", params.get("wait_interval", 300))
-        max_retries = params.get("max_retries", params.get("max_clicks", 6))
+        max_retries = params.get("max_retries", params.get("max_clicks", 3))
         fail_on_timeout = params.get("fail_on_timeout", False)
 
         for retry_index in range(max_retries):

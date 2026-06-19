@@ -4,11 +4,12 @@
     "description": "闪耀暖暖小助手",
     "contact": "",
     "license": "MIT",
-    "welcome": "首次使用！欢迎使用 MAA!",
-    "github": "https://github.com/MaaXYZ/MaaPracticeBoilerplate/",
+    "welcome": "首次使用！欢迎使用 闪现吧暖暖!",
+    "github": "https://github.com/7iko-07/MaaShiningNikki",
     "version": "0.0.1",
     "title": "闪现吧暖暖",
     "icon": "logo.ico",
+    "mirrorchyan_multiplatform":false,
     "agent": {
         "child_exec": "python",
         "child_args": [
@@ -21,17 +22,6 @@
             "name": "安卓端",
             "type": "Adb",
             "display_short_side": 720
-        },
-        {
-            "name": "桌面端",
-            "type": "Win32",
-            "win32": {
-                "class_regex": ".*",
-                "window_regex": "Visual Studio",
-                "screencap": "PrintWindow",
-                "mouse": "PostMessageWithCursorPos",
-                "keyboard": "PostMessageWithCursorPos"
-            }
         }
     ],
     "resource": [
@@ -45,41 +35,49 @@
     "task": [
         {
             "name": "start",
-            "entry": "点击开始"
+            "entry": "点击开始",
+            "description": "点击登录页面的开始，持续时间较长，闪暖太卡了"
         },
         {
             "name": "好友",
-            "entry": "好友任务链入口"
+            "entry": "好友任务链入口",
+            "description": "好友一键送心\n\n联盟一键送心\n\n体力一键领取"
         },
         {
             "name": "联盟",
-            "entry": "联盟任务链入口"
+            "entry": "联盟任务链入口",
+            "description": "机密任务执行五次\n\n联盟捐献金币五次\n\n联盟福利一键领取"
         },
         {
             "name": "邮件",
-            "entry": "邮件任务链入口"
+            "entry": "邮件任务链入口",
+            "description": "邮件奖励一键领取"
         },
         {
             "name": "福利",
-            "entry": "福利任务链入口"
+            "entry": "福利任务链入口",
+            "description": "每日签到\n\n补签领取\n\n免费体力补给领取"
         },
         {
             "name": "回家",
             "entry": "回家任务链入口",
             "option": [
                 "自习室是否离开"
-            ]
+            ],
+            "description": "采购三次番茄炒蛋\n\n采购五次金币小物\n\n自习室好感度获取"
         },
         {
             "name": "设计中心",
             "entry": "设计中心任务链入口",
             "option": [
-                "设计中心任务选择"
+                "设计中心任务选择",
+                "美甲特约顾客任务"
             ]
         },
         {
             "name": "结伴",
-            "entry": "体力任务链入口"
+            "entry": "体力任务链入口",
+            "description": "时光钟表铺\n\n不落的帷幕\n\n印象旅航"
         },
         {
             "name": "竞技场",
@@ -87,19 +85,24 @@
             "option": [
                 "竞技场刷新次数",
                 "竞技场是否搭配服装"
-            ]
+            ],
+            "description": "会对比当前批次，从左到右进行，玩家战力大于对方则自动挑战"
         },
         {
             "name": "搭配评选赛",
-            "entry": "搭配评选赛任务链入口"
+            "entry": "搭配评选赛任务链入口",
+            "description": "搭配评选赛点赞"
         },
         {
             "name": "一键领取",
-            "entry": "一键领取任务链入口"
+            "entry": "一键领取任务链入口",
+            "description": "一键领取活跃任务\n\n一键领取时尚任务\n\n一键领取时尚提升计划"
         },
         {
             "name": "织吻为拥",
-            "entry": "活动任务链入口"
+            "entry": "活动任务链入口",
+            "default_check": false,
+            "description": "##**默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！**"
         }
     ],
     "option": {
@@ -115,6 +118,7 @@
             "cases": [
                 {
                     "name": "美甲",
+                    "description":  "雇佣免费店员\n\n提取心意币\n\n特约顾客\n\n美甲点赞",
                     "pipeline_override": {
                         "设计中心运行美甲": {
                             "enabled": true
@@ -123,6 +127,7 @@
                 },
                 {
                     "name": "制作目标服装",
+                    "description":  "只获取制衣引导的衣服的时空回廊材料",
                     "pipeline_override": {
                         "设计中心运行制作目标服装": {
                             "enabled": true
@@ -130,7 +135,8 @@
                     }
                 },
                 {
-                    "name": "情报屋",
+                    "name": "情报屋-左一",
+                    "description":  "只获取左一情报",
                     "pipeline_override": {
                         "设计中心运行情报屋": {
                             "enabled": true
@@ -139,10 +145,29 @@
                 }
             ]
         },
+        "美甲特约顾客任务":{
+            "type": "switch",
+            "description": "完成特约顾客三个手指，\n\n###**如果三个手指加起来达不到完美就会死循环，建议有一定美甲积累再做**",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {}
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "点击我的店铺空白2": {
+                            "next": ["点击返回美甲页面"]
+                        }
+                    }
+                }
+            ]
+        },
         "竞技场刷新次数": {
             "type": "input",
             "label": "竞技场刷新设置",
-            "description": "调整竞技场战力刷新的最大轮数。对比从左到右进行，玩家战力大于对方则自动挑战",
+            "description": "调整竞技场战力刷新的最大轮数。",
             "inputs": [
                 {
                     "name": "max_rounds",
@@ -150,8 +175,8 @@
                     "description": "查找弱对手的最大轮数，每轮对比3个对手",
                     "default": "5",
                     "pipeline_type": "int",
-                    "verify": "^[1-9]$|^1[0-9]$|^20$",
-                    "pattern_msg": "请输入1-20之间的整数"
+                    "verify": "^[1-9]$|^[1-9][0-9]$$",
+                    "pattern_msg": "请输入1-99之间的整数"
                 }
             ],
             "pipeline_override": {
@@ -179,6 +204,7 @@
         },
         "竞技场是否搭配服装":{
             "type": "switch",
+            "default_case": "No",
             "cases": [
                 {
                     "name": "Yes",
@@ -196,6 +222,8 @@
         },
         "自习室是否离开":{
             "type": "select",
+            "description": "今日是否永久离开，不想关自习室陪伴的暖妈一定要选只是暂时离开",
+            "default_case": "只是暂时离开",
             "cases": [
                 {
                     "name": "只是暂时离开",

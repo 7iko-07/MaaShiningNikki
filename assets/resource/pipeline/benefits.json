@@ -30,7 +30,7 @@
 			"param": {}
 		},
 		"post_wait_freezes": 500,
-		"next": ["点击每日签到", "查找方舟补给", "返回主页面"],
+		"next": ["点击每日签到", "查找方舟补给", "[JumpBack]左划福利菜单"],
 		"timeout": 2000
     },
     "点击每日签到": {
@@ -49,7 +49,7 @@
 			"param": {}
 		},
 		"post_wait_freezes": 500,
-		"next": ["点击感叹号所在位置"],
+		"next": ["点击感叹号所在位置", "点击活跃度感叹号所在位置", "退出签到"],
 		"timeout": 2000
     },
     "点击感叹号所在位置": {
@@ -68,6 +68,45 @@
                 "target_offset": [-60, 60, 0, 0]
             }
 		},
+		"next": ["点击活跃度感叹号所在位置", "退出签到"],
+		"post_delay": 500,
+		"timeout": 2000
+    },
+	"点击活跃度感叹号所在位置": {
+        "recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"roi":[113, 476, 587, 179],
+				"template": [
+                    "签到活跃度感叹号.png"
+                ]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+                "target_offset": [-20, 30, 0, 0]
+            }
+		},
+		"post_delay": 500,
+		"next": ["点击确定-活跃度奖励"],
+		"timeout": 2000
+    },
+	"点击确定-活跃度奖励": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[226, 600, 273, 123],
+				"expected": ["免费","补签","次数"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [312, 754, 97, 47]
+			}
+		},
+		"post_delay": 500,
 		"next": ["退出签到"],
 		"timeout": 2000
     },
@@ -147,6 +186,7 @@
                 "end": [152, 219]
             }
         },
+		"post_delay": 500,
         "timeout": 1000
     },
 	"右划福利菜单": {
