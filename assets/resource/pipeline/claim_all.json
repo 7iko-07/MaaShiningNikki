@@ -31,7 +31,7 @@
 		},
         "repeat": 2,
         "repeat_delay": 2000,
-		"post_delay": 1000,
+		"post_delay": 2000,
 		"next": ["点击今日活跃"],
 		"timeout": 2000
     },
@@ -45,21 +45,9 @@
                 "target": [633, 589, 53, 46]
             }
         },
-		"post_delay": 1000,
-		"next": ["点击空白"],
-		"timeout": 2000
-    },
-    "点击空白":{
-        "recognition": {
-			"type": "DirectHit"
-		},
-        "action":{
-            "type": "Click",
-            "param": {
-                "target": [305, 1213, 115, 45]
-            }
-        },
-		"post_delay": 1000,
+		"post_delay": 2000,
+		"repeat": 2,
+		"repeat_delay": 2000,
 		"next": ["点击时尚任务"],
 		"timeout": 2000
     },
@@ -75,7 +63,7 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_delay": 1000,
+		"post_delay": 2000,
 		"next": ["点击一键领取_时尚任务"],
 		"timeout": 2000
     },
@@ -91,7 +79,9 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_delay": 1000,
+		"post_delay": 2000,
+		"repeat": 2,
+		"repeat_delay": 2000,
 		"next": ["点击时尚提升计划"],
 		"timeout": 2000
     },
@@ -124,6 +114,8 @@
 			"param": {}
 		},
 		"post_delay": 1000,
+		"repeat": 2,
+		"repeat_delay": 2000,
 		"next": ["stop"],
 		"timeout": 2000
     }

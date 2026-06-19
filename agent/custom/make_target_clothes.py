@@ -134,24 +134,20 @@ class MakeTargetClothesChallengeAction(CustomAction):
             if not text:
                 return None
 
-            text = text.strip().replace(",", "")
-            numbers = re.findall(r"\d+", text)
-            if not numbers:
+            num_str = self._extract_number_text(text)
+            if not num_str:
                 return None
 
-            index = self._as_int(number_index, 0)
-            if index < 0:
-                index = len(numbers) + index
-            if index < 0 or index >= len(numbers):
-                logger.warning(
-                    f"make_target_clothes_challenge: number_index {number_index} out of range for OCR text {text!r}"
-                )
-                return None
-
-            return int(numbers[index])
+            return int(num_str)
         except Exception as e:
             logger.warning(f"make_target_clothes_challenge: OCR error: {e}")
             return None
+
+    def _extract_number_text(self, text):
+        text = str(text).strip().replace(",", "")
+        if "/" in text:
+            text = text.split("/", 1)[0]
+        return re.sub(r"\D", "", text)
 
     def _extract_ocr_text(self, result):
         if not result or not getattr(result, "hit", False):

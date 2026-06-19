@@ -103,13 +103,10 @@
 			"param": {
                 "custom_action": "make_target_clothes_challenge",
                 "custom_action_param": {
-                    "challenge_count_roi": [504, 863, 27, 24],
-                    "stamina_roi": [130, 72, 46, 25],
+                    "challenge_count_roi": [323, 852, 247, 43],
+                    "stamina_roi": [88, 69, 131, 32],
                     "once_button": [63, 914, 116, 39],
-                    "multi_button": [223, 915, 111, 36],
-                    "stamina_cost": 5,
-                    "max_multi": 10,
-                    "click_delay": 1.2
+                    "multi_button": [223, 915, 111, 36]
                 }
             }
 		},
@@ -166,13 +163,44 @@
                     "change_threshold": 0.01,
                     "final_click_roi": [539, 1106, 128, 39],
                     "changed_next": ["点击全部材料"],
-                    "unchanged_next": ["点击前往获取时空回廊制衣材料", "点击前往制作", "制衣末尾占位"],
+                    "unchanged_next": ["点击前往获取时空回廊制衣材料", "点击前往制作2", "设计中心任务调度情报屋"],
                     "final_challenge_node": "计算并挑战时空回廊制衣材料",
-                    "final_challenge_next": ["返回主页面"]
+                    "final_challenge_next": ["设计中心任务调度情报屋"]
                 }
             }
         },
-        "next": ["设计中心任务调度情报屋"],
         "timeout": 1000
+    },
+    "点击前往制作2":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [284, 746, 145, 62],
+				"expected": ["前往制作", "前往", "制作"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击返回-制衣2"],
+		"timeout": 2000
+    },
+    "点击返回-制衣3":{
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000,
+        "post_wait_freezes": 1000,
+        "next": ["设计中心任务调度情报屋"]
     }
 }

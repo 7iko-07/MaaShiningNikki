@@ -539,13 +539,13 @@
     "导航点击邮件入口": {
         "recognition": "DirectHit",
         "action": "DoNothing",
-        "next": ["导航点击邮件", "导航上划侧边菜单后点击邮件"]
+        "next": ["导航点击邮件"]
     },
     "导航点击邮件": {
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [529, 0, 191, 1054],
+                "roi": [583, 181, 137, 506],
                 "expected": ["邮件"]
             }
         },
@@ -555,19 +555,6 @@
         },
         "post_wait_freezes": 2000,
         "timeout": 2000
-    },
-    "导航上划侧边菜单后点击邮件": {
-        "recognition": "DirectHit",
-        "action": {
-            "type": "Swipe",
-            "param": {
-                "begin": [670, 794],
-                "end": [670, 294]
-            }
-        },
-        "post_delay": 500,
-        "timeout": 1000,
-        "next": ["导航点击邮件"]
     },
     "导航在邮件页面": {
         "recognition": {
@@ -589,7 +576,7 @@
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [529, 0, 191, 1054],
+                "roi": [590, 122, 130, 185],
                 "expected": ["好友"]
             }
         },
@@ -605,9 +592,8 @@
         "action": {
             "type": "Swipe",
             "param": {
-                "begin": [670, 144],
-                "begin_offset": [0, 150, 0, 0],
-                "end_offset": [0, 650, 0, 0]
+                "begin": [670, 226],
+                "end": [670, 570]
             }
         },
         "post_delay": 500,
@@ -628,7 +614,7 @@
     "导航点击福利入口": {
         "recognition": "DirectHit",
         "action": "DoNothing",
-        "next": ["导航点击福利"]
+        "next": ["导航点击福利", "导航上划菜单后点击福利"]
     },
     "导航点击福利": {
         "recognition": {
@@ -644,6 +630,24 @@
         },
         "post_wait_freezes": 2000,
         "timeout": 2000
+    },
+    "导航上划菜单": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [670, 570],
+                "end": [670, 226]
+            }
+        },
+        "post_delay": 500,
+        "timeout": 1000,
+        "next": ["导航点击福利"]
+    },
+    "导航上划菜单后点击福利": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航上划菜单"]
     },
     "导航在福利页面": {
         "recognition": {
@@ -665,7 +669,7 @@
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [645, 821, 51, 26],
+                "roi": [601, 146, 119, 932],
                 "expected": ["任务"]
             }
         },
@@ -680,8 +684,8 @@
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [294, 1182, 132, 40],
-                "expected": ["键领取", "领取", "键"]
+                "roi": [62, 700, 203, 51],
+                "expected": ["每日任务"]
             }
         },
         "action": "DoNothing",
@@ -697,9 +701,8 @@
         "action": {
             "type": "Swipe",
             "param": {
-                "begin": [670, 144],
-                "begin_offset": [0, 150, 0, 0],
-                "end_offset": [0, 650, 0, 0]
+                "begin": [670, 226],
+                "end": [670, 570]
             }
         },
         "post_delay": 500,
@@ -711,9 +714,8 @@
         "action": {
             "type": "Swipe",
             "param": {
-                "begin": [670, 144],
-                "begin_offset": [0, 150, 0, 0],
-                "end_offset": [0, 650, 0, 0]
+                "begin": [670, 226],
+                "end": [670, 570]
             }
         },
         "post_delay": 500,
@@ -723,13 +725,13 @@
     "导航下划菜单后点击联盟": {
         "recognition": "DirectHit",
         "action": "DoNothing",
-        "next": ["导航下划菜单", "导航点击联盟"]
+        "next": ["导航下划菜单"]
     },
     "导航点击联盟": {
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [518, 197, 202, 307],
+                "roi": [599, 199, 121, 559],
                 "expected": ["联盟"]
             }
         },

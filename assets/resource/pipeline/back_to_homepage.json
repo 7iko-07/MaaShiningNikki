@@ -1,12 +1,26 @@
 {
     "是否是主页面": {
         "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
+            "type": "And",
+            "param":{
+                "all_of": [
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "template": [
+                                "活动一览按钮.png"
+                            ],
+                            "roi": [13, 841, 79, 76]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "OCR",
+                        "param": {
+                            "roi": [0, 184, 129, 607],
+                            "expected": ["心之"]
+                        }
+                    }}
+                ]
             }
         },
         "action": {
@@ -17,15 +31,31 @@
     },
     "点击主页空白区域": {
         "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": "主页货币栏.png",
-                "roi": [103, 53, 72, 69]
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "template": "主页音乐图标-关.png",
+                            "roi": [101, 95, 75, 74]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "template": "主页音乐图标-开.png",
+                            "roi": [101, 95, 75, 74]
+                        }
+                    }}
+                ]
             }
         },
         "action": {
             "type": "Click",
-            "param": {}
+            "param": {
+                "target_offset": [80, -50, 0, 0]
+            }
         },
         "post_wait_freezes": 1000
     },
@@ -46,7 +76,6 @@
         "action": "DoNothing",
         "next": [
 			"是否是主页面",
-			"[JumpBack]点击叉号",
 			"[JumpBack]点击返回",
             "[JumpBack]点击体力用尽确定",
             "[JumpBack]点击主页空白区域"
