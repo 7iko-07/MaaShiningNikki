@@ -1,7 +1,17 @@
 {
     "制作目标服装任务链入口": {
-		"next": ["点击制衣引导", "[JumpBack]进入设计中心"],
-		"timeout": 2000
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "制衣"
+                }
+            }
+        },
+		"next": ["点击全部材料"],
+		"timeout": 30000
     },
     "点击制衣引导": {
         "recognition": {

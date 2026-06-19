@@ -4,20 +4,18 @@
 		"timeout": 2000
     },
 	"邮件任务链准备": {
-        "recognition": {
-            "type": "TemplateMatch",
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
             "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "邮件"
+                }
             }
         },
-        "action": {
-            "type": "DoNothing",
-            "param": {}
-        },
-        "next": ["点击邮件", "[JumpBack]点击菜单"]
+        "next": ["点击一键领取邮件"],
+        "timeout": 30000
     },
     "点击邮件": {
         "recognition": {

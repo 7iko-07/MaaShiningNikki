@@ -4,3 +4,6 @@ from . import click_region
 from . import arena_action
 from . import make_target_clothes
 from . import select_same_text
+from . import page_navigation
+from . import click_and_wait_change
+from . import information_house_action

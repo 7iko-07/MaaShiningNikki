@@ -1,0 +1,808 @@
+{
+    "页面导航": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "主页面"
+                }
+            }
+        }
+    },
+    "导航确保底部菜单打开": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航底部菜单已打开", "导航点击打开底部菜单"]
+    },
+    "导航底部菜单已打开": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 1062, 720, 218],
+                "expected": ["开始旅程", "旅程", "设计中心", "设计", "回家"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 1000
+    },
+    "导航点击打开底部菜单": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [700, 1150]
+            }
+        },
+        "post_delay": 500,
+        "timeout": 1000
+    },
+    "导航点击返回": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_wait_freezes": 1000,
+        "timeout": 5000
+    },
+    "导航点击设计中心入口": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航识别并点击设计中心", "导航右划底部菜单后点击设计中心"]
+    },
+    "导航识别并点击设计中心": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 1062, 220, 218],
+                "expected": ["设计中心", "设计"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "timeout": 1000
+    },
+    "导航右划底部菜单": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [98, 1145],
+                "end_offset": [600, 0, 0, 0]
+            }
+        },
+        "post_delay": 500,
+        "timeout": 1000,
+        "next": ["导航点击设计中心"]
+    },
+    "导航右划底部菜单后点击设计中心": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航右划底部菜单", "导航点击设计中心"]
+    },
+    "导航点击设计中心": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [62, 1118, 37, 33]
+            }
+        },
+        "post_delay": 2000,
+        "timeout": 1000
+    },
+    "导航点击回家入口": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航识别并点击回家", "导航左划底部菜单后点击回家"]
+    },
+    "导航识别并点击回家": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [125, 1080, 486, 164],
+                "expected": ["回家", "回", "家"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_wait_freezes": 5000,
+        "timeout": 2000
+    },
+    "导航左划底部菜单": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [500, 1150],
+                "end": [100, 1150]
+            }
+        },
+        "post_delay": 500,
+        "timeout": 1000,
+        "next": ["导航点击回家"]
+    },
+    "导航左划底部菜单后点击回家": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航左划底部菜单", "导航点击回家"]
+    },
+    "导航点击回家": {
+        "recognition": {
+            "type": "OCR",
+            "param":{
+                "expected": ["回家"],
+                "roi": [125, 1080, 486, 164]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_wait_freezes": 5000,
+        "timeout": 1000
+    },
+    "导航在回家页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [566, 53, 154, 181],
+                "expected": ["活力特权", "活力", "特权"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击美甲": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["美甲"],
+                "roi": [67, 1030, 120, 95]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航在美甲页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["我的店铺"],
+                "roi": [25, 983, 190, 192]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击我的店铺": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["我的店铺"],
+                "roi": [25, 983, 190, 192]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航在美甲我的店铺页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 560, 720, 640],
+                "expected": ["雇佣店员", "店员", "提取心意币", "心意币", "特约顾客", "顾客"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击雇佣店员": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["雇佣店员", "店员"],
+                "roi": [70, 604, 575, 186]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航在美甲雇佣店员页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [85, 819, 547, 108],
+                "expected": ["免费雇佣", "免费", "雇佣"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击美甲店铺空白": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [143, 136, 86, 62]
+            }
+        },
+        "repeat": 3,
+        "repeat_delay": 400,
+        "post_delay": 500,
+        "timeout": 2000
+    },
+    "导航点击特约顾客": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [50, 856, 80, 63]
+            }
+        },
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航在美甲特约顾客页面": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [575, 441, 19, 16],
+                "upper": [138, 174, 237],
+                "lower": [137, 173, 236],
+                "count": 10
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击私人设计": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [575, 441, 19, 16],
+                "upper": [138, 174, 237],
+                "lower": [137, 173, 236],
+                "count": 10
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [575, 441, 19, 16]
+            }
+        },
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "导航在美甲私人设计页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [254, 829, 206, 54],
+                "expected": ["开始设计", "开始", "设计"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击制衣引导": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [433, 162, 195, 82],
+                "expected": ["制衣引导", "制衣", "引导"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_wait_freezes": 2000,
+        "timeout": 2000
+    },
+    "导航在制衣页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [283, 576, 156, 42],
+                "expected": ["制衣", "目标", "添加"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击全部材料": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [159, 1095, 206, 65],
+                "expected": ["全部材料", "全部", "材料"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航在制衣全部材料页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [162, 410, 327, 574],
+                "expected": ["时空回廊", "前往制作", "前往", "制作"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击情报屋": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [47, 663, 179, 201],
+                "expected": ["情报屋", "情报", "设计师"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_wait_freezes": 2000,
+        "timeout": 2000
+    },
+    "导航在情报屋页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [44, 288, 246, 591],
+                "expected": ["解锁", "进度"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击开始旅程入口": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航点击开始旅程", "导航左划底部菜单后点击开始旅程"]
+    },
+    "导航点击开始旅程": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 1062, 720, 218],
+                "expected": ["开始旅程", "旅程"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航左划底部菜单后点击开始旅程": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [700, 1150],
+                "begin_offset": [-100, 0, 0, 0],
+                "end_offset": [-600, 0, 0, 0]
+            }
+        },
+        "post_delay": 500,
+        "timeout": 1000,
+        "next": ["导航点击开始旅程"]
+    },
+    "导航点击结伴": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["结伴"],
+                "roi": [352, 1107, 284, 106]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航点击独自": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["独自"],
+                "roi": [24, 1118, 368, 162]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "导航点击钻石竞技场": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [250, 621, 431, 193],
+                "expected": ["钻石竞技场", "竞技场", "竞技"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航在竞技场页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["我的搭配", "我的", "搭配"],
+                "roi": [441, 522, 279, 100]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击搭配评选赛": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [44, 629, 132, 29],
+                "expected": ["搭配评选赛", "搭配", "评选赛"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_wait_freezes": 2000,
+        "timeout": 2000
+    },
+    "导航点击我当评委": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["我当评委", "当评", "评委"],
+                "roi": [567, 1174, 108, 31]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航确保侧边菜单打开": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航侧边菜单已打开", "导航点击打开侧边菜单"]
+    },
+    "导航侧边菜单已打开": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [518, 197, 202, 307],
+                "expected": ["联盟", "好友", "邮件"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 1000
+    },
+    "导航点击打开侧边菜单": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [670, 144]
+            }
+        },
+        "post_delay": 500,
+        "timeout": 1000
+    },
+    "导航点击邮件入口": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航点击邮件", "导航上划侧边菜单后点击邮件"]
+    },
+    "导航点击邮件": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [529, 0, 191, 1054],
+                "expected": ["邮件"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_wait_freezes": 2000,
+        "timeout": 2000
+    },
+    "导航上划侧边菜单后点击邮件": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [670, 794],
+                "end": [670, 294]
+            }
+        },
+        "post_delay": 500,
+        "timeout": 1000,
+        "next": ["导航点击邮件"]
+    },
+    "导航在邮件页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [60, 680, 605, 366],
+                "expected": ["全部领取"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击好友入口": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航点击好友", "导航下划侧边菜单后点击好友"]
+    },
+    "导航点击好友": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [529, 0, 191, 1054],
+                "expected": ["好友"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_wait_freezes": 2000,
+        "timeout": 2000
+    },
+    "导航下划侧边菜单后点击好友": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [670, 144],
+                "begin_offset": [0, 150, 0, 0],
+                "end_offset": [0, 650, 0, 0]
+            }
+        },
+        "post_delay": 500,
+        "timeout": 1000,
+        "next": ["导航点击好友"]
+    },
+    "导航在好友页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 931, 537, 349],
+                "expected": ["键送心", "送心", "领取体力"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击福利入口": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航点击福利"]
+    },
+    "导航点击福利": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [521, 217, 199, 1063],
+                "expected": ["福利"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_wait_freezes": 2000,
+        "timeout": 2000
+    },
+    "导航在福利页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1, 185, 719, 70],
+                "expected": ["每日签到", "每日", "签到", "方舟补给", "方舟", "补给"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击任务入口": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航点击任务"]
+    },
+    "导航点击任务": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [645, 821, 51, 26],
+                "expected": ["任务"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "导航在任务页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [294, 1182, 132, 40],
+                "expected": ["键领取", "领取", "键"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击联盟入口": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航点击联盟", "导航下划侧边菜单后点击联盟"]
+    },
+    "导航下划侧边菜单后点击联盟": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [670, 144],
+                "begin_offset": [0, 150, 0, 0],
+                "end_offset": [0, 650, 0, 0]
+            }
+        },
+        "post_delay": 500,
+        "timeout": 1000,
+        "next": ["导航点击联盟"]
+    },
+    "导航下划菜单": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [670, 144],
+                "begin_offset": [0, 150, 0, 0],
+                "end_offset": [0, 650, 0, 0]
+            }
+        },
+        "post_delay": 500,
+        "timeout": 1000,
+        "next": ["导航点击联盟"]
+    },
+    "导航下划菜单后点击联盟": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航下划菜单", "导航点击联盟"]
+    },
+    "导航点击联盟": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [518, 197, 202, 307],
+                "expected": ["联盟"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "导航在美甲评价页面":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [377, 1151, 124, 109],
+				"expected": ["完美"]
+			}
+		},
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航在美甲此刻投稿页面":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [392, 1092, 173, 162],
+				"expected": ["浏览点赞"]
+			}
+		},
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击此刻投稿": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [168, 709, 210, 199],
+				"expected": ["此刻投稿"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"timeout": 2000
+    },
+    "导航点击浏览点赞": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [392, 1092, 173, 162],
+				"expected": ["浏览点赞"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+        "post_wait_freezes": 1000,
+		"timeout": 2000
+    },
+    "导航在空白页面": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [0, 0, 720, 1280],
+                "lower": [224, 170, 177],
+                "upper": [255, 207, 220],
+                "count": 700000
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 1000
+    }
+}

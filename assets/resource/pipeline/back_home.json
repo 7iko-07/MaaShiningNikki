@@ -4,36 +4,18 @@
 		"timeout": 2000
     },
 	"回家任务链准备": {
-        "recognition": {
-            "type": "TemplateMatch",
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
             "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "回家"
+                }
             }
         },
-        "action": {
-            "type": "DoNothing",
-            "param": {}
-        },
-        "next": ["点击回家", "[JumpBack]点击底部菜单并左划"]
-    },
-    "点击回家": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [0, 1062, 720, 218],
-				"expected": ["回家", "回", "家"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_wait_freezes": 5000,
-		"next": ["点击收起日程表","点击前往采购小物", "点击日常采购"],
-		"timeout": 2000
+        "next": ["点击收起日程表","点击前往采购小物", "点击日常采购"],
+        "timeout": 30000
     },
     "点击收起日程表": {
         "recognition": {
@@ -225,6 +207,7 @@
             }
         },
 		"next": ["点击晴雨伞"],
+		"post_delay": 1000,
         "timeout": 1000
     },
 	"点击晴雨伞": {
@@ -254,7 +237,170 @@
 			"type": "Click",
 			"param": {}
 		},
-		"next": ["返回主页面"],
+		"next": ["点击空白-日常采购"],
+		"post_delay": 1000,
+		"timeout": 2000
+    },
+	"点击空白-日常采购":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [139, 37, 91, 53]
+            }
+        },
+		"repeat": 2,
+		"repeat_delay": 500,
+		"next": ["点击暖心传音"],
+		"post_delay": 500,
+		"timeout": 3000
+    },
+	"点击暖心传音": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[613, 900, 99, 126],
+				"expected": ["暖心传音","暖心","传音"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 3000,
+		"next": ["点击前往自习室"],
+		"timeout": 2000
+    },
+    "点击前往自习室": {
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"template": "进入自习室图标.png",
+                "roi": [518, 72, 113, 115]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"next": ["点击评价自习室穿搭", "点击前往自习室内", "点击回到自习室内"],
+		"post_wait_freezes": 3000,
+		"timeout": 2000
+    },
+	"点击评价自习室穿搭":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[104, 701, 515, 95],
+				"expected": ["今天的","不用","搭配很完美"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["点击退出自习室"],
+		"timeout": 2000
+	},
+	"点击前往自习室内": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[389, 503, 170, 45],
+				"expected": ["前往自习室","前往","自习室"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["点击退出自习室"],
+		"timeout": 2000
+    },
+	"点击回到自习室内": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[103, 505, 469, 274],
+				"expected": ["回到时光自习室","还在等你"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [308, 633, 113, 42]
+			}
+		},
+		"post_delay": 1000,
+		"next": ["点击退出自习室"],
+		"timeout": 2000
+    },
+	"点击退出自习室": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000,
+        "post_wait_freezes": 1000,
+		"next": ["点击结束今日行程"]
+    },
+	"点击只是暂时离开":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[194, 591, 338, 181],
+				"expected": ["只是暂时离开","只是","暂时离"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 3000,
+		"timeout": 2000
+	},
+	"点击结束今日行程": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[194, 591, 338, 181],
+				"expected": ["结束今日行程","结束","今日行程"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 3000,
+		"next": ["点击离开"],
+		"timeout": 2000
+    },
+	"点击离开": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[340, 854, 100, 62],
+				"expected": ["离开","离","开"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 3000,
+		"next": ["stop"],
 		"timeout": 2000
     }
 }

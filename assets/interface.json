@@ -7,7 +7,7 @@
     "welcome": "首次使用！欢迎使用 MAA!",
     "github": "https://github.com/MaaXYZ/MaaPracticeBoilerplate/",
     "version": "0.0.1",
-    "title": "小灰毛",
+    "title": "闪现吧暖暖",
     "icon": "logo.ico",
     "agent": {
         "child_exec": "python",
@@ -44,6 +44,10 @@
     ],
     "task": [
         {
+            "name": "start",
+            "entry": "点击开始"
+        },
+        {
             "name": "好友",
             "entry": "好友任务链入口"
         },
@@ -61,7 +65,10 @@
         },
         {
             "name": "回家",
-            "entry": "回家任务链入口"
+            "entry": "回家任务链入口",
+            "option": [
+                "自习室是否离开"
+            ]
         },
         {
             "name": "设计中心",
@@ -98,11 +105,12 @@
     "option": {
         "设计中心任务选择": {
             "type": "checkbox",
-            "label": "设计中心任务",
-            "description": "选择本次进入设计中心后要运行的子任务。情报屋目前仅保留入口占位。",
+            "label": "设计中心任务选择",
+            "description": "选择要执行的设计中心子任务",
             "default_case": [
                 "美甲",
-                "制作目标服装"
+                "制作目标服装",
+                "情报屋"
             ],
             "cases": [
                 {
@@ -123,7 +131,6 @@
                 },
                 {
                     "name": "情报屋",
-                    "description": "暂未编写具体流程，当前选中后会直接结束设计中心任务。",
                     "pipeline_override": {
                         "设计中心运行情报屋": {
                             "enabled": true
@@ -152,14 +159,18 @@
                     "action": {
                         "param": {
                             "custom_action_param": {
-                                "area_a": [0, 0, 200, 60],
+                                "area_a": [239, 640, 202, 31],
                                 "area_b": [
-                                    [0, 200, 200, 60],
-                                    [0, 400, 200, 60],
-                                    [0, 600, 200, 60]
+                                    [8, 1009, 223, 37],
+                                    [249, 1011, 223, 32],
+                                    [489, 1010, 223, 35]
                                 ],
-                                "refresh": [500, 1100, 200, 60],
-                                "max_rounds": "{{max_rounds}}"
+                                "refresh": [139, 1072, 118, 48],
+                                "max_rounds": "{max_rounds}",
+                                "剩余次数": [593, 1067, 75, 30],
+                                "空白区域": [538, 133, 33, 19],
+                                "blank_clicks": 10,
+                                "blank_click_delay": 1.0
                             }
                         }
                     }
@@ -176,10 +187,26 @@
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "点击钻石竞技场":{
+                        "点击竞技场空白":{
                             "next": ["竞技场战力对比", "[JumpBack]在加载页面", "[JumpBack]点击OK-竞技场"]
                         }
                     }
+                }
+            ]
+        },
+        "自习室是否离开":{
+            "type": "select",
+            "cases": [
+                {
+                    "name": "只是暂时离开",
+                    "pipeline_override": {
+                        "点击退出自习室": {
+                            "next": ["点击只是暂时离开"]
+                        }
+                    }
+                },
+                {
+                    "name": "结束今日行程"
                 }
             ]
         }

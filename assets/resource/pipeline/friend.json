@@ -4,20 +4,18 @@
 		"timeout": 2000
     },
 	"好友任务链准备": {
-        "recognition": {
-            "type": "TemplateMatch",
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
             "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "好友"
+                }
             }
         },
-        "action": {
-            "type": "DoNothing",
-            "param": {}
-        },
-        "next": ["点击好友", "[JumpBack]点击菜单并下划"]
+        "next": ["点击好友一键送心"],
+        "timeout": 30000
     },
     "点击好友": {
         "recognition": {

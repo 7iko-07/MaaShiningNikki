@@ -1,7 +1,17 @@
 {
 	"美甲任务链入口": {
-		"next": ["点击美甲", "[JumpBack]进入设计中心"],
-		"timeout": 2000
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "美甲"
+                }
+            }
+        },
+		"next": ["点击我的店铺"],
+		"timeout": 30000
     },
     "点击美甲": {
         "recognition": {
@@ -348,10 +358,14 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [405, 1115, 53, 51]
+				}
+			}
 		},
-		"post_delay": 5000,
 		"next": ["点击美甲完美评价2", "[JumpBack]在接受投稿页面"],
 		"timeout": 2000
     },
@@ -364,10 +378,14 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [405, 1115, 53, 51]
+				}
+			}
 		},
-		"post_delay": 5000,
 		"next": ["点击美甲完美评价3", "[JumpBack]在接受投稿页面"],
 		"timeout": 2000
     },
@@ -380,10 +398,14 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [405, 1115, 53, 51]
+				}
+			}
 		},
-		"post_delay": 5000,
 		"next": ["点击美甲完美评价4", "[JumpBack]在接受投稿页面"],
 		"timeout": 2000
     },
@@ -396,10 +418,14 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [405, 1115, 53, 51]
+				}
+			}
 		},
-		"post_delay": 5000,
 		"next": ["点击美甲完美评价5", "[JumpBack]在接受投稿页面"],
 		"timeout": 2000
     },
@@ -412,10 +438,14 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [405, 1115, 53, 51]
+				}
+			}
 		},
-		"post_delay": 5000,
 		"next": ["点击返回点赞美甲页面", "[JumpBack]在接受投稿页面"],
 		"timeout": 2000
     },

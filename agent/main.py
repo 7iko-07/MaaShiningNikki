@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import importlib.util
 import subprocess
 from typing import Optional
 from pathlib import Path
@@ -24,6 +25,12 @@ except ImportError:
 
     logging.basicConfig(format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO)
     logger = logging
+
+
+REQUIRED_MODULES = {
+    "maafw": "maa",
+    "loguru": "loguru",
+}
 
 
 def read_pip_config() -> dict:
@@ -196,7 +203,17 @@ def check_and_install_dependencies():
     logger.info(f"启用 pip 安装依赖: {enable_pip_install}")
     logger.info(f"当前版本: {current_version}, 上次运行版本: {last_version}")
 
-    if enable_pip_install and (current_version != last_version or current_version == "unknown"):
+    missing_modules = [
+        package
+        for package, module in REQUIRED_MODULES.items()
+        if importlib.util.find_spec(module) is None
+    ]
+    if missing_modules:
+        logger.warning(f"检测到缺失依赖: {', '.join(missing_modules)}")
+
+    should_install = current_version != last_version or current_version == "unknown" or bool(missing_modules)
+
+    if enable_pip_install and should_install:
         if install_requirements(pip_config=pip_config):
             update_pip_config(current_version)
             logger.info("依赖检查完成")
@@ -244,10 +261,9 @@ def update_pip_config(version) -> bool:
 
 def agent():
     try:
-        import custom
-        from utils import logger
         from maa.toolkit import Toolkit
         from maa.agent.agent_server import AgentServer
+        import custom
 
         Toolkit.init_option("./")
 

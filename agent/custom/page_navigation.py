@@ -1,0 +1,491 @@
+import json
+import time
+from collections import deque
+
+from maa.agent.agent_server import AgentServer
+from maa.custom_action import CustomAction
+from maa.context import Context
+from utils import logger
+
+
+DEFAULT_PAGES = {
+    "主页面": ["是否是主页面"],
+    "设计中心": ["在设计中心页面"],
+    "美甲": ["导航在美甲页面"],
+    "制衣": ["导航在制衣页面", "在制衣页面1"],
+    "制衣全部材料": ["导航在制衣全部材料页面"],
+    "情报屋": ["导航在情报屋页面"],
+    "结伴": ["在结伴页面"],
+    "联盟": ["在联盟页面"],
+    "回家": ["导航在回家页面"],
+    "邮件": ["导航在邮件页面"],
+    "好友": ["导航在好友页面"],
+    "福利": ["导航在福利页面"],
+    "任务": ["导航在任务页面"],
+    "竞技场": ["导航在竞技场页面"],
+    "搭配评选赛": ["在搭配评选赛页面"],
+    "美甲我的店铺": ["导航在美甲我的店铺页面"],
+    "美甲雇佣店员": ["导航在美甲雇佣店员页面"],
+    "美甲特约顾客": ["导航在美甲特约顾客页面"],
+    "美甲私人设计": ["导航在美甲私人设计页面"],
+    "美甲评价": ["导航在美甲评价页面"],
+    "此刻投稿": ["导航在美甲此刻投稿页面"],
+}
+
+DEFAULT_ROUTES = [
+    {"from": "主页面", "to": "设计中心", "tasks": ["导航确保底部菜单打开", "导航点击设计中心入口"]},
+    {"from": "设计中心", "to": "主页面", "tasks": ["导航点击返回"]},
+    {"from": "主页面", "to": "回家", "tasks": ["导航确保底部菜单打开", "导航点击回家入口"]},
+    {"from": "设计中心", "to": "美甲", "tasks": ["导航点击美甲"]},
+    {"from": "设计中心", "to": "制衣", "tasks": ["导航点击制衣引导"]},
+    {"from": "设计中心", "to": "情报屋", "tasks": ["导航点击情报屋"]},
+    {"from": "制衣", "to": "制衣全部材料", "tasks": ["导航点击全部材料"]},
+    {"from": "主页面", "to": "结伴", "tasks": ["导航确保底部菜单打开", "导航点击开始旅程入口", "导航点击结伴"]},
+    {"from": "主页面", "to": "联盟", "tasks": ["导航确保侧边菜单打开", "导航点击联盟入口"]},
+    {"from": "主页面", "to": "邮件", "tasks": ["导航确保侧边菜单打开", "导航点击邮件入口"]},
+    {"from": "主页面", "to": "好友", "tasks": ["导航确保侧边菜单打开", "导航点击好友入口"]},
+    {"from": "主页面", "to": "福利", "tasks": ["导航点击福利入口"]},
+    {"from": "主页面", "to": "任务", "tasks": ["导航点击任务入口"]},
+    {"from": "主页面", "to": "竞技场", "tasks": ["导航确保底部菜单打开", "导航点击开始旅程入口", "导航点击独自", "导航点击钻石竞技场"]},
+    {
+        "from": "主页面",
+        "to": "搭配评选赛",
+        "tasks": ["导航确保底部菜单打开", "导航点击开始旅程入口", "导航点击独自", "导航点击搭配评选赛", "导航点击我当评委"],
+    },
+    {"from": "美甲", "to": "美甲我的店铺", "tasks": ["导航点击我的店铺"]},
+    {"from": "美甲我的店铺", "to": "美甲", "tasks": ["导航点击返回"]},
+    {"from": "美甲我的店铺", "to": "美甲雇佣店员", "tasks": ["导航点击雇佣店员"]},
+    {"from": "美甲雇佣店员", "to": "美甲我的店铺", "tasks": ["导航点击美甲店铺空白"]},
+    {"from": "美甲我的店铺", "to": "美甲特约顾客", "tasks": ["导航点击特约顾客"]},
+    {"from": "美甲特约顾客", "to": "美甲我的店铺", "tasks": ["导航点击返回"]},
+    {"from": "美甲特约顾客", "to": "美甲私人设计", "tasks": ["导航点击私人设计"]},
+    {"from": "美甲私人设计", "to": "美甲特约顾客", "tasks": ["导航点击返回"]},
+    {"from": "美甲", "to": "美甲评价", "tasks": ["导航点击此刻投稿", "导航点击浏览点赞"]},
+    {"from": "美甲", "to": "此刻投稿", "tasks": ["导航点击此刻投稿"]},
+]
+
+DEFAULT_ALIASES = {
+    "首页": "主页面",
+    "主页": "主页面",
+    "主界面": "主页面",
+    "设计": "设计中心",
+    "制作目标服装": "制衣",
+    "目标服装": "制衣",
+    "全部材料": "制衣全部材料",
+    "制衣材料": "制衣全部材料",
+    "情报": "情报屋",
+    "家园": "回家",
+    "一键领取": "任务",
+    "每日任务": "任务",
+    "方舟": "福利",
+    "联盟页面": "联盟",
+    "结伴页面": "结伴",
+    "评选赛": "搭配评选赛",
+    "我的店铺": "美甲我的店铺",
+    "店铺": "美甲我的店铺",
+    "美甲店铺": "美甲我的店铺",
+    "雇佣店员": "美甲雇佣店员",
+    "店员": "美甲雇佣店员",
+    "特约顾客": "美甲特约顾客",
+    "私人设计": "美甲私人设计",
+    "美甲投稿": "此刻投稿",
+    "浏览点赞": "美甲评价",
+}
+
+DEFAULT_WAIT_RECOGNITIONS = ["在加载页面", "在接受投稿页面", "导航在空白页面"]
+
+
+@AgentServer.custom_action("page_navigate")
+class PageNavigateAction(CustomAction):
+    def run(
+        self,
+        context: Context,
+        argv: CustomAction.RunArg,
+    ) -> bool:
+        params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
+        target_page = self._normalize_page(
+            self._get_first_param(params, "target", "target_page", "目标页面"),
+            params,
+        )
+        if not target_page:
+            logger.error("page_navigate: missing target page")
+            return False
+
+        pages = self._build_pages(params)
+        routes = self._build_routes(params)
+        if target_page not in pages:
+            logger.error(f"page_navigate: unknown target page {target_page!r}")
+            return False
+
+        fallback_page = self._normalize_page(params.get("fallback_page", "主页面"), params)
+        fallback_task = params.get("fallback_task", "返回主页面")
+        retry_detect = self._as_int(params.get("retry_detect"), 2)
+        retry_delay = self._as_float(params.get("retry_delay"), 0.8)
+        verify_each_step = self._as_bool(params.get("verify_each_step"), True)
+        wait_nodes = self._build_wait_nodes(params)
+        wait_timeout = self._as_float(params.get("wait_timeout"), 15.0)
+        wait_interval = self._as_float(params.get("wait_interval"), 0.8)
+
+        self._wait_while_intermediate(
+            context,
+            wait_nodes=wait_nodes,
+            timeout=wait_timeout,
+            interval=wait_interval,
+        )
+        current_page = self._detect_current_page(
+            context,
+            pages,
+            retry=retry_detect,
+            retry_delay=retry_delay,
+            preferred=target_page,
+        )
+
+        if not current_page:
+            logger.warning(
+                "page_navigate: failed to identify current page, "
+                f"running fallback task {fallback_task!r}"
+            )
+            if not self._run_task(context, fallback_task):
+                logger.error(f"page_navigate: fallback task failed: {fallback_task!r}")
+                return False
+            self._wait_while_intermediate(
+                context,
+                wait_nodes=wait_nodes,
+                timeout=wait_timeout,
+                interval=wait_interval,
+            )
+            current_page = self._detect_current_page(
+                context,
+                pages,
+                retry=retry_detect,
+                retry_delay=retry_delay,
+                preferred=fallback_page,
+            ) or fallback_page
+
+        logger.info(f"page_navigate: current={current_page}, target={target_page}")
+        if current_page == target_page:
+            return True
+
+        path = self._shortest_path(routes, current_page, target_page)
+        if not path and current_page != fallback_page:
+            logger.warning(
+                f"page_navigate: no route from {current_page} to {target_page}, "
+                f"falling back to {fallback_page}"
+            )
+            if not self._go_to_fallback_page(
+                context,
+                pages=pages,
+                routes=routes,
+                current_page=current_page,
+                fallback_page=fallback_page,
+                fallback_task=fallback_task,
+                retry_detect=retry_detect,
+                retry_delay=retry_delay,
+                wait_nodes=wait_nodes,
+                wait_timeout=wait_timeout,
+                wait_interval=wait_interval,
+            ):
+                return False
+            current_page = self._detect_current_page(
+                context,
+                pages,
+                retry=retry_detect,
+                retry_delay=retry_delay,
+                preferred=fallback_page,
+            ) or fallback_page
+            path = self._shortest_path(routes, current_page, target_page)
+
+        if not path:
+            logger.error(f"page_navigate: no route from {current_page} to {target_page}")
+            return False
+
+        logger.info("page_navigate: path=" + " -> ".join([current_page] + [edge["to"] for edge in path]))
+        for edge in path:
+            for task_name in edge["tasks"]:
+                if not self._run_task(context, task_name):
+                    logger.error(f"page_navigate: route task failed: {task_name!r}")
+                    return False
+                self._wait_while_intermediate(
+                    context,
+                    wait_nodes=wait_nodes,
+                    timeout=wait_timeout,
+                    interval=wait_interval,
+                )
+
+            if verify_each_step:
+                self._wait_while_intermediate(
+                    context,
+                    wait_nodes=wait_nodes,
+                    timeout=wait_timeout,
+                    interval=wait_interval,
+                )
+                detected = self._detect_current_page(
+                    context,
+                    pages,
+                    retry=retry_detect,
+                    retry_delay=retry_delay,
+                    preferred=edge["to"],
+                )
+                if detected != edge["to"]:
+                    logger.error(
+                        "page_navigate: route verification failed, "
+                        f"expected={edge['to']}, detected={detected}"
+                    )
+                    return False
+
+        return True
+
+    def _go_to_fallback_page(
+        self,
+        context,
+        pages,
+        routes,
+        current_page,
+        fallback_page,
+        fallback_task,
+        retry_detect,
+        retry_delay,
+        wait_nodes,
+        wait_timeout,
+        wait_interval,
+    ):
+        fallback_path = self._shortest_path(routes, current_page, fallback_page)
+        if fallback_path:
+            logger.info(
+                "page_navigate: fallback path="
+                + " -> ".join([current_page] + [edge["to"] for edge in fallback_path])
+            )
+            for edge in fallback_path:
+                for task_name in edge["tasks"]:
+                    if not self._run_task(context, task_name):
+                        logger.error(f"page_navigate: fallback route task failed: {task_name!r}")
+                        return False
+                    self._wait_while_intermediate(
+                        context,
+                        wait_nodes=wait_nodes,
+                        timeout=wait_timeout,
+                        interval=wait_interval,
+                    )
+
+                detected = self._detect_current_page(
+                    context,
+                    pages,
+                    retry=retry_detect,
+                    retry_delay=retry_delay,
+                    preferred=edge["to"],
+                )
+                if detected != edge["to"]:
+                    logger.warning(
+                        "page_navigate: fallback route verification failed, "
+                        f"expected={edge['to']}, detected={detected}"
+                    )
+                    break
+                if detected == fallback_page:
+                    return True
+
+        logger.info(f"page_navigate: running fallback task {fallback_task!r}")
+        if not self._run_task(context, fallback_task):
+            logger.error(f"page_navigate: fallback task failed: {fallback_task!r}")
+            return False
+        self._wait_while_intermediate(
+            context,
+            wait_nodes=wait_nodes,
+            timeout=wait_timeout,
+            interval=wait_interval,
+        )
+        detected = self._detect_current_page(
+            context,
+            pages,
+            retry=retry_detect,
+            retry_delay=retry_delay,
+            preferred=fallback_page,
+        )
+        if detected != fallback_page:
+            logger.error(
+                "page_navigate: fallback task did not reach fallback page, "
+                f"expected={fallback_page}, detected={detected}"
+            )
+            return False
+        return True
+
+    def _wait_while_intermediate(
+        self,
+        context,
+        wait_nodes,
+        timeout,
+        interval,
+    ):
+        if timeout <= 0:
+            return
+
+        deadline = time.time() + timeout
+        waited = False
+        while time.time() < deadline:
+            image = self._screencap(context)
+            reason = self._intermediate_reason(
+                context,
+                image,
+                wait_nodes=wait_nodes,
+            )
+            if not reason:
+                if waited:
+                    logger.info("page_navigate: intermediate page finished")
+                return
+
+            waited = True
+            logger.info(f"page_navigate: waiting intermediate page: {reason}")
+            time.sleep(interval)
+
+        logger.warning("page_navigate: intermediate page wait timeout")
+
+    def _intermediate_reason(self, context, image, wait_nodes):
+        for node_name in wait_nodes:
+            if self._recognize(context, image, node_name):
+                return node_name
+
+        return ""
+
+    def _detect_current_page(self, context: Context, pages, retry, retry_delay, preferred=None):
+        ordered_pages = list(pages.keys())
+        if preferred in pages:
+            ordered_pages.remove(preferred)
+            ordered_pages.insert(0, preferred)
+
+        for attempt in range(max(1, retry)):
+            image = self._screencap(context)
+            for page_name in ordered_pages:
+                for node_name in pages[page_name]:
+                    if self._recognize(context, image, node_name):
+                        logger.info(f"page_navigate: detected page {page_name} by {node_name}")
+                        return page_name
+            if attempt < retry - 1:
+                time.sleep(retry_delay)
+
+        return None
+
+    def _recognize(self, context: Context, image, node_name):
+        try:
+            result = context.run_recognition(node_name, image)
+            return bool(result and getattr(result, "hit", False))
+        except Exception as e:
+            logger.warning(f"page_navigate: recognition {node_name!r} failed: {e}")
+            return False
+
+    def _run_task(self, context: Context, task_name):
+        try:
+            result = context.run_task(task_name)
+            success = getattr(result, "success", None)
+            return True if success is None else bool(success)
+        except Exception as e:
+            logger.error(f"page_navigate: task {task_name!r} raised: {e}")
+            return False
+
+    def _screencap(self, context: Context):
+        controller = context.tasker.controller
+        controller.post_screencap().wait()
+        return controller.cached_image
+
+    def _shortest_path(self, routes, start, target):
+        graph = {}
+        for route in routes:
+            graph.setdefault(route["from"], []).append(route)
+
+        queue = deque([(start, [])])
+        visited = {start}
+        while queue:
+            page, path = queue.popleft()
+            if page == target:
+                return path
+
+            for edge in graph.get(page, []):
+                next_page = edge["to"]
+                if next_page in visited:
+                    continue
+                visited.add(next_page)
+                queue.append((next_page, path + [edge]))
+
+        return []
+
+    def _build_pages(self, params):
+        pages = {name: list(nodes) for name, nodes in DEFAULT_PAGES.items()}
+        custom_pages = params.get("pages") or {}
+        for page_name, nodes in custom_pages.items():
+            normalized = self._normalize_page(page_name, params)
+            if isinstance(nodes, str):
+                pages[normalized] = [nodes]
+            elif isinstance(nodes, list):
+                pages[normalized] = [node for node in nodes if isinstance(node, str)]
+        return pages
+
+    def _build_wait_nodes(self, params):
+        nodes = list(DEFAULT_WAIT_RECOGNITIONS)
+        custom_nodes = self._get_first_param(params, "wait_nodes", "waiting_nodes", "intermediate_nodes") or []
+        if isinstance(custom_nodes, str):
+            custom_nodes = [custom_nodes]
+        for node_name in custom_nodes:
+            if isinstance(node_name, str) and node_name not in nodes:
+                nodes.append(node_name)
+        return nodes
+
+    def _build_routes(self, params):
+        routes = [self._normalize_route(route, params) for route in DEFAULT_ROUTES]
+        for route in params.get("routes") or []:
+            normalized = self._normalize_route(route, params)
+            if normalized:
+                routes.append(normalized)
+        return [route for route in routes if route]
+
+    def _normalize_route(self, route, params):
+        if not isinstance(route, dict):
+            return None
+
+        from_page = self._normalize_page(route.get("from") or route.get("source"), params)
+        to_page = self._normalize_page(route.get("to") or route.get("target"), params)
+        tasks = route.get("tasks") or route.get("task")
+        if isinstance(tasks, str):
+            tasks = [tasks]
+        if not from_page or not to_page or not isinstance(tasks, list) or not tasks:
+            return None
+
+        return {
+            "from": from_page,
+            "to": to_page,
+            "tasks": [task for task in tasks if isinstance(task, str)],
+        }
+
+    def _normalize_page(self, page_name, params):
+        if not page_name:
+            return ""
+
+        page_name = str(page_name)
+        aliases = dict(DEFAULT_ALIASES)
+        aliases.update(params.get("aliases") or {})
+        return aliases.get(page_name, page_name)
+
+    def _get_first_param(self, params, *names):
+        for name in names:
+            value = params.get(name)
+            if value is not None:
+                return value
+        return None
+
+    def _as_int(self, value, default):
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return default
+
+    def _as_float(self, value, default):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return default
+
+    def _as_bool(self, value, default):
+        if value is None:
+            return default
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.lower() not in ("0", "false", "no", "off")
+        return bool(value)

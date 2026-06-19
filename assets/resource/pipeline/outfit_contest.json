@@ -4,20 +4,18 @@
         "timeout": 2000
     },
     "搭配评选赛任务链准备": {
-        "recognition": {
-            "type": "TemplateMatch",
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
             "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "搭配评选赛"
+                }
             }
         },
-        "action": {
-            "type": "DoNothing",
-            "param": {}
-        },
-        "next": ["点击开始旅程-搭配评选赛", "[JumpBack]点击底部菜单并左划"]
+        "next": ["在搭配评选赛页面", "[JumpBack]点赞搭配评选赛", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
+        "timeout": 30000
     },
     "点击开始旅程-搭配评选赛": {
         "recognition": {
@@ -103,12 +101,14 @@
 			}
 		},
 		"action": {
-			"type": "Click",
+			"type": "Custom",
 			"param": {
-                "target": [507, 1134, 70, 66]
-            }
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [507, 1134, 70, 66]
+				}
+			}
 		},
-		"post_delay": 2000,
         "repeat": 2,
         "repeat_delay": 3000,
 		"timeout": 2000

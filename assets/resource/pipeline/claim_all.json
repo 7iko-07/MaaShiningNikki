@@ -1,39 +1,21 @@
 {
     "一键领取任务链入口": {
-		"next": ["一键领取任务链准备", "[JumpBack]返回主页面"],
+		"next": ["一键领取任务链准备"],
 		"timeout": 2000
     },
 	"一键领取任务链准备": {
-        "recognition": {
-            "type": "TemplateMatch",
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
             "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "任务"
+                }
             }
         },
-        "action": {
-            "type": "DoNothing",
-            "param": {}
-        },
-        "next": ["点击任务", "[JumpBack]点击菜单"]
-    },
-    "点击任务": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [645, 821, 51, 26],
-				"expected": ["任务"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 1000,
-		"next": ["点击一键领取"],
-		"timeout": 2000
+        "next": ["点击一键领取"],
+        "timeout": 30000
     },
 	"点击一键领取": {
         "recognition": {

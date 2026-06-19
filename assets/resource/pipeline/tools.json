@@ -25,6 +25,7 @@
                 "target": [670, 144]
             }
         },
+        "post_delay": 500,
         "timeout": 1000
     },
     "下划菜单": {
@@ -39,6 +40,7 @@
                 "end_offset": [0, 650, 0, 0]
             }
         },
+        "post_delay": 500,
         "timeout": 1000
     },
     "点击菜单并下划": {
@@ -53,6 +55,7 @@
             }
         },
         "timeout": 1000,
+        "post_delay": 500,
 		"next": ["下划菜单"]
 	},
     "点击底部菜单并左划": {
@@ -67,6 +70,7 @@
             }
         },
         "timeout": 1000,
+        "post_delay": 500,
 		"next": ["左划底部菜单"]
 	},
     "左划底部菜单": {
@@ -81,6 +85,7 @@
                 "end_offset": [-600, 0, 0, 0]
             }
         },
+        "post_delay": 500,
         "timeout": 1000
     },
     "点击底部菜单并右划": {
@@ -95,6 +100,7 @@
             }
         },
         "timeout": 1000,
+        "post_delay": 500,
 		"next": ["右划底部菜单"]
 	},
     "右划底部菜单": {
@@ -108,6 +114,7 @@
                 "end_offset": [600, 0, 0, 0]
             }
         },
+        "post_delay": 500,
         "timeout": 1000
     },
     "stop": {
@@ -125,6 +132,7 @@
             "type": "Click",
             "param": {}
         },
+        "post_delay": 500,
         "timeout": 5000
     },
     "上划活动条": {
@@ -138,6 +146,7 @@
                 "end": [58, 285,0,0]
             }
         },
+        "post_delay": 500,
         "timeout": 1000
     },
     "在加载页面":{
@@ -151,7 +160,8 @@
 			}
 		},
 		"action": "DoNothing",
-		"post_delay": 1000
+		"post_delay": 1000,
+        "timeout": 1000
 	},
     "在接受投稿页面":{
 		"recognition": {
@@ -162,6 +172,7 @@
 			}
 		},
 		"action": "DoNothing",
-		"post_delay": 1000
+		"post_delay": 1000,
+        "timeout": 1000
 	}
 }

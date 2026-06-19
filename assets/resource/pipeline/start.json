@@ -1,15 +1,18 @@
 {
     "点击开始": {
 		"recognition": {
-			"type": "DirectHit",
-			"param": {}
+			"type": "OCR",
+			"param": {
+				"expected": ["拒绝盗版游戏。注意自我保护谨","拒绝","盗版游戏","注意","自我保护谨","点击开始"],
+				"roi": [235, 1090, 266, 51]
+			}
 		},
 		"action": {
 			"type": "Click",
-			"param": {
-                "target": [235, 1090, 266, 51]
-            }
+			"param": {}
 		},
+		"post_wait_freezes": 3000,
+		"next": ["点击开始","stop"],
 		"timeout": 2000
 	}
 }

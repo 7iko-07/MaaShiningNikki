@@ -81,13 +81,16 @@
 	    "进入设计中心":{
         "recognition": "DirectHit",
         "action": {
-            "type": "Click",
-            "param":{
-                "target": [62, 1118, 37, 33]
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "设计中心"
+                }
             }
         },
-        "post_delay": 2000,
-        "next": ["在设计中心页面", "[JumpBack]点击底部菜单并右划-点击设计中心-入口"]
+        "next": ["在设计中心页面"],
+        "timeout": 30000
     },
     "在设计中心页面":{
         "recognition": {

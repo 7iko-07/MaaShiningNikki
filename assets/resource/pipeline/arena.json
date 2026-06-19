@@ -4,69 +4,32 @@
         "timeout": 2000
     },
     "竞技场任务链准备": {
-        "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
-            }
-        },
+        "recognition": "DirectHit",
         "action": {
-            "type": "DoNothing",
-            "param": {}
-        },
-        "next": ["点击开始旅程-竞技场", "[JumpBack]点击底部菜单并左划"]
-    },
-    "点击开始旅程-竞技场": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [0, 1062, 720, 218],
-				"expected": ["开始旅程", "旅程"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 2000,
-		"next": ["点击独自-竞技场", "[JumpBack]在加载页面"],
-		"timeout": 2000
-    },
-    "点击独自-竞技场": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["独自"],
-				"roi": [24, 1118, 368, 162]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 1000,
-		"next": ["点击钻石竞技场"],
-		"timeout": 2000
-    },
-    "点击钻石竞技场": {
-        "recognition": {
-            "type": "OCR",
+            "type": "Custom",
             "param": {
-                "roi": [250, 621, 431, 193],
-                "expected": ["钻石竞技场", "竞技场", "竞技"]
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "竞技场"
+                }
             }
         },
+        "next": ["点击竞技场空白", "[JumpBack]在加载页面"],
+        "timeout": 30000
+    },
+	"点击竞技场空白":{
+		"recognition": "DirectHit",
         "action": {
             "type": "Click",
-            "param": {}
+            "param": {
+                "target":[157, 116, 123, 70]
+            }
         },
-        "post_delay": 2000,
+		"repeat": 3,
+		"repeat_delay": 1000,
         "next": ["我的搭配", "[JumpBack]在加载页面"],
-        "timeout": 2000
-    },
+        "timeout": 30000
+	},
     "我的搭配": {
         "recognition": {
 			"type": "OCR",
@@ -76,11 +39,16 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [528, 555, 111, 34]
+				}
+			}
 		},
 		"post_delay": 2000,
-		"next": ["推荐搭配"],
+		"next": ["推荐搭配", "[JumpBack]在加载页面"],
 		"timeout": 2000
     },
     "推荐搭配": {
@@ -108,10 +76,16 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [458, 756, 76, 36],
+					"change_threshold": 0.05
+				}
+			}
 		},
-		"post_delay": 10000,
+		"post_delay": 1000,
 		"next": ["确认推荐搭配下一步1"],
 		"timeout": 2000
     },
@@ -124,10 +98,15 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [73, 1150, 146, 43]
+				}
+			}
 		},
-		"post_delay": 10000,
+		"post_delay": 1000,
 		"next": ["确定竞技场影召1"],
 		"timeout": 2000
     },
@@ -143,8 +122,8 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_delay": 10000,
-		"next": ["确认推荐搭配下一步2"],
+		"post_delay": 1000,
+		"next": ["确认推荐搭配下一步2", "[JumpBack]在加载页面"],
 		"timeout": 2000
     },
     "确认推荐搭配下一步2": {
@@ -156,10 +135,15 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [73, 1150, 146, 43]
+				}
+			}
 		},
-		"post_delay": 10000,
+		"post_delay": 1000,
 		"next": ["确定竞技场影召2"],
 		"timeout": 2000
     },
@@ -175,8 +159,8 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_delay": 10000,
-		"next": ["确认推荐搭配下一步3"],
+		"post_delay": 1000,
+		"next": ["确认推荐搭配下一步3", "[JumpBack]在加载页面"],
 		"timeout": 2000
     },
     "确认推荐搭配下一步3": {
@@ -188,10 +172,15 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [73, 1150, 146, 43]
+				}
+			}
 		},
-		"post_delay": 10000,
+		"post_delay": 1000,
 		"next": ["确定竞技场影召3"],
 		"timeout": 2000
     },
@@ -207,8 +196,8 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_delay": 10000,
-		"next": ["返回竞技场战力对比页面"],
+		"post_delay": 1000,
+		"next": ["返回竞技场战力对比页面", "[JumpBack]在加载页面"],
 		"timeout": 2000
     },
 
@@ -225,7 +214,7 @@
 			"param": {}
 		},
 		"post_delay": 10000,
-		"next": ["竞技场战力对比", "[JumpBack]点击OK-竞技场"],
+		"next": ["竞技场战力对比", "[JumpBack]点击OK-竞技场", "[JumpBack]在加载页面"],
 		"timeout": 2000
     },
     "竞技场战力对比": {

@@ -4,20 +4,18 @@
 		"timeout": 2000
     },
 	"体力任务链准备": {
-        "recognition": {
-            "type": "TemplateMatch",
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
             "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "结伴"
+                }
             }
         },
-        "action": {
-            "type": "DoNothing",
-            "param": {}
-        },
-        "next": ["点击开始旅程", "[JumpBack]点击底部菜单并左划"]
+        "next": ["时光钟表铺入口"],
+        "timeout": 30000
     },
     "点击开始旅程": {
         "recognition": {

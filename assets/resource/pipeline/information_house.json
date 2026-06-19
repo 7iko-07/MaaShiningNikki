@@ -1,3 +1,155 @@
 {
-    "情报屋任务链入口":{}
+    "情报屋任务链入口":{
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "情报屋"
+                }
+            }
+        },
+		"next": ["点击左一", "[JumpBack]上滑情报屋"],
+		"timeout": 30000
+    },
+    "上滑情报屋":{
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param":{
+                "begin": [431, 1174],
+                "end": [433, 302],
+                "end_hold": 300
+            }
+        },
+        "timeout": 2000,
+        "post_delay": 500
+    },
+    "点击左一": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["左一", "喋血", "女王"],
+				"roi": [350, 271, 183, 1009]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击托管调查", "点击调查中"],
+		"timeout": 2000
+    },
+    "点击调查中":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["调查", "调查中"],
+				"roi": [274, 1002, 159, 53]
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [287, 1004, 136, 47]
+				}
+			}
+		},
+		"next": ["点击托管调查奖励"],
+        "post_delay": 1000,
+		"timeout": 2000
+    },
+    "点击托管调查奖励":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["托管调查", "管调", "调查"],
+				"roi": [597, 325, 123, 145]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+        "post_delay": 1500,
+		"next": ["点击领取托管调查奖励"],
+		"timeout": 2000
+    },
+    "点击领取托管调查奖励":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["领取奖励", "领取", "奖励"],
+				"roi": [298, 885, 159, 51]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+        "post_delay": 1000,
+		"timeout": 2000,
+        "next": ["在调查页面", "[JumpBack]点击返回"]
+    },
+    "在调查页面":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["调查", "调查中", "托管调查","托管"],
+				"roi": [54, 990, 640, 103]
+			}
+		},
+        "action": "DoNothing",
+        "next": ["点击托管调查"],
+        "timeout": 3000
+    },
+    "点击托管调查": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["托管调查","托管"],
+				"roi": [55, 989, 198, 77]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["情报屋自动托管调查"],
+		"timeout": 2000
+    },
+    "情报屋自动托管调查": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "information_house_auto_investigate",
+                "custom_action_param": {
+                    "stamina_roi": [73, 64, 146, 40],
+                    "add_button_roi": [581, 604, 33, 33],
+                    "cost_roi": [496, 838, 92, 35],
+                    "minus_button_roi": [350, 606, 35, 28],
+                    "start_button_roi": [418, 777, 125, 40],
+                    "cost_map": {
+                        "0": 20,
+                        "1": 32,
+                        "2": 44,
+                        "3": 59,
+                        "4": 74,
+                        "5": 92,
+                        "6": 110,
+                        "7": 135,
+                        "8": 160
+                    },
+                    "max_adjust": 8
+                }
+            }
+        },
+        "timeout": 30000
+    }
 }
