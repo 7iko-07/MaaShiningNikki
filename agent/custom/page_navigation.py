@@ -26,6 +26,7 @@ DEFAULT_PAGES = {
     "美甲我的店铺": ["导航在美甲我的店铺页面"],
     "美甲评价": ["导航在美甲评价页面"],
     "此刻投稿": ["导航在美甲此刻投稿页面"],
+    "商城": ["导航在商城页面"],
 }
 
 DEFAULT_ROUTES = [
@@ -41,6 +42,7 @@ DEFAULT_ROUTES = [
     {"from": "主页面", "to": "好友", "tasks": ["导航确保侧边菜单打开", "导航点击好友入口"]},
     {"from": "主页面", "to": "福利", "tasks": ["导航确保侧边菜单打开", "导航点击福利入口"]},
     {"from": "主页面", "to": "任务", "tasks": ["导航确保侧边菜单打开", "导航点击任务入口"]},
+    {"from": "主页面", "to": "商城", "tasks": ["导航确保侧边菜单打开", "导航点击商城入口"]},
     {"from": "主页面", "to": "竞技场", "tasks": ["导航确保底部菜单打开", "导航点击开始旅程入口", "导航点击独自", "导航点击钻石竞技场"]},
     {
         "from": "主页面",
@@ -64,6 +66,7 @@ DEFAULT_ALIASES = {
     "家园": "回家",
     "一键领取": "任务",
     "每日任务": "任务",
+    "商店": "商城",
     "联盟页面": "联盟",
     "结伴页面": "结伴",
 }
@@ -95,8 +98,8 @@ class PageNavigateAction(CustomAction):
 
         fallback_page = self._normalize_page(params.get("fallback_page", "主页面"), params)
         fallback_task = params.get("fallback_task", "返回主页面")
-        retry_detect = self._as_int(params.get("retry_detect"), 2)
-        retry_delay = self._as_float(params.get("retry_delay"), 0.8)
+        retry_detect = self._as_int(params.get("retry_detect"), 3)
+        retry_delay = self._as_float(params.get("retry_delay"), 1)
         verify_each_step = self._as_bool(params.get("verify_each_step"), True)
         wait_nodes = self._build_wait_nodes(params)
         wait_timeout = self._as_float(params.get("wait_timeout"), 15.0)
@@ -306,6 +309,7 @@ class PageNavigateAction(CustomAction):
             if not reason:
                 if waited:
                     logger.info("page_navigate: intermediate page finished")
+                time.sleep(2.0)
                 return
 
             waited = True

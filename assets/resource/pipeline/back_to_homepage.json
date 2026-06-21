@@ -78,7 +78,8 @@
 			"是否是主页面",
 			"[JumpBack]点击返回",
             "[JumpBack]点击体力用尽确定",
-            "[JumpBack]点击主页空白区域"
+            "[JumpBack]点击主页空白区域",
+            "[JumpBack]点击OK-竞技场"
 		]
     }
 }

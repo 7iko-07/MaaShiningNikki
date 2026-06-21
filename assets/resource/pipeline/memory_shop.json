@@ -1,0 +1,72 @@
+{
+    "回忆小铺任务链入口": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "商城"
+                }
+            }
+        },
+        "post_delay": 1000,
+        "next": ["商城点击补给站"]
+    },
+    "商城点击补给站": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [169, 102, 113, 99],
+                "expected": ["补给站", "补给"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": ["商城点击回忆小铺"]
+    },
+    "商城点击回忆小铺": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 448, 167, 55],
+                "expected": ["回忆小铺", "回忆"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 1000,
+        "timeout": 2000,
+        "next": ["商城检查回忆小铺商品"]
+    },
+    "商城检查回忆小铺商品": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 448, 720, 790],
+                "expected": ["回忆小铺", "刷新卡", "换一批", "剩余"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "memory_shop_check",
+                "custom_action_param": {
+                    "auto_buy_gold": false,
+                    "diamond_discount_threshold": 4,
+                    "diamond_price_threshold": 0,
+                    "continue_refresh_when_not_free": false
+                }
+            }
+        },
+        "timeout": 3000,
+        "post_delay": 500,
+        "next": ["商城检查回忆小铺商品"]
+    }
+}

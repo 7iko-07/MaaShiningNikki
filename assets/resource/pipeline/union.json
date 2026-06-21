@@ -150,7 +150,7 @@
         "repeat": 10,
         "repeat_delay": 500,
 		"post_delay": 1000,
-		"next": ["退出联盟捐献"],
+		"next": ["退出联盟捐献", "[JumpBack]点击体力用尽确定"],
 		"timeout": 2000
 	},
     "退出联盟捐献": {

@@ -59,17 +59,35 @@
             "description": "每日签到\n\n补签领取\n\n免费体力补给领取"
         },
         {
+            "name": "结伴",
+            "entry": "体力任务链入口",
+            "description": "时光钟表铺\n\n不落的帷幕\n\n印象旅航"
+        },
+        {
+            "name": "美甲",
+            "description":  "雇佣免费店员\n\n提取心意币\n\n特约顾客\n\n美甲点赞",
+            "entry": "美甲任务链入口",
+            "option": [
+                "美甲特约顾客任务"
+            ]
+        },
+        {
+            "name": "制作目标服装",
+            "description":  "目前只获取制衣引导的衣服的时空回廊材料\n\n必须依次设定目标，会从前往后做，遇到空会停",
+            "entry": "制作目标服装任务链入口"
+        },
+        {
+            "name": "情报屋-左一",
+            "description":  "只获取左一情报",
+            "entry": "情报屋任务链入口"
+        },
+        {
             "name": "回家",
             "entry": "回家任务链入口",
             "option": [
                 "自习室是否离开"
             ],
             "description": "采购三次番茄炒蛋\n\n采购五次金币小物\n\n自习室好感度获取"
-        },
-        {
-            "name": "结伴",
-            "entry": "体力任务链入口",
-            "description": "时光钟表铺\n\n不落的帷幕\n\n印象旅航"
         },
         {
             "name": "竞技场",
@@ -97,22 +115,12 @@
             "description": "##[color:red][b]默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！[/b][/color]"
         },
         {
-            "name": "美甲",
-            "description":  "雇佣免费店员\n\n提取心意币\n\n特约顾客\n\n美甲点赞",
-            "entry": "美甲任务链入口",
+            "name": "回忆小铺",
+            "description": "识别当前回忆小铺六个商品；遇到金币商品或低折扣非排除钻石商品时暂停，否则自动换一批",
+            "entry": "回忆小铺任务链入口",
             "option": [
-                "美甲特约顾客任务"
+                "回忆小铺设置"
             ]
-        },
-        {
-            "name": "制作目标服装",
-            "description":  "只获取制衣引导的衣服的时空回廊材料",
-            "entry": "制作目标服装任务链入口"
-        },
-        {
-            "name": "情报屋-左一",
-            "description":  "只获取左一情报",
-            "entry": "情报屋任务链入口"
         }
     ],
     "option": {
@@ -208,6 +216,63 @@
                     "name": "结束今日行程"
                 }
             ]
+        },
+        "回忆小铺设置": {
+            "type": "input",
+            "label": "回忆小铺设置",
+            "description": "配置回忆小铺金币商品购买、钻石商品暂停折扣，以及非免费刷新时是否继续。",
+            "inputs": [
+                {
+                    "name": "auto_buy_gold",
+                    "label": "自动购买金币商品",
+                    "description": "开启后发现金币商品会自动点击购买并确认；关闭时发现金币商品会暂停。",
+                    "default": "false",
+                    "pipeline_type": "bool",
+                    "verify": "^(true|false)$",
+                    "pattern_msg": "请输入 true 或 false"
+                },
+                {
+                    "name": "diamond_discount_threshold",
+                    "label": "钻石暂停折扣",
+                    "description": "请输入1-9之间的整数，例如4表示4折及以下暂停。\n\n出现低于此折扣的钻石商品时不再刷新。\n\n输入1时不因折扣暂停。",
+                    "default": "4",
+                    "pipeline_type": "int",
+                    "verify": "^[1-9]$",
+                    "pattern_msg": "请输入1-9之间的整数"
+                },
+                {
+                    "name": "diamond_price_threshold",
+                    "label": "钻石暂停价格",
+                    "description": "不包括排除商品。存在实际价格低于该值的钻石商品时暂停，优先级高于折扣判断。\n\n输入0表示不按价格暂停。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^\\d+$",
+                    "pattern_msg": "请输入非负整数"
+                },
+                {
+                    "name": "continue_refresh_when_not_free",
+                    "label": "非免费继续刷新",
+                    "description": "开启后“换一批”不是免费刷新时仍继续点击；关闭时会暂停。",
+                    "default": "false",
+                    "pipeline_type": "bool",
+                    "verify": "^(true|false)$",
+                    "pattern_msg": "请输入 true 或 false"
+                }
+            ],
+            "pipeline_override": {
+                "商城检查回忆小铺商品": {
+                    "action": {
+                        "param": {
+                            "custom_action_param": {
+                                "auto_buy_gold": "{auto_buy_gold}",
+                                "continue_refresh_when_not_free": "{continue_refresh_when_not_free}",
+                                "diamond_discount_threshold": "{diamond_discount_threshold}",
+                                "diamond_price_threshold": "{diamond_price_threshold}"
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

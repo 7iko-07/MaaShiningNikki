@@ -110,7 +110,7 @@
         "repeat": 3,
         "repeat_delay": 500,
 		"post_delay": 1000,
-		"next": ["点击采购小物"],
+		"next": ["点击采购小物", "[JumpBack]点击体力用尽确定"],
 		"timeout": 2000
     },
     "点击采购小物": {
@@ -159,7 +159,7 @@
         "repeat": 2,
         "repeat_delay": 500,
 		"post_delay": 1000,
-		"next": ["点击缤纷调色板"],
+		"next": ["点击缤纷调色板", "[JumpBack]点击体力用尽确定"],
 		"timeout": 2000
     },
 	"点击缤纷调色板": {
@@ -192,7 +192,7 @@
         "repeat": 2,
         "repeat_delay": 500,
 		"post_delay": 1000,
-		"next": ["上划日常采购"],
+		"next": ["上划日常采购", "[JumpBack]点击体力用尽确定"],
 		"timeout": 2000
     },
     "上划日常采购": {
@@ -237,7 +237,7 @@
 			"type": "Click",
 			"param": {}
 		},
-		"next": ["点击空白-日常采购"],
+		"next": ["点击空白-日常采购", "[JumpBack]点击体力用尽确定"],
 		"post_delay": 1000,
 		"timeout": 2000
     },

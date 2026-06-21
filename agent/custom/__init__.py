@@ -7,3 +7,5 @@ from . import select_same_text
 from . import page_navigation
 from . import click_and_wait_change
 from . import information_house_action
+from . import memory_shop
+from . import claim_rewards

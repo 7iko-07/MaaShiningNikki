@@ -26,7 +26,7 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["点击空白-雇佣店员"],
+		"next": ["点击空白-雇佣店员","[JumpBack]点击稍后接待"],
 		"timeout": 2000
     },
 	"点击空白-雇佣店员":{
@@ -41,7 +41,7 @@
             }
         },
 		"repeat": 3,
-        "next": ["点击雇佣店员","点击提取心意币"],
+        "next": ["点击雇佣店员","点击提取心意币","[JumpBack]点击稍后接待"],
 		"timeout": 2000,
 		"post_delay": 1000
     },
@@ -58,7 +58,7 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["点击免费雇佣"],
+		"next": ["点击免费雇佣","[JumpBack]点击稍后接待"],
 		"timeout": 2000
     },
     "点击免费雇佣": {
@@ -74,7 +74,7 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["点击我的店铺空白"],
+		"next": ["点击我的店铺空白","[JumpBack]点击稍后接待"],
 		"timeout": 2000
     },
     "点击我的店铺空白": {
@@ -90,9 +90,37 @@
         },
         "repeat": 3,
 		"repeat_delay": 400,
-        "next": ["点击提取心意币"],
+        "next": ["点击提取心意币","[JumpBack]点击稍后接待"],
 		"timeout": 2000
     },
+	"点击稍后接待":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["稍?后接待?"],
+				"roi": [0, 806, 720, 98]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"next": ["点击空白-突然到来的特约顾客"],
+		"post_delay": 2000,
+		"timeout": 2000
+	},
+	"点击空白-突然到来的特约顾客":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Click",
+			"param":{
+				"target": [148, 89, 50, 45]
+			}
+		},
+		"repeat": 2,
+		"repeat_delay": 500,
+		"timeout": 3000
+	},
     "点击提取心意币": {
         "recognition": {
 			"type": "OCR",
@@ -176,7 +204,7 @@
             "param": {}
         },
         "next": ["下载资源包-美甲", "搭配拇指"],
-		"post_wait_freezes": 3000,
+		"post_wait_freezes": 8000,
 		"timeout": 2000
     },
 	"下载资源包-美甲":{
@@ -327,6 +355,124 @@
 		"repeat": 2,
 		"repeat_delay": 500,
 		"timeout": 3000,
+		"next": ["查找周好评礼包"]
+	},
+	"查找周好评礼包": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[0, 1094, 229, 186],
+				"expected": ["周?好?评礼包?"]
+			}
+		},
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"next": ["点击周好评礼包", "点击返回美甲页面"],
+		"timeout": 2000
+    },
+    "点击周好评礼包": {
+        "recognition": {
+			"type": "ColorMatch",
+			"param": {
+				"roi":"查找周好评礼包",
+				"roi_offset": [40, -80, 0, 0],
+				"lower": [254, 70, 66],
+				"upper": [256, 72, 68],
+				"count": 20,
+				"connected": true
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 500,
+		"next": ["下滑周好评奖励"],
+		"timeout": 2000
+    },
+	"下滑周好评奖励":{
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param":{
+                "begin": [363, 528],
+                "end": [362, 836]
+            }
+        },
+		"next": ["领取前两个周好评奖励"],
+        "timeout": 2000,
+        "post_delay": 500
+    },
+	"领取前两个周好评奖励":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param":{
+				"custom_action":"click_nail_tabs_sequence",
+				"custom_action_param":{
+					"rois": [
+						[556, 474, 34, 28],
+						[317, 989, 21, 9],
+						[556, 474, 34, 28],
+						[317, 989, 21, 9],
+						[562, 656, 18, 18],
+						[317, 989, 21, 9]
+					]
+				}
+			}
+		},
+		"timeout": 10000,
+		"post_delay": 1000,
+		"next": ["上滑周好评奖励"]
+	},
+	"上滑周好评奖励":{
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param":{
+                "end": [363, 528],
+                "begin": [362, 836]
+            }
+        },
+		"next": ["领取后三个周好评奖励"],
+        "timeout": 2000,
+        "post_delay": 500
+    },
+	"领取后三个周好评奖励":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param":{
+				"custom_action":"click_nail_tabs_sequence",
+				"custom_action_param":{
+					"rois": [
+						[567, 544, 19, 22],
+						[317, 989, 21, 9],
+						[562, 720, 21, 14],
+						[317, 989, 21, 9],
+						[564, 891, 18, 11],
+						[317, 989, 21, 9]
+					]
+				}
+			}
+		},
+		"timeout": 10000,
+		"next": ["点击空白-周好评礼包"],
+		"post_delay": 1000
+	},
+	"点击空白-周好评礼包":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Click",
+			"param":{
+				"target": [148, 89, 50, 45]
+			}
+		},
+		"repeat": 2,
+		"repeat_delay": 500,
+		"timeout": 3000,
 		"next": ["点击返回美甲页面"]
 	},
     "点击返回美甲页面":{
@@ -355,7 +501,7 @@
 			"type": "Click",
 			"param": {}
 		},
-		"next": ["[JumpBack]美甲周期奖励确认","此刻投稿-我的投稿","点击浏览点赞"],
+		"next": ["[JumpBack]美甲周期奖励确认","点击浏览点赞","此刻投稿-我的投稿"],
 		"post_delay": 2000,
 		"timeout": 2000
     },
@@ -368,13 +514,13 @@
 			}
 		},
 		"action": {
-			"type": "Click",
+			"type": "DoNothing",
 			"param": {}
 		},
 		"focus": {
 			"Node.Action.Starting": "#[color:red][b]美甲投稿需自行搭配[/b][/color]"
 		},
-		"next": ["stop"],
+		"next": ["点击话题任务"],
 		"post_delay": 2000,
 		"timeout": 2000
 	},
@@ -520,6 +666,42 @@
         "repeat": 2,
         "timeout": 5000,
         "post_delay": 1000,
-		"next": ["stop"]
-    }
+		"next": ["点击话题任务"]
+    },
+    "点击话题任务": {
+        "recognition": {
+			"type": "ColorMatch",
+			"param": {
+				"roi":[314, 1176, 71, 89],
+				"lower": [254, 70, 66],
+				"upper": [256, 72, 68],
+				"count": 20,
+				"connected": true
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 1000,
+		"next": ["领取话题任务奖励"],
+		"timeout": 2000
+    },
+	"领取话题任务奖励": {
+    "recognition": "DirectHit",
+    "action": {
+        "type": "Custom",
+        "param": {
+            "custom_action": "claim_visible_rewards",
+            "custom_action_param": {
+                "list_roi": [40, 430, 640, 590],
+                "button_roi": [455, 430, 220, 590],
+                "close_roi": [344, 998, 30, 17],
+                "max_swipes": 2
+            }
+        }
+    },
+    "timeout": 30000
+}
+
 }

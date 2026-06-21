@@ -1,117 +1,113 @@
-<!-- markdownlint-disable MD033 MD041 -->
-<p align="center">
-  <img alt="LOGO" src="https://cdn.jsdelivr.net/gh/MaaAssistantArknights/design@main/logo/maa-logo_512x512.png" width="256" height="256" />
-</p>
+# MaaShiningNikki
 
-<div align="center">
+**闪现吧暖暖**，一个基于 [MaaFramework](https://github.com/MaaXYZ/MaaFramework) 的 **闪耀暖暖小助手**。  
+通过图像识别、OCR 与模拟控制，把日常重复操作交给自动化流程处理。
 
-# MaaPracticeBoilerplate
+如果 MaaShiningNikki 对你有帮助，欢迎在项目右上角点亮 Star 支持。
 
 </div>
 
-本仓库为 [MaaFramework](https://github.com/MaaXYZ/MaaFramework) 所提供的项目模板，开发者可基于此模板直接创建自己的 MaaXXX 项目。
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.12+-3776AB?logo=python&logoColor=white">
+  <img alt="MaaFramework" src="https://img.shields.io/badge/MaaFramework-5.x-blue">
+  <img alt="platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blueviolet">
+  <br>
+  <img alt="license" src="https://img.shields.io/github/license/7iko-07/MaaShiningNikki">
+  <img alt="commit" src="https://img.shields.io/github/commit-activity/m/7iko-07/MaaShiningNikki">
+  <img alt="stars" src="https://img.shields.io/github/stars/7iko-07/MaaShiningNikki?style=social">
+  <img alt="downloads" src="https://img.shields.io/github/downloads/7iko-07/MaaShiningNikki/total?style=social">
 
-> **MaaFramework** 是基于图像识别技术、运用 [MAA](https://github.com/MaaAssistantArknights/MaaAssistantArknights) 开发经验去芜存菁、完全重写的新一代自动化黑盒测试框架。
-> 低代码的同时仍拥有高扩展性，旨在打造一款丰富、领先、且实用的开源库，助力开发者轻松编写出更好的黑盒测试程序，并推广普及。
+<br>
 
-## 即刻开始
+[![qq group](https://img.shields.io/badge/QQ%E7%BE%A4-977642793-hotpink)](https://qm.qq.com/q/NQA8iFWmQg)
 
-- [📄 快速开始](https://github.com/MaaXYZ/MaaFramework/blob/main/docs/zh_cn/1.1-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B.md)
-- [🎞️ 视频教程](https://www.bilibili.com/video/BV1yr421E7MW)
+</p>
 
-## 如何开发
+## 功能概览
 
-0. 使用右上角 `Use this template` - `Create a new repository` 来基于本模板创建您自己的项目。
+当前项目采用 **Maa Pipeline JSON + Python Agent 自定义动作** 的混合架构。常规点击、识别和跳转由 Pipeline 描述，战力比较、动态翻页、商品判断、列表匹配等复杂逻辑由 Python Agent 处理。
 
-1. 克隆本项目（地址请修改为您基于本模板创建的新项目地址）。
+| 模块 | 当前支持 |
+| --- | --- |
+| 启动与导航 | 登录页点击开始、通用加载等待、返回主页、页面导航 |
+| 好友 | 好友一键送心、联盟一键送心、体力一键领取 |
+| 联盟 | 机密任务执行、联盟金币捐献、联盟福利领取 |
+| 邮件与福利 | 邮件奖励领取、每日签到、免费体力补给 |
+| 结伴 | 时光钟表铺、不落的帷幕、印象旅航 |
+| 美甲 | 雇佣免费店员、提取心意币、特约顾客、美甲点赞 |
+| 制作目标服装 | 获取制衣引导目标服装所需的时空回廊材料 |
+| 情报屋 | 自动调查左一情报 |
+| 回家 | 采购番茄炒蛋、采购金币小物、自习室好感度获取 |
+| 竞技场 | 识别双方战力、刷新弱对手、剩余次数循环挑战、可选搭配服装 |
+| 搭配评选赛 | 自动点赞 |
+| 一键领取 | 活跃任务、时尚任务、时尚提升计划奖励领取 |
+| 活动 | 活动剧情/活动任务流程，当前包含“织吻为拥” |
+| 回忆小铺 | 识别六个商品，支持金币商品处理、钻石商品折扣/价格阈值暂停、免费刷新判断 |
 
-    ```bash
-    git clone https://github.com/MaaXYZ/MaaPracticeBoilerplate.git
-    ```
+> [!NOTE]  
+> 项目目前主要围绕安卓端和 mumu模拟器开发。其他分辨率、模拟器或系统若出现识别偏移，请优先附带[日志](https://github.com/SuperWaterGod/MaaGakumasu/blob/main/docs/zh_cn/%E6%8F%90%E9%97%AE%E4%B8%8E%E5%8F%8D%E9%A6%88%E6%8C%87%E5%8D%97.md#%E5%AF%BC%E5%87%BA%E8%B0%83%E8%AF%95%E6%97%A5%E5%BF%97)
 
-2. 下载 MaaFramework 的 [Release 包](https://github.com/MaaXYZ/MaaFramework/releases)，解压到 `deps` 文件夹中。
+## 注意事项
 
-3. 下载 OCR（文字识别）资源文件 [ppocr_v5.zip](https://download.maafw.xyz/MaaCommonAssets/OCR/ppocr_v5/ppocr_v5-zh_cn.zip) 解压到 `assets/resource/model/ocr/` 目录下，确保路径如下：
+1. 推荐使用720p以上并保持游戏画面完整显示。
+6. 本项目仅用于学习交流，请勿用于商业用途。
+7. 本项目仅提供自动化脚本，不提供任何游戏资源。
 
-    ```tree
-    assets/resource/model/ocr/
-    ├── det.onnx
-    ├── keys.txt
-    └── rec.onnx
-    ```
+## 使用说明
 
-    _请注意，您不需要将 OCR 资源文件上传到您的代码仓库中。`.gitignore` 已经忽略了 `assets/resource/model/ocr/` 目录，且 GitHub workflow 在发布版本时会自动配置这些资源文件。_
+### Windows
 
-4. 进行开发工作，按您的业务需求修改 `assets` 中的资源文件，请参考 [MaaFramework 相关文档](https://github.com/MaaXYZ/MaaFramework/blob/main/docs/zh_cn/1.1-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B.md#%E8%B5%84%E6%BA%90%E5%87%86%E5%A4%87)。
+在 [Releases](https://github.com/7iko-07/MaaShiningNikki/releases) 下载对应版本压缩包：
 
-5. 完成开发后，上传您的代码并发布版本。
+| 架构 | 下载文件 |
+| --- | --- |
+| 绝大多数 Windows 电脑 | `MaaShiningNikki-win-x86_64-vXXX.zip` |
 
-    ```bash
-    # 配置 git 信息（仅第一次需要，后续不用再配置）
-    git config user.name "您的 GitHub 昵称"
-    git config user.email "您的 GitHub 邮箱"
-    
-    # 提交修改
-    git add .
-    git commit -m "XX 新功能"
-    git push origin HEAD -u
-    ```
+解压后运行 `MaaShiningNikki.exe`，选择安卓端控制器并连接模拟器或设备即可。首次启动会根据 `config/pip_config.json` 检查并安装 Agent 依赖。
 
-6. 发布您的版本
+如果无法启动，请先安装 [`Visual C++ 可再发行程序包`](https://aka.ms/vs/17/release/vc_redist.x64.exe) 和对应 `.NET` 桌面运行时，然后重启电脑。
 
-    需要**先**修改仓库设置 `Settings` - `Actions` - `General` - `Read and write permissions` - `Save`
+Windows 10 或 11 用户也可以使用 `winget` 安装常见运行库：
 
-    ```bash
-    # CI 检测到 tag 会自动进行发版
-    git tag v1.0.0
-    git push origin v1.0.0
-    ```
+```bash
+winget install Microsoft.VCRedist.2015+.x64
+```
 
-7. 更多操作，请参考 [个性化配置](./docs/zh_cn/个性化配置.md)（可选）
+### macOS / Linux
 
-## 生态共建
+项目工作流会构建 macOS 与 Linux 包体，但当前主要测试集中在 Windows。若在 macOS 或 Linux 上使用，请参考包内 MFAAvalonia 启动方式，并在反馈问题时附带系统版本、运行日志和截图。
 
-MAA 正计划建设为一类项目，而非舟的单一软件。
+## 开发相关
 
-若您的项目依赖于 MaaFramework，我们欢迎您将它命名为 MaaXXX, MXA, MAX 等等。当然，这是许可而不是限制，您也可以自由选择其他与 MAA 无关的名字，完全取决于您自己的想法！
+MaaShiningNikki 基于 [MaaFramework](https://github.com/MaaXYZ/MaaFramework) 开发，可参考 [MaaFramework 官方文档](https://maa.plus/docs/zh-cn/)。
 
-同时，我们也非常欢迎您提出 PR，在 [社区项目列表](https://github.com/MaaXYZ/MaaFramework#%E7%A4%BE%E5%8C%BA%E9%A1%B9%E7%9B%AE) 中添加上您的项目！
+## 免责声明
 
-## FAQ
+本软件开源、免费，仅供学习交流使用。若您遇到商家使用本软件收费，产生的费用、问题及后果与本软件无关。
 
-### 0. 我是第一次使用 git，这是什么？视频演示中那个黑框框命令行哪来的？
+**在使用过程中，MaaShiningNikki 可能存在任何意想不到的问题。因软件漏洞、文本理解歧义、识别错误、异常操作等导致的账号问题或资源损失，开发者不承担任何责任。请在阅读说明并自行确认运行效果后谨慎使用。**
 
-黑框框是 git bash，几乎任何现代软件的开发都离不开 git，建议先参考 [菜鸟教程](https://www.runoob.com/git/git-install-setup.html) 或搜索一些视频，学习完 git 后再来进行后续开发工作。
+## Star History
 
-### 1. 我是第一次使用 Python，在命令行输入 `python ./configure.py` 或 `python -m pip install MaaFW` 之后没有反应？没有报错，也没有提示成功，什么都没有
-
-Win10 或者 Win11 系统自带了一份 "Python"，但它其实只是一个安装器，是没法用的。  
-你需要做的是关闭它或者删除它的环境变量，然后自己去 Python 官网下载并安装一份 Python。  
-[参考方法](https://www.bilibili.com/read/cv24692025/)
-
-### 2. 使用 MaaDebugger 或 MaaPicli 时弹窗报错，应用程序错误：应用程序无法正常启动
-
-![缺少运行库](https://github.com/user-attachments/assets/942df84b-f47d-4bb5-98b5-ab5d44bc7c2a)
-
-一般是电脑缺少某些运行库，请安装一下 [vc_redist](https://aka.ms/vs/17/release/vc_redist.x64.exe) 。
-
-### 3. 我在这个仓库里提了 Issue 很久没人回复
-
-这里是《项目模板》仓库，它仅仅是一个模板，一般很少会修改，开发者也较少关注。  
-在此仓库请仅提问模板相关问题，其他问题最好前往对应的仓库提出，如果有 log，最好也带上它（`debug/maa.log` 文件）
-
-- MaaFW 本身及 MaaPiCli 的问题：[MaaFramework/issues](https://github.com/MaaXYZ/MaaFramework/issues)
-- MaaDebugger 的问题：[MaaDebugger/issues](https://github.com/MaaXYZ/MaaDebugger/issues)
-- 不知道算是哪里的、其他疑问等：[讨论区](https://github.com/MaaXYZ/MaaFramework/discussions)
-
-### 4. OCR 文字识别一直没有识别结果，报错 "Failed to load det or rec", "ocrer_ is null"
-
-**请仔细阅读文档**，你无视了前面步骤的报错。我不想解释了，请再把本文档仔细阅读一遍！
+<a href="https://www.star-history.com/?repos=7iko-07%2FMaaShiningNikki&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=7iko-07/MaaShiningNikki&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=7iko-07/MaaShiningNikki&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=7iko-07/MaaShiningNikki&type=date&legend=top-left" />
+ </picture>
+</a>
 
 ## 鸣谢
 
-本项目由 **[MaaFramework](https://github.com/MaaXYZ/MaaFramework)** 强力驱动！
+本项目由 **[MaaFramework](https://github.com/MaaXYZ/MaaFramework)** 强力驱动！  
+UI 由 [MFAAvalonia](https://github.com/SweetSmellFox/MFAAvalonia) 大力支持！
 
-感谢以下开发者对本项目作出的贡献（下面链接改成你自己的项目地址）:
+感谢[MaaGakumasu](https://github.com/SuperWaterGod/MaaGakumasu)提供的Agent实现思路！
 
-[![Contributors](https://contrib.rocks/image?repo=MaaXYZ/MaaFramework&max=1000)](https://github.com/MaaXYZ/MaaFramework/graphs/contributors)
+感谢[MaaLYSK](https://github.com/Witty36/MaaLYSK)的pipeline架构思路
+
+
+
+感谢以下开发者对本项目作出的贡献：
+
+[![Contributors](https://contrib.rocks/image?repo=7iko-07/MaaShiningNikki&max=1000)](https://github.com/7iko-07/MaaShiningNikki/graphs/contributors)
