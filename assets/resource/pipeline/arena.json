@@ -35,16 +35,14 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["我的搭配", "我的", "搭配"],
-				"roi": [441, 522, 279, 100]
+				"roi": [387, 473, 333, 202]
 			}
 		},
 		"action": {
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"target": [528, 555, 111, 34]
-				}
+				"custom_action_param": {}
 			}
 		},
 		"post_delay": 2000,
@@ -56,7 +54,7 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["推荐搭配"],
-				"roi": [559, 1122, 161, 95]
+				"roi": [528, 1140, 192, 140]
 			}
 		},
 		"action": {
@@ -72,7 +70,7 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["确认"],
-				"roi": [372, 717, 251, 128]
+				"roi": [361, 644, 268, 178]
 			}
 		},
 		"action": {
@@ -80,7 +78,6 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-					"target": [458, 756, 76, 36],
 					"change_threshold": 0.05
 				}
 			}
@@ -94,16 +91,14 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["下一步"],
-				"roi": [32, 1118, 239, 93]
+				"roi": [0, 1144, 268, 136]
 			}
 		},
 		"action": {
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"target": [73, 1150, 146, 43]
-				}
+				"custom_action_param": {}
 			}
 		},
 		"post_delay": 1000,
@@ -131,16 +126,14 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["下一步"],
-				"roi": [32, 1118, 239, 93]
+				"roi": [0, 1120, 276, 160]
 			}
 		},
 		"action": {
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"target": [73, 1150, 146, 43]
-				}
+				"custom_action_param": {}
 			}
 		},
 		"post_delay": 1000,
@@ -168,16 +161,14 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["下一步"],
-				"roi": [32, 1118, 239, 93]
+				"roi": [0, 1120, 276, 160]
 			}
 		},
 		"action": {
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"target": [73, 1150, 146, 43]
-				}
+				"custom_action_param": {}
 			}
 		},
 		"post_delay": 1000,
@@ -222,7 +213,7 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["我的搭配", "我的", "搭配"],
-				"roi": [441, 522, 279, 100]
+				"roi": [413, 486, 307, 193]
 			}
 		},
         "action": {
@@ -230,16 +221,16 @@
             "param": {
                 "custom_action": "arena_compare",
                 "custom_action_param": {
-                    "area_a": [239, 640, 202, 31],
+                    "area_a": [171, 675, 316, 26],
                     "area_b": [
-                        [8, 1009, 223, 37],
-                        [249, 1011, 223, 32],
-                        [489, 1010, 223, 35]
+                        [8, 1047, 227, 29],
+                        [248, 1042, 222, 38],
+                        [492, 1043, 217, 42]
                     ],
-                    "refresh": [139, 1072, 118, 48],
+                    "refresh": [153, 1114, 89, 27],
                     "max_rounds": 5,
-                    "剩余次数": [593, 1067, 75, 30],
-                    "空白区域": [538, 133, 33, 19],
+                    "剩余次数": [473, 1100, 202, 32],
+                    "空白区域": [534, 114, 17, 10],
                     "blank_clicks": 10,
                     "blank_click_delay": 1.0
                 }
@@ -252,15 +243,13 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["对方", "玩家", "名次"],
-				"roi": [138, 635, 430, 54]
+				"expected": ["OK"],
+				"roi": [208, 634, 286, 202]
 			}
 		},
         "action": {
             "type": "Click",
-            "param": {
-				"target": [321, 758, 86, 39]
-            }
+            "param": {}
         },
         "timeout": 3000
 	}

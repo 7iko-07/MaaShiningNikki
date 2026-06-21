@@ -21,7 +21,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[1, 185, 719, 70],
+				"roi":[0, 119, 720, 85],
 				"expected": ["每日签到","每日","签到"]
 			}
 		},
@@ -56,7 +56,7 @@
         "recognition": {
 			"type": "TemplateMatch",
 			"param": {
-				"roi":[0, 655, 720, 625],
+				"roi":[4, 573, 716, 707],
 				"template": [
                     "签到感叹号.png"
                 ]
@@ -68,15 +68,29 @@
                 "target_offset": [-60, 60, 0, 0]
             }
 		},
-		"next": ["点击活跃度感叹号所在位置", "退出签到"],
+		"next": ["退出签到"],
 		"post_delay": 500,
+		"timeout": 2000
+    },
+	"退出签到":{
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [555, 177, 165, 95]
+            }
+        },	
+        "next": ["点击活跃度感叹号所在位置", "查找方舟补给", "[JumpBack]左划福利菜单"],
 		"timeout": 2000
     },
 	"点击活跃度感叹号所在位置": {
         "recognition": {
 			"type": "TemplateMatch",
 			"param": {
-				"roi":[113, 476, 587, 179],
+				"roi":[111, 415, 609, 168],
 				"template": [
                     "签到活跃度感叹号.png"
                 ]
@@ -96,39 +110,23 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[226, 600, 273, 123],
-				"expected": ["免费","补签","次数"]
+				"roi":[179, 631, 386, 373],
+				"expected": ["确定"]
 			}
 		},
 		"action": {
 			"type": "Click",
-			"param": {
-				"target": [312, 754, 97, 47]
-			}
+			"param": {}
 		},
 		"post_delay": 500,
-		"next": ["退出签到"],
-		"timeout": 2000
-    },
-    "退出签到":{
-        "recognition": {
-            "type": "DirectHit",
-            "param": {}
-        },
-        "action": {
-            "type": "Click",
-            "param": {
-                "target": [555, 177, 165, 95]
-            }
-        },	
-        "next": ["查找方舟补给", "[JumpBack]左划福利菜单"],
+		"next": ["查找方舟补给", "[JumpBack]左划福利菜单"],
 		"timeout": 2000
     },
 	"查找方舟补给": {
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[1, 185, 719, 70],
+				"roi":[0, 119, 720, 85],
 				"expected": ["方舟补给","方舟","补给"]
 			}
 		},
@@ -171,8 +169,8 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_wait_freezes": 2000,
-		"next": ["返回主页面"],
+		"post_delay": 2000,
+		"next": ["stop"],
 		"timeout": 2000
     },
 	"左划福利菜单": {
@@ -182,24 +180,11 @@
         "action": {
             "type": "Swipe",
             "param": {
-                "begin": [598, 221],
-                "end": [152, 219]
+                "begin": [633, 153],
+                "end": [137, 153]
             }
         },
 		"post_delay": 500,
-        "timeout": 1000
-    },
-	"右划福利菜单": {
-        "recognition": {
-            "type": "DirectHit"
-        },
-        "action": {
-            "type": "Swipe",
-            "param": {
-                "end": [598, 221],
-                "begin": [152, 219]
-            }
-        },
         "timeout": 1000
     }
 }

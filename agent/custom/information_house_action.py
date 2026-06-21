@@ -1,11 +1,10 @@
 import json
-import re
 import time
 
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
-from utils import logger
+from utils import logger, read_number_from_controller
 
 
 @AgentServer.custom_action("information_house_auto_investigate")
@@ -34,7 +33,17 @@ class InformationHouseAutoInvestigateAction(CustomAction):
             return False
 
         controller = context.tasker.controller
-        stamina = self._read_number_before_slash(context, controller, stamina_roi, retry, retry_delay)
+        stamina = read_number_from_controller(
+            context,
+            controller,
+            stamina_roi,
+            "_information_house_ocr",
+            [r"\d+\s*/"],
+            retry=retry,
+            retry_delay=retry_delay,
+            log_prefix="information_house_auto_investigate",
+            retry_label="stamina",
+        )
         if stamina is None:
             logger.error("information_house_auto_investigate: failed to read stamina")
             return False
@@ -122,7 +131,17 @@ class InformationHouseAutoInvestigateAction(CustomAction):
         max_adjust,
     ):
         for attempt in range(max(0, max_adjust) + 1):
-            cost = self._read_number(context, controller, cost_roi, retry, retry_delay)
+            cost = read_number_from_controller(
+                context,
+                controller,
+                cost_roi,
+                "_information_house_ocr",
+                [r"\d+"],
+                retry=retry,
+                retry_delay=retry_delay,
+                log_prefix="information_house_auto_investigate",
+                retry_label="number",
+            )
             if cost is None:
                 logger.error("information_house_auto_investigate: failed to verify cost before start")
                 return False
@@ -145,114 +164,6 @@ class InformationHouseAutoInvestigateAction(CustomAction):
             f"target_cost={target_cost}"
         )
         return False
-
-    def _read_number_before_slash(self, context: Context, controller, roi, retry, retry_delay):
-        text = self._read_ocr_text(context, controller, roi, [r"\d+\s*/"])
-        if not text:
-            for attempt in range(max(1, retry - 1)):
-                time.sleep(retry_delay)
-                text = self._read_ocr_text(context, controller, roi, [r"\d+\s*/"])
-                if text:
-                    break
-                logger.warning(
-                    "information_house_auto_investigate: failed to OCR stamina on "
-                    f"retry {attempt + 1}/{max(1, retry - 1)}"
-                )
-
-        if not text:
-            return None
-
-        text = text.replace(",", "").replace(" ", "")
-        match = re.search(r"(\d+)\s*/", text)
-        if not match:
-            match = re.search(r"\d+", text)
-        return int(match.group(1) if match.lastindex else match.group(0)) if match else None
-
-    def _read_number(self, context: Context, controller, roi, retry, retry_delay):
-        for attempt in range(max(1, retry)):
-            text = self._read_ocr_text(context, controller, roi, [r"\d+"])
-            if text:
-                text = text.replace(",", "").replace(" ", "")
-                match = re.search(r"\d+", text)
-                if match:
-                    return int(match.group(0))
-
-            if attempt < retry - 1:
-                logger.warning(
-                    "information_house_auto_investigate: failed to OCR number on "
-                    f"attempt {attempt + 1}/{retry}"
-                )
-                time.sleep(retry_delay)
-
-        return None
-
-    def _read_ocr_text(self, context: Context, controller, roi, expected):
-        controller.post_screencap().wait()
-        image = controller.cached_image
-        node_name = "_information_house_ocr"
-
-        try:
-            result = context.run_recognition(
-                node_name,
-                image,
-                pipeline_override={
-                    node_name: {
-                        "recognition": "OCR",
-                        "roi": roi,
-                        "expected": expected,
-                    }
-                },
-            )
-            return self._extract_ocr_text(result)
-        except Exception as e:
-            logger.warning(f"information_house_auto_investigate: OCR error: {e}")
-            return ""
-
-    def _extract_ocr_text(self, result):
-        if not result or not getattr(result, "hit", False):
-            return ""
-
-        for candidate in self._iter_recognition_results(result):
-            text = getattr(candidate, "text", None)
-            if text:
-                return str(text)
-
-            detail = getattr(candidate, "detail", None)
-            if detail:
-                return str(detail)
-
-        return self._extract_text_from_raw_detail(getattr(result, "raw_detail", None))
-
-    def _iter_recognition_results(self, result):
-        best_result = getattr(result, "best_result", None)
-        if best_result is not None:
-            yield best_result
-
-        for attr in ("filtered_results", "all_results"):
-            for item in getattr(result, attr, []) or []:
-                if item is not None:
-                    yield item
-
-    def _extract_text_from_raw_detail(self, raw_detail):
-        if isinstance(raw_detail, dict):
-            for key in ("text", "detail"):
-                value = raw_detail.get(key)
-                if value:
-                    return str(value)
-
-            for key in ("best", "filtered", "all"):
-                value = raw_detail.get(key)
-                text = self._extract_text_from_raw_detail(value)
-                if text:
-                    return text
-
-        if isinstance(raw_detail, list):
-            for item in raw_detail:
-                text = self._extract_text_from_raw_detail(item)
-                if text:
-                    return text
-
-        return ""
 
     def _click_roi(self, controller, roi):
         x, y, w, h = roi

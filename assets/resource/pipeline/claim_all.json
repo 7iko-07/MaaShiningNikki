@@ -21,7 +21,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[294, 1182, 132, 40],
+				"roi":[234, 1199, 268, 81],
 				"expected": ["键领取","领取","键"]
 			}
 		},
@@ -32,30 +32,46 @@
         "repeat": 2,
         "repeat_delay": 2000,
 		"post_delay": 2000,
-		"next": ["点击今日活跃"],
+		"next": ["点击今日活跃","点击时尚任务"],
 		"timeout": 2000
     },
     "点击今日活跃":{
         "recognition": {
-			"type": "DirectHit"
+			"type": "TemplateMatch",
+			"param":{
+				"roi": [611, 496, 109, 101],
+				"template": "活跃度奖励.png"
+			}
 		},
         "action":{
             "type": "Click",
             "param": {
-                "target": [633, 589, 53, 46]
-            }
+				"target_offset": [-45,30,0,0]
+			}
         },
 		"post_delay": 2000,
-		"repeat": 2,
-		"repeat_delay": 2000,
-		"next": ["点击时尚任务"],
+		"next": ["点击空白-今日活跃领取"],
 		"timeout": 2000
     },
+	"点击空白-今日活跃领取":{
+		"recognition": {
+			"type": "DirectHit"
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [125, 29, 44, 31]
+			}
+		},
+		"post_delay": 2000,
+		"next": ["点击时尚任务"],
+		"timeout": 2000
+	},
     "点击时尚任务": {
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[494, 705, 129, 41],
+				"roi":[0, 629, 720, 66],
 				"expected": ["时尚","时","尚"]
 			}
 		},
@@ -71,7 +87,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[294, 1182, 132, 40],
+				"roi":[260, 1186, 206, 94],
 				"expected": ["键领取","领取","键"]
 			}
 		},
@@ -89,7 +105,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[195, 183, 166, 36],
+				"roi":[0, 103, 720, 67],
 				"expected": ["时尚","提升计划","提升"]
 			}
 		},
@@ -105,7 +121,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[444, 1187, 127, 37],
+				"roi":[387, 1199, 241, 81],
 				"expected": ["键领取","领取","键"]
 			}
 		},

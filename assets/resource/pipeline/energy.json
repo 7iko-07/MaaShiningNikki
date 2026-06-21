@@ -17,38 +17,6 @@
         "next": ["时光钟表铺入口"],
         "timeout": 30000
     },
-    "点击开始旅程": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [0, 1062, 720, 218],
-				"expected": ["开始旅程", "旅程"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_wait_freezes": 2000,
-		"next": ["点击结伴"],
-		"timeout": 2000
-    },
-    "点击结伴": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["结伴"],
-				"roi": [352, 1107, 284, 106]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 2000,
-		"next": ["时光钟表铺入口"],
-		"timeout": 2000
-    },
 	"时光钟表铺入口": {
 		"recognition": "DirectHit",
         "action": "DoNothing",
@@ -156,7 +124,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [258, 342, 182, 902],
+				"roi": [285, 288, 146, 787],
 				"expected": ["上演中", "上演"]
 			}
 		},
@@ -173,6 +141,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
+				"roi": [0, 664, 720, 94],
 				"expected": ["高难度", "高难"]
 			}
 		},
@@ -224,7 +193,7 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [432, 109, 181, 75]
+                "target": [128, 63, 61, 41]
             }
         },
         "repeat": 3,
@@ -273,6 +242,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
+				"roi": [0, 667, 720, 90],
 				"expected": ["高难度", "高难"]
 			}
 		},
@@ -324,7 +294,7 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [432, 109, 181, 75]
+                "target": [121, 57, 59, 39]
             }
         },
         "repeat": 3,
@@ -346,102 +316,17 @@
         "post_wait_freezes": 1000,
         "next": ["返回主页面"]
     },
-    "在结伴页面": {
-		"recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["时光钟表铺", "钟表"]
-			}
-		},
-		"action": {
-			"type": "DoNothing",
-			"param": {}
-		},
-		"timeout": 2000
-	},
 	"返回结伴页面": {
 		"recognition": "DirectHit",
-		"action": {
-			"type": "DoNothing",
-			"param": {}
-		},
-		"next": [
-			"在结伴页面",
-			"[JumpBack]返回主页面3"
-		]
-	},
-	"返回主页面3": {
-        "recognition": "DirectHit",
-        "action": "DoNothing",
-        "post_wait_freezes": 200,
-        "next": [
-			"是否是主页面3",
-			"[JumpBack]点击叉号",
-			"[JumpBack]点击返回",
-            "[JumpBack]点击主页空白区域"
-		]
-    },
-	"是否是主页面3": {
-        "recognition": {
-            "type": "TemplateMatch",
+        "action": {
+            "type": "Custom",
             "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "结伴"
+                }
             }
         },
-        "action": {
-            "type": "DoNothing",
-            "param": {}
-        },
-        "next": ["点击开始旅程2"]
-    },
-	"点击开始旅程2": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [0, 1062, 720, 218],
-				"expected": ["开始旅程", "旅程"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-        "next": ["点击结伴2"],
-		"post_wait_freezes": 5000,
-		"timeout": 2000
-    },
-    "点击结伴2": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["结伴"],
-				"roi": [352, 1107, 284, 106]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 2000,
-		"timeout": 2000
-    },
-    "点击体力用尽确定": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [237, 742, 252, 70],
-				"expected": ["确定"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 500,
-		"timeout": 2000
-    }
-
+		"timeout": 30000
+	}
 }

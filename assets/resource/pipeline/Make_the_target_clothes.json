@@ -33,7 +33,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [159, 1095, 206, 65],
+				"roi": [147, 1071, 281, 75],
 				"expected": ["全部材料","全部","材料"]
 			}
 		},
@@ -49,13 +49,16 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [284, 746, 145, 62],
+				"roi": [234, 662, 256, 100],
 				"expected": ["前往制作", "前往", "制作"]
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
 		},
 		"post_delay": 2000,
 		"next": ["点击返回-制衣2"],
@@ -103,10 +106,10 @@
 			"param": {
                 "custom_action": "make_target_clothes_challenge",
                 "custom_action_param": {
-                    "challenge_count_roi": [323, 852, 247, 43],
-                    "stamina_roi": [88, 69, 131, 32],
-                    "once_button": [63, 914, 116, 39],
-                    "multi_button": [223, 915, 111, 36]
+                    "challenge_count_roi": [320, 832, 252, 57],
+                    "stamina_roi": [0, 0, 218, 37],
+                    "once_button": [63, 895, 116, 40],
+                    "multi_button": [218, 895, 117, 44]
                 }
             }
 		},
@@ -138,7 +141,7 @@
         "recognition": {
             "type": "OCR",
             "param":{
-                "roi": [283, 576, 156, 42],
+                "roi": [218, 524, 283, 92],
                 "expected": ["制衣", "目标", "添加"]
             }
         },
@@ -161,11 +164,11 @@
                     "wait_after_swipe": 1.0,
                     "pixel_threshold": 25,
                     "change_threshold": 0.01,
-                    "final_click_roi": [539, 1106, 128, 39],
+                    "final_click_roi": [542, 1092, 125, 35],
                     "changed_next": ["点击全部材料"],
-                    "unchanged_next": ["点击前往获取时空回廊制衣材料", "点击前往制作2", "设计中心任务调度情报屋"],
+                    "unchanged_next": ["点击前往获取时空回廊制衣材料", "点击前往制作2", "stop"],
                     "final_challenge_node": "计算并挑战时空回廊制衣材料",
-                    "final_challenge_next": ["设计中心任务调度情报屋"]
+                    "final_challenge_next": ["stop"]
                 }
             }
         },
@@ -175,13 +178,16 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [284, 746, 145, 62],
+				"roi": [283, 688, 155, 47],
 				"expected": ["前往制作", "前往", "制作"]
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
 		},
 		"post_delay": 2000,
 		"next": ["点击返回-制衣2"],
@@ -201,6 +207,6 @@
         },
         "timeout": 5000,
         "post_wait_freezes": 1000,
-        "next": ["设计中心任务调度情报屋"]
+        "next": ["stop"]
     }
 }

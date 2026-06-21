@@ -21,15 +21,18 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [0, 240, 122, 75],
+				"roi": [0, 190, 129, 61],
 				"expected": ["织吻为拥"]
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
 		},
-		"post_wait_freezes": 2000,
+		"post_wait_freezes": 30000,
 		"next": ["点击活动剧情名称"],
 		"timeout": 2000
     },
@@ -37,13 +40,16 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["宾客入席"],
-				"roi": [561, 1013, 82, 71]
+				"expected": ["宾客","入席"],
+				"roi": [537, 1020, 132, 123]
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
 		},
 		"post_wait_freezes": 500,
 		"next": ["点击活动剧情"],
@@ -65,7 +71,7 @@
 					"roi": [0, 0, 720, 1280],
 					"max_points": 20000,
 					"change_detection": true,
-					"exclude": [[0, 74, 124, 126], [546, 48, 174, 226],[436, 1033, 284, 129]],
+					"exclude": [[0, 14, 120, 114], [543, 0, 177, 202],[440, 1073, 280, 112]],
 					"stop_on_no_change": true
 				}
 			}
@@ -82,7 +88,7 @@
 			"param": {}
 		},
 		"post_wait_freezes": 500,
-		"next": ["[JumpBack]点击聊天框", "[JumpBack]点击剧情叉号","[Anchor]点击活动剧情"],
+		"next": ["识别剧情过完了并停止任务", "[JumpBack]点击聊天框", "[JumpBack]点击剧情叉号","[Anchor]点击活动剧情"],
 		"timeout": 2000
     },
     "点击聊天框":{
@@ -94,7 +100,7 @@
 						"recognition":{
 							"type": "OCR",
 							"param": {
-								"roi": [568, 113, 152, 134],
+								"roi": [538, 0, 182, 277],
 								"expected": ["自动播放","自动","播放","文字速度","文字","速度"]
 							}
 						}
@@ -103,7 +109,7 @@
 						"recognition":{
 							"type": "ColorMatch",
 							"param": {
-								"roi": [568, 113, 152, 134],
+								"roi": [538, 0, 182, 277],
 								"lower": [0, 0, 0],
 								"upper": [0, 0, 0],
 								"count": 3000,
@@ -136,5 +142,18 @@
         },
 		"repeat": 3,
         "timeout": 5000
+	},
+	"识别剧情过完了并停止任务":{
+		"recognition": {
+			"type": "OCR",
+			"param":{
+				"roi": [552, 33, 168, 91],
+				"expected": ["跳过"]
+			}
+		},
+		"focus": {
+			"Node.Action.Starting": "#[color:blue][b]剧情过完了[/b][/color]"
+		},
+		"next": ["stop"]
 	}
 }

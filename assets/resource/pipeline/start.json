@@ -3,15 +3,15 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["拒绝盗版游戏。注意自我保护谨","拒绝","盗版游戏","注意","自我保护谨","点击开始"],
-				"roi": [235, 1090, 266, 51]
+				"expected": ["点击开始"],
+				"roi": [203, 1043, 331, 99]
 			}
 		},
 		"action": {
 			"type": "Click",
 			"param": {}
 		},
-		"post_wait_freezes": 3000,
+		"post_delay": 3000,
 		"next": ["点击开始","stop"],
 		"timeout": 2000
 	}

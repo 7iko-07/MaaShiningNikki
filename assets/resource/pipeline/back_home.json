@@ -22,7 +22,7 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["收起日程表"],
-				"roi": [0, 647, 720, 304]
+				"roi": [0, 465, 720, 594]
 			}
 		},
 		"action": {
@@ -68,7 +68,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [369, 275, 140, 76],
+				"roi": [370, 261, 136, 69],
 				"expected": ["零食", "食", "零"]
 			}
 		},
@@ -202,7 +202,7 @@
         "action": {
             "type": "Swipe",
             "param": {
-                "begin": [362, 906],
+                "begin": [362, 850],
                 "end": [360, 660]
             }
         },
@@ -249,7 +249,7 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [139, 37, 91, 53]
+                "target": [141, 19, 39, 25]
             }
         },
 		"repeat": 2,
@@ -262,13 +262,16 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[613, 900, 99, 126],
+				"roi":[570, 698, 150, 444],
 				"expected": ["暖心传音","暖心","传音"]
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
 		},
 		"post_delay": 3000,
 		"next": ["点击前往自习室"],
@@ -279,65 +282,77 @@
 			"type": "TemplateMatch",
 			"param": {
 				"template": "进入自习室图标.png",
-                "roi": [518, 72, 113, 115]
+                "roi": [498, 0, 222, 213]
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
 		},
 		"next": ["点击评价自习室穿搭", "点击前往自习室内", "点击回到自习室内"],
-		"post_wait_freezes": 3000,
+		"post_delay": 5000,
 		"timeout": 2000
     },
 	"点击评价自习室穿搭":{
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[104, 701, 515, 95],
+				"roi":[84, 609, 540, 179],
 				"expected": ["今天的","不用","搭配很完美"]
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
 		},
 		"post_delay": 1000,
-		"next": ["点击退出自习室"],
+		"next": ["点击退出自习室", "[JumpBack]在加载页面"],
 		"timeout": 2000
 	},
 	"点击前往自习室内": {
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[389, 503, 170, 45],
+				"roi":[367, 457, 274, 94],
 				"expected": ["前往自习室","前往","自习室"]
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
 		},
 		"post_delay": 1000,
-		"next": ["点击退出自习室"],
+		"next": ["点击评价自习室穿搭", "点击退出自习室"],
 		"timeout": 2000
     },
 	"点击回到自习室内": {
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[103, 505, 469, 274],
+				"roi":[99, 432, 448, 370],
 				"expected": ["回到时光自习室","还在等你"]
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {
-				"target": [308, 633, 113, 42]
-			}
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{
+					"target": [330, 620, 64, 35]
+				}
+            }
 		},
-		"post_delay": 1000,
-		"next": ["点击退出自习室"],
+		"post_delay": 3000,
+		"next": ["点击退出自习室", "[JumpBack]在加载页面"],
 		"timeout": 2000
     },
 	"点击退出自习室": {
@@ -383,7 +398,7 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_delay": 3000,
+		"post_delay": 10000,
 		"next": ["点击离开"],
 		"timeout": 2000
     },
@@ -391,7 +406,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi":[340, 854, 100, 62],
+				"roi":[339, 837, 88, 67],
 				"expected": ["离开","离","开"]
 			}
 		},

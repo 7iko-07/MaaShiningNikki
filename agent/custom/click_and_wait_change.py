@@ -11,6 +11,24 @@ from utils import logger
 
 @AgentServer.custom_action("click_and_wait_change")
 class ClickAndWaitChangeAction(CustomAction):
+    SELF_TARGET_NAMES = {
+        "self",
+        "current",
+        "current_roi",
+        "current_box",
+        "roi",
+        "box",
+        "hit",
+        "true",
+        "自身",
+        "本节点",
+        "当前",
+        "当前节点",
+        "当前识别",
+        "当前roi",
+        "当前box",
+    }
+
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
 
@@ -73,13 +91,40 @@ class ClickAndWaitChangeAction(CustomAction):
 
     def _get_target(self, params, argv):
         target = params.get("target")
-        if target is not None:
+        if target is None:
+            return self._argv_box_target(argv)
+
+        if self._is_self_target(target):
+            return self._argv_box_target(argv)
+
+        if isinstance(target, str):
+            logger.error(
+                "click_and_wait_change: custom_action_param.target 不支持节点名；"
+                "如需引用当前节点或其他节点的识别框，请把 target 写在 Custom action 自身字段中"
+            )
+            return None
+
+        if self._valid_target(target):
             return target
 
+        logger.error("click_and_wait_change: target 必须是 true/self、[x, y] 或 [x, y, w, h]")
+        return None
+
+    def _argv_box_target(self, argv):
         box = argv.box
         if box.w > 0 and box.h > 0:
             return [box.x, box.y, box.w, box.h]
         return None
+
+    def _is_self_target(self, target):
+        if target is True:
+            return True
+        if not isinstance(target, str):
+            return False
+        return target.strip().lower() in self.SELF_TARGET_NAMES
+
+    def _valid_target(self, target):
+        return isinstance(target, (list, tuple)) and len(target) in (2, 4)
 
     def _target_center(self, target):
         if len(target) == 2:

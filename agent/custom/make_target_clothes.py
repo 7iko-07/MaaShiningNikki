@@ -1,5 +1,4 @@
 import json
-import re
 import time
 
 import numpy as np
@@ -7,7 +6,7 @@ from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
 from maa.pipeline import JActionType, JSwipe
-from utils import logger
+from utils import logger, read_ocr_number
 
 
 @AgentServer.custom_action("make_target_clothes_challenge")
@@ -52,19 +51,21 @@ class MakeTargetClothesChallengeAction(CustomAction):
             controller.post_screencap().wait()
             img = controller.cached_image
 
-            challenge_count = self._ocr_number(
+            challenge_count = read_ocr_number(
                 context,
                 img,
+                "_make_target_clothes_challenge_count_ocr",
                 challenge_count_roi,
-                number_index=params.get("challenge_count_number_index", 0),
-                node_name="_make_target_clothes_challenge_count_ocr",
+                [r"\d+"],
+                "make_target_clothes_challenge",
             )
-            stamina = self._ocr_number(
+            stamina = read_ocr_number(
                 context,
                 img,
+                "_make_target_clothes_stamina_ocr",
                 stamina_roi,
-                number_index=params.get("stamina_number_index", 0),
-                node_name="_make_target_clothes_stamina_ocr",
+                [r"\d+"],
+                "make_target_clothes_challenge",
             )
 
             if challenge_count is not None and stamina is not None:
@@ -116,84 +117,6 @@ class MakeTargetClothesChallengeAction(CustomAction):
             time.sleep(popup_close_delay)
 
         return True
-
-    def _ocr_number(self, context: Context, img, roi, number_index, node_name):
-        try:
-            result = context.run_recognition(
-                node_name,
-                img,
-                pipeline_override={
-                    node_name: {
-                        "recognition": "OCR",
-                        "roi": roi,
-                        "expected": [r"\d+"],
-                    }
-                },
-            )
-            text = self._extract_ocr_text(result)
-            if not text:
-                return None
-
-            num_str = self._extract_number_text(text)
-            if not num_str:
-                return None
-
-            return int(num_str)
-        except Exception as e:
-            logger.warning(f"make_target_clothes_challenge: OCR error: {e}")
-            return None
-
-    def _extract_number_text(self, text):
-        text = str(text).strip().replace(",", "")
-        if "/" in text:
-            text = text.split("/", 1)[0]
-        return re.sub(r"\D", "", text)
-
-    def _extract_ocr_text(self, result):
-        if not result or not getattr(result, "hit", False):
-            return ""
-
-        for candidate in self._iter_recognition_results(result):
-            text = getattr(candidate, "text", None)
-            if text:
-                return str(text)
-
-            detail = getattr(candidate, "detail", None)
-            if detail:
-                return str(detail)
-
-        return self._extract_text_from_raw_detail(getattr(result, "raw_detail", None))
-
-    def _iter_recognition_results(self, result):
-        best_result = getattr(result, "best_result", None)
-        if best_result is not None:
-            yield best_result
-
-        for attr in ("filtered_results", "all_results"):
-            for item in getattr(result, attr, []) or []:
-                if item is not None:
-                    yield item
-
-    def _extract_text_from_raw_detail(self, raw_detail):
-        if isinstance(raw_detail, dict):
-            for key in ("text", "detail"):
-                value = raw_detail.get(key)
-                if value:
-                    return str(value)
-
-            for key in ("best", "filtered", "all"):
-                value = raw_detail.get(key)
-                text = self._extract_text_from_raw_detail(value)
-                if text:
-                    return text
-
-        if isinstance(raw_detail, list):
-            for item in raw_detail:
-                text = self._extract_text_from_raw_detail(item)
-                if text:
-                    return text
-
-        return ""
 
     def _calc_clicks(self, challenge_count, challenge_times, max_multi):
         if challenge_times <= 0:

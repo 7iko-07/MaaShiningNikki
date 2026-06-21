@@ -31,7 +31,7 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["左一", "喋血", "女王"],
-				"roi": [350, 271, 183, 1009]
+				"roi": [346, 236, 186, 1044]
 			}
 		},
 		"action": {
@@ -47,16 +47,14 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["调查", "调查中"],
-				"roi": [274, 1002, 159, 53]
+				"roi": [269, 987, 160, 51]
 			}
 		},
 		"action": {
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"target": [287, 1004, 136, 47]
-				}
+				"custom_action_param": {}
 			}
 		},
 		"next": ["点击托管调查奖励"],
@@ -84,7 +82,7 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["领取奖励", "领取", "奖励"],
-				"roi": [298, 885, 159, 51]
+				"roi": [169, 823, 404, 169]
 			}
 		},
 		"action": {
@@ -100,7 +98,7 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["调查", "调查中", "托管调查","托管"],
-				"roi": [54, 990, 640, 103]
+				"roi": [16, 973, 704, 143]
 			}
 		},
         "action": "DoNothing",
@@ -112,7 +110,7 @@
 			"type": "OCR",
 			"param": {
 				"expected": ["托管调查","托管"],
-				"roi": [55, 989, 198, 77]
+				"roi": [0, 956, 720, 190]
 			}
 		},
 		"action": {
@@ -130,11 +128,11 @@
             "param": {
                 "custom_action": "information_house_auto_investigate",
                 "custom_action_param": {
-                    "stamina_roi": [73, 64, 146, 40],
-                    "add_button_roi": [581, 604, 33, 33],
-                    "cost_roi": [496, 838, 92, 35],
-                    "minus_button_roi": [350, 606, 35, 28],
-                    "start_button_roi": [418, 777, 125, 40],
+                    "stamina_roi": [0, 0, 215, 49],
+                    "add_button_roi": [585, 594, 24, 18],
+                    "cost_roi": [493, 818, 96, 47],
+                    "minus_button_roi": [355, 597, 19, 15],
+                    "start_button_roi": [410, 756, 135, 45],
                     "cost_map": {
                         "0": 20,
                         "1": 32,

@@ -17,28 +17,12 @@
         "next": ["点击好友一键送心"],
         "timeout": 30000
     },
-    "点击好友": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [529, 0, 191, 1054],
-				"expected": ["好友"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_wait_freezes": 2000,
-		"next": ["点击好友一键送心"],
-		"timeout": 2000
-    },
     "点击好友一键送心": {
         "recognition": {
 			"type": "OCR",
 			"param": {
 				"roi": [0, 931, 537, 349],
-				"expected": ["键送心"]
+				"expected": ["键送心","送心","键"]
 			}
 		},
 		"action": {
@@ -86,7 +70,7 @@
 			"type": "OCR",
 			"param": {
 				"roi": [0, 931, 537, 349],
-				"expected": ["领取体力", "体力"]
+				"expected": ["领取体力", "体力","领取","取体"]
 			}
 		},
 		"action": {
@@ -102,7 +86,7 @@
 			"type": "OCR",
 			"param": {
 				"roi": [57, 324, 608, 726],
-				"expected": ["一键领取", "键领取"]
+				"expected": ["一键领取", "键领取", "键领"]
 			}
 		},
 		"action": {
@@ -121,11 +105,11 @@
 		"action": {
 			"type": "Click",
 			"param": {
-                "target": [227, 1, 168, 98]
+                "target": [207, 114, 153, 68]
             }
 		},
 		"post_delay": 1000,
-		"next": ["点击返回"],
+		"next": ["stop"],
 		"timeout": 2000,
         "repeat": 5,
         "repeat_delay": 500

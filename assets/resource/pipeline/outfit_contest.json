@@ -14,63 +14,30 @@
                 }
             }
         },
-        "next": ["在搭配评选赛页面", "[JumpBack]点赞搭配评选赛", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
+        "next": ["点击我当评委","我要参赛-停止"],
         "timeout": 30000
     },
-    "点击开始旅程-搭配评选赛": {
-        "recognition": {
+	"我要参赛-停止":{
+		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [0, 1062, 720, 218],
-				"expected": ["开始旅程", "旅程"]
+				"expected": ["我要参赛","参赛","赛"],
+				"roi": [530, 1111, 190, 158]
 			}
 		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_wait_freezes": 2000,
-		"next": ["点击独自-搭配评选赛"],
-		"timeout": 2000
-    },
-    "点击独自-搭配评选赛": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["独自"],
-				"roi": [24, 1118, 368, 162]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
+		"focus": {
+			"Node.Action.Starting": "#[color:red][b]参赛需要自行搭配[/b][/color]"
 		},
 		"post_delay": 2000,
-		"next": ["点击搭配评选赛"],
+		"next": ["stop"],
 		"timeout": 2000
-    },
-    "点击搭配评选赛": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [44, 629, 132, 29],
-                "expected": ["搭配评选赛", "搭配", "评选赛"]
-            }
-        },
-        "action": {
-            "type": "Click",
-            "param": {}
-        },
-        "post_wait_freezes": 2000,
-        "next": ["点击我当评委", "[JumpBack]在加载页面"],
-        "timeout": 2000
-    },
+	},
     "点击我当评委": {
         "recognition": {
 			"type": "OCR",
 			"param": {
 				"expected": ["我当评委","当评","评委"],
-				"roi": [567, 1174, 108, 31]
+				"roi": [530, 1111, 190, 158]
 			}
 		},
 		"action": {
@@ -78,35 +45,22 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["在搭配评选赛页面", "[JumpBack]点赞搭配评选赛", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
+		"next": ["导航在搭配评选赛页面", "[JumpBack]点赞搭配评选赛", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
 		"timeout": 2000
-    },
-    "在搭配评选赛页面":{
-        "recognition": {
-			"type": "OCR",
-			"param": {
-                "expected": ["排行榜", "排", "行", "榜"],
-                "roi": [556, 132, 164, 64]
-            }
-		},
-        "action": "DoNothing",
-        "next": ["stop"]
     },
     "点赞搭配评选赛": {
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["我的准确度", "我", "度", "的", "准", "确"],
-				"roi": [575, 76, 125, 37]
+				"expected": ["赞"],
+				"roi": [431, 1037, 242, 239]
 			}
 		},
 		"action": {
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"target": [507, 1134, 70, 66]
-				}
+				"custom_action_param": {}
 			}
 		},
         "repeat": 2,

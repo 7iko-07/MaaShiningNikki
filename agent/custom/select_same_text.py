@@ -21,9 +21,9 @@ class SelectSameTextAfterThumbAction(CustomAction):
 
         source_roi = params.get("source_roi", [433, 215, 47, 24])
         thumb_roi = params.get("thumb_roi", [568, 739, 26, 26])
-        search_button_roi = params.get("search_button_roi", [30, 736, 33, 33])
+        search_button_roi = params.get("search_button_roi", [30, 721, 32, 27])
         search_roi = params.get("search_roi", [60, 354, 603, 381])
-        confirm_roi = params.get("confirm_roi", [483, 959, 98, 45])
+        confirm_roi = params.get("confirm_roi", [493, 943, 74, 35])
 
         max_swipes = self._as_int(params.get("max_swipes"), 4)
         swipe_distance = self._as_int(params.get("swipe_distance"), 200)
@@ -182,16 +182,16 @@ class SelectSameTextAfterThumbAction(CustomAction):
 class ClickNailTabsSequenceAction(CustomAction):
 
     DEFAULT_ROIS = [
-        [58, 969, 65, 33],
-        [59, 1089, 59, 61],
-        [239, 970, 65, 26],
-        [59, 1089, 59, 61],
-        [423, 966, 55, 31],
-        [59, 1089, 59, 61],
-        [603, 969, 52, 27],
-        [59, 1089, 59, 61],
-        [44, 215, 90, 25],
-        [676, 915, 21, 23]
+        [53, 992, 75, 47],
+        [63, 1130, 61, 53],
+        [232, 999, 74, 36],
+        [63, 1140, 57, 50],
+        [404, 1001, 86, 32],
+        [63, 1140, 57, 50],
+        [600, 1000, 71, 36],
+        [63, 1140, 57, 50],
+        [58, 149, 58, 23],
+        [678, 953, 17, 12]
     ]
 
     def run(

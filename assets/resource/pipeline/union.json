@@ -17,28 +17,13 @@
         "next": ["点击机密任务"],
         "timeout": 30000
     },
-	"点击联盟": {
-		"recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [518, 197, 202, 307],
-				"expected": ["联盟"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 1000,
-		"next": ["点击机密任务"]
-	},
 	"点击机密任务": {
 		"pre_delay": 1000,
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [198, 579, 508, 596],
-				"expected": ["机密任务"]
+				"roi": [337, 789, 154, 153],
+				"expected": ["机?密任务?"]
 			}
 		},
 		"action": {
@@ -54,7 +39,7 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [0, 1034, 720, 246],
+				"roi": [0, 932, 720, 348],
 				"expected": ["前往当前目标", "当前目标"]
 			}
 		},
@@ -63,6 +48,7 @@
 			"param": {}
 		},
 		"post_delay": 1000,
+		"next": ["点击执行五次", "点击返回联盟"],
 		"timeout": 5000
 	},
 	"点击执行五次": {
@@ -70,8 +56,8 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [255, 1183, 105, 35],
-				"expected": ["执行五次", "五次", "执行"]
+				"roi": [223, 1136, 162, 113],
+				"expected": ["执行五次", "五次"]
 			}
 		},
 		"action": {
@@ -92,7 +78,7 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [268, 4, 192, 54]
+                "target": [117, 53, 35, 26]
             }
         },
 		"repeat": 3,
@@ -103,7 +89,7 @@
             "type": "TemplateMatch",
             "param": {
                 "template": "back1.png",
-                "roi": [0, 91, 86, 87]
+                "roi": [0, 0, 228, 217]
             }
         },
 		"action": {
@@ -119,8 +105,8 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [198, 579, 508, 596],
-				"expected": ["联盟捐献"]
+				"roi": [514, 763, 169, 174],
+				"expected": ["联?盟?捐献?"]
 			}
 		},
 		"action": {
@@ -237,70 +223,17 @@
         "repeat": 5,
         "repeat_delay": 500
 	},
-	"在联盟页面": {
-		"recognition": {
-			"type": "TemplateMatch",
-			"param": {
-				"template": "联盟眼睛.png",
-                "roi": [125, 433, 104, 90]
-			}
-		},
-		"action": {
-			"type": "DoNothing",
-			"param": {}
-		},
-		"timeout": 2000
-	},
 	"返回联盟页面": {
 		"recognition": "DirectHit",
-		"action": {
-			"type": "DoNothing",
-			"param": {}
-		},
-		"next": [
-			"在联盟页面",
-			"[JumpBack]返回主页面2"
-		]
-	},
-	"返回主页面2": {
-        "recognition": "DirectHit",
-        "action": "DoNothing",
-        "post_wait_freezes": 2000,
-        "next": [
-			"是否是主页面2",
-			"[JumpBack]点击叉号",
-			"[JumpBack]点击返回",
-            "[JumpBack]点击主页空白区域"
-		]
-    },
-	"是否是主页面2": {
-        "recognition": {
-            "type": "TemplateMatch",
+        "action": {
+            "type": "Custom",
             "param": {
-                "template": [
-                    "活动一览按钮.png"
-                ],
-                "roi": [13, 841, 79, 76]
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "联盟"
+                }
             }
         },
-        "action": {
-            "type": "DoNothing",
-            "param": {}
-        },
-        "next": ["点击联盟2"]
-    },
-	"点击联盟2": {
-		"recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [518, 197, 202, 307],
-				"expected": ["联盟"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 1000
+        "timeout": 30000
 	}
 }

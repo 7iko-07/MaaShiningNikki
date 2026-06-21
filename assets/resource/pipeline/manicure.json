@@ -13,28 +13,12 @@
 		"next": ["点击我的店铺"],
 		"timeout": 30000
     },
-    "点击美甲": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["美甲"],
-				"roi": [67, 1030, 120, 95]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 2000,
-		"next": ["点击我的店铺"],
-		"timeout": 2000
-    },
 	"点击我的店铺": {
         "recognition": {
 			"type": "OCR",
 			"param": {
 				"expected": ["我的店铺"],
-				"roi": [25, 983, 190, 192]
+				"roi": [0, 976, 296, 304]
 			}
 		},
 		"action": {
@@ -111,14 +95,15 @@
     },
     "点击提取心意币": {
         "recognition": {
-			"type": "DirectHit",
-			"param": {}
+			"type": "OCR",
+			"param": {
+				"expected": ["^[提取]{1,2}$"],
+				"roi": [441, 1034, 279, 246]
+			}
 		},
 		"action": {
 			"type": "Click",
-			"param": {
-				"target": [544, 1126, 72, 33]
-			}
+			"param": {}
 		},
 		"next": ["点击我的店铺空白2"],
 		"post_delay": 2000,
@@ -142,34 +127,37 @@
     },
 	"点击特约顾客": {
         "recognition": {
-            "type": "DirectHit",
-            "param": {}
+            "type": "OCR",
+            "param": {
+				"roi": [0, 769, 199, 511],
+				"expected": ["特?约顾客?"]
+			}
         },
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [50, 856, 80, 63]
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
             }
         },
 		"post_delay": 2000,
-        "next": ["点击私人设计","点击返回美甲页面"],
+        "next": ["点击私人设计","点击空白-特约顾客"],
 		"timeout": 2000
     },
 	"点击私人设计": {
         "recognition":{
 		"type": "ColorMatch",
 			"param":{
-				"roi": [575, 441, 19, 16],
-				"upper": [138, 174, 237],
-				"lower": [137, 173, 236],
-				"count": 10
+				"roi": [531, 405, 82, 74],
+				"upper": [139, 175, 238],
+				"lower": [136, 172, 235],
+				"count": 500,
+				"connected": true
 			}
 		},
         "action": {
             "type": "Click",
-            "param": {
-                "target": [575, 441, 19, 16]
-            }
+            "param": {}
         },
 		"post_delay": 1000,
         "next": ["点击开始设计"],
@@ -177,19 +165,41 @@
     },
 	"点击开始设计": {
         "recognition": {
-            "type": "DirectHit",
+            "type": "OCR",
+            "param": {
+				"expected": ["开?始设计?"],
+				"roi": [220, 788, 297, 119]
+			}
+        },
+        "action": {
+            "type": "Click",
             "param": {}
+        },
+        "next": ["下载资源包-美甲", "搭配拇指"],
+		"post_wait_freezes": 3000,
+		"timeout": 2000
+    },
+	"下载资源包-美甲":{
+        "recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["美甲资源", "资源包", "下载"],
+				"roi": [66, 458, 588, 347]
+			}
         },
         "action": {
             "type": "Click",
             "param": {
-                "target": [254, 829, 206, 54]
-            }
+				"target": [189, 689, 90, 44]
+			}
         },
-        "next": ["搭配拇指"],
-		"post_wait_freezes": 3000,
+		"focus": {
+			"Node.Action.Starting": "#[color:red][b]美甲资源未下载，请先下载资源，之后再次运行任务[/b][/color]"
+		},
+        "next": ["stop"],
+		"post_delay": 1000,
 		"timeout": 2000
-    },
+	},
 	"搭配拇指": {
 		"recognition": "DirectHit",
 		"action": {
@@ -197,7 +207,7 @@
 			"param": {
 				"custom_action": "select_same_text_after_thumb",
 				"custom_action_param": {
-					"source_roi": [433, 215, 47, 24],
+					"source_roi": [427, 149, 58, 25],
 					"thumb_roi": [568, 739, 26, 26]
 				}
 			}
@@ -226,7 +236,7 @@
 			"param": {
 				"custom_action": "select_same_text_after_thumb",
 				"custom_action_param": {
-					"source_roi": [528, 215, 46, 23],
+					"source_roi": [526, 149, 50, 25],
 					"thumb_roi": [536, 470, 24, 25]
 				}
 			}
@@ -253,7 +263,7 @@
 			"param": {
 				"custom_action": "select_same_text_after_thumb",
 				"custom_action_param": {
-					"source_roi": [621, 214, 47, 24],
+					"source_roi": [618, 149, 55, 24],
 					"thumb_roi": [491, 404, 19, 18]
 				}
 			}
@@ -274,16 +284,23 @@
 		"next": ["点击完成搭配"]
 	},
 	"点击完成搭配":{
-		"recognition": "DirectHit",
-		"action": {
-			"type": "Click",
+		"recognition": {
+			"type": "OCR",
 			"param":{
-				"target": [78, 879, 111, 35]
+				"expected": ["完?成搭配?"],
+				"roi": [0, 857, 310, 172]
 			}
 		},
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
+		},
 		"timeout": 2000,
-		"post_wait_freezes": 4000,
-		"next": ["点击完成搭配空白"]
+		"post_delay": 4000,
+		"next": ["点击完成搭配空白","[JumpBack]在加载页面"]
 	},
 	"点击完成搭配空白":{
 		"recognition": "DirectHit",
@@ -299,22 +316,31 @@
 		"post_wait_freezes": 2000,
 		"next": ["点击特约顾客"]
 	},
+	"点击空白-特约顾客":{
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Click",
+			"param":{
+				"target": [148, 89, 50, 45]
+			}
+		},
+		"repeat": 2,
+		"repeat_delay": 500,
+		"timeout": 3000,
+		"next": ["点击返回美甲页面"]
+	},
     "点击返回美甲页面":{
-        "recognition": {
-            "type": "TemplateMatch",
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
             "param": {
-                "template": "back1.png",
-                "roi": [0, 0, 379, 404]
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "美甲"
+                }
             }
         },
-        "action": {
-            "type": "Click",
-            "param": {}
-        },
-		"repeat": 2,
-		"repeat_delay": 1000,
-        "timeout": 5000,
-        "post_wait_freezes": 1000,
+		"timeout": 30000,
         "next": ["点击此刻投稿"]
     },
     "点击此刻投稿": {
@@ -322,17 +348,51 @@
 			"type": "OCR",
 			"param": {
 				"roi": [168, 709, 210, 199],
-				"expected": ["此刻投稿"]
+				"expected": ["此?刻投稿?"]
 			}
 		},
 		"action": {
 			"type": "Click",
 			"param": {}
 		},
-		"next": ["点击浏览点赞"],
+		"next": ["[JumpBack]美甲周期奖励确认","此刻投稿-我的投稿","点击浏览点赞"],
 		"post_delay": 2000,
 		"timeout": 2000
     },
+	"此刻投稿-我的投稿":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [550, 1133, 170, 147],
+				"expected": ["我的投稿"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"focus": {
+			"Node.Action.Starting": "#[color:red][b]美甲投稿需自行搭配[/b][/color]"
+		},
+		"next": ["stop"],
+		"post_delay": 2000,
+		"timeout": 2000
+	},
+	"美甲周期奖励确认":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [273, 900, 175, 88],
+				"expected": ["确定"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"timeout": 2000
+	},
     "点击浏览点赞": {
         "recognition": {
 			"type": "OCR",
@@ -342,8 +402,11 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param":{}
+			}
 		},
         "post_wait_freezes": 1000,
 		"next": ["点击美甲完美评价1", "[JumpBack]在加载页面"],
@@ -353,7 +416,7 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [377, 1151, 124, 109],
+				"roi": [377, 1151, 122, 129],
 				"expected": ["完美"]
 			}
 		},
@@ -361,9 +424,7 @@
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"target": [405, 1115, 53, 51]
-				}
+				"custom_action_param": {}
 			}
 		},
 		"next": ["点击美甲完美评价2", "[JumpBack]在接受投稿页面"],
@@ -373,7 +434,7 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [377, 1151, 124, 109],
+				"roi": [377, 1151, 122, 129],
 				"expected": ["完美"]
 			}
 		},
@@ -381,9 +442,7 @@
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"target": [405, 1115, 53, 51]
-				}
+				"custom_action_param": {}
 			}
 		},
 		"next": ["点击美甲完美评价3", "[JumpBack]在接受投稿页面"],
@@ -393,7 +452,7 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [377, 1151, 124, 109],
+				"roi": [377, 1151, 122, 129],
 				"expected": ["完美"]
 			}
 		},
@@ -401,9 +460,7 @@
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"target": [405, 1115, 53, 51]
-				}
+				"custom_action_param": {}
 			}
 		},
 		"next": ["点击美甲完美评价4", "[JumpBack]在接受投稿页面"],
@@ -413,7 +470,7 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [377, 1151, 124, 109],
+				"roi": [377, 1151, 122, 129],
 				"expected": ["完美"]
 			}
 		},
@@ -421,9 +478,7 @@
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"target": [405, 1115, 53, 51]
-				}
+				"custom_action_param": {}
 			}
 		},
 		"next": ["点击美甲完美评价5", "[JumpBack]在接受投稿页面"],
@@ -433,7 +488,7 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [377, 1151, 124, 109],
+				"roi": [377, 1151, 122, 129],
 				"expected": ["完美"]
 			}
 		},
@@ -441,9 +496,7 @@
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"target": [405, 1115, 53, 51]
-				}
+				"custom_action_param": {}
 			}
 		},
 		"next": ["点击返回点赞美甲页面", "[JumpBack]在接受投稿页面"],
@@ -458,12 +511,15 @@
             }
         },
         "action": {
-            "type": "Click",
-            "param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
         },
         "repeat": 2,
         "timeout": 5000,
-        "post_wait_freezes": 1000,
-		"next": ["设计中心任务调度制作目标服装"]
+        "post_delay": 1000,
+		"next": ["stop"]
     }
 }

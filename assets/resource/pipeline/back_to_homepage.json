@@ -10,13 +10,13 @@
                             "template": [
                                 "活动一览按钮.png"
                             ],
-                            "roi": [13, 841, 79, 76]
+                            "roi": [12, 837, 85, 108]
                         }
                     }},
                     {"recognition": {
                         "type": "OCR",
                         "param": {
-                            "roi": [0, 184, 129, 607],
+                            "roi": [1, 145, 119, 669],
                             "expected": ["心之"]
                         }
                     }}
@@ -38,14 +38,14 @@
                         "type": "TemplateMatch",
                         "param": {
                             "template": "主页音乐图标-关.png",
-                            "roi": [101, 95, 75, 74]
+                            "roi": [86, 0, 108, 173]
                         }
                     }},
                     {"recognition": {
                         "type": "TemplateMatch",
                         "param": {
                             "template": "主页音乐图标-开.png",
-                            "roi": [101, 95, 75, 74]
+                            "roi": [86, 0, 108, 173]
                         }
                     }}
                 ]
@@ -67,7 +67,7 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [265, 116, 227, 61]
+                "target": [267, 42, 228, 55]
             }
         }
     },
