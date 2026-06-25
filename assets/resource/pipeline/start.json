@@ -1,10 +1,23 @@
 {
-    "点击开始": {
+    "启动闪暖":{
+		"recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "StartApp",
+			"param": {"package": "com.papegames.nn4.cn"}
+		},
+		"post_delay": 10000,
+		"timeout": 2000,
+		"next": ["资源更新","点击开始", "[JumpBack]嗯等"]
+	},
+	"资源更新":{
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["点击开始"],
-				"roi": [203, 1043, 331, 99]
+				"expected": ["确定"],
+				"roi": [12, 453, 690, 368]
 			}
 		},
 		"action": {
@@ -12,7 +25,67 @@
 			"param": {}
 		},
 		"post_delay": 3000,
-		"next": ["点击开始","stop"],
+		"next": ["点击开始","[JumpBack]在资源更新页面","stop"],
+		"timeout": 4000
+	},
+	"在资源更新页面":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 1056, 720, 224],
+				"expected": ["正在前往", "奇迹大陆", "解压中"]
+			}
+		},
+		"action": "DoNothing",
+		"post_delay": 1000,
+        "timeout": 4000
+	},
+	"嗯等":{
+		"recognition": {
+			"type": "DirectHit",
+			"param": {
+				"roi": [316, 1082, 87, 32]
+			}
+		},
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"post_delay": 5000,
 		"timeout": 2000
+	},
+	"点击开始": {
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["点?击开始?"],
+				"roi": [227, 1064, 270, 70]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 3000,
+		"next": ["是否是主页面", "点击开始", "[JumpBack]点击跳过", "返回主页面"],
+		"timeout": 4000
+	},
+	"点击跳过":{
+		"recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"roi": [565, 0, 155, 221],
+				"template": "开屏跳过.png"
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param":{
+				"custom_action":"click_and_wait_change",
+				"custom_action_param":{}
+			}
+		},
+		"post_delay": 1000,
+        "timeout": 4000
 	}
 }

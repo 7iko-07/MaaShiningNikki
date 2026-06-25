@@ -291,7 +291,7 @@
 			"param": {
 				"custom_action": "select_same_text_after_thumb",
 				"custom_action_param": {
-					"source_roi": [618, 149, 55, 24],
+					"source_roi": [613, 150, 65, 23],
 					"thumb_roi": [491, 404, 19, 18]
 				}
 			}
@@ -573,7 +573,8 @@
 				"custom_action_param": {}
 			}
 		},
-		"next": ["点击美甲完美评价2", "[JumpBack]在接受投稿页面"],
+		"pre_delay": 500,
+		"next": ["点击美甲完美评价2", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
 		"timeout": 2000
     },
 	"点击美甲完美评价2": {
@@ -591,7 +592,8 @@
 				"custom_action_param": {}
 			}
 		},
-		"next": ["点击美甲完美评价3", "[JumpBack]在接受投稿页面"],
+		"pre_delay": 500,
+		"next": ["点击美甲完美评价3", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
 		"timeout": 2000
     },
 	"点击美甲完美评价3": {
@@ -609,7 +611,8 @@
 				"custom_action_param": {}
 			}
 		},
-		"next": ["点击美甲完美评价4", "[JumpBack]在接受投稿页面"],
+		"pre_delay": 500,
+		"next": ["点击美甲完美评价4", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
 		"timeout": 2000
     },
 	"点击美甲完美评价4": {
@@ -627,7 +630,8 @@
 				"custom_action_param": {}
 			}
 		},
-		"next": ["点击美甲完美评价5", "[JumpBack]在接受投稿页面"],
+		"pre_delay": 500,
+		"next": ["点击美甲完美评价5", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
 		"timeout": 2000
     },
 	"点击美甲完美评价5": {
@@ -645,7 +649,8 @@
 				"custom_action_param": {}
 			}
 		},
-		"next": ["点击返回点赞美甲页面", "[JumpBack]在接受投稿页面"],
+		"pre_delay": 500,
+		"next": ["点击返回点赞美甲页面", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
 		"timeout": 2000
     },
     "点击返回点赞美甲页面": {
@@ -663,7 +668,6 @@
 				"custom_action_param": {}
 			}
         },
-        "repeat": 2,
         "timeout": 5000,
         "post_delay": 1000,
 		"next": ["点击话题任务"]

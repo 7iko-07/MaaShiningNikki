@@ -21,7 +21,7 @@
             "type": "OCR",
             "param": {
                 "roi": [0, 1062, 720, 218],
-                "expected": ["开始旅程", "旅程", "设计中心", "设计", "回家"]
+                "expected": ["开?始旅程?",  "设?计中心?","回家"]
             }
         },
         "action": "DoNothing",
@@ -40,10 +40,24 @@
     },
     "导航点击返回": {
         "recognition": {
-            "type": "TemplateMatch",
-            "param": {
-                "template": "back1.png",
-                "roi": [0, 0, 379, 404]
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "template": "back1.png",
+                            "roi": [0, 0, 379, 404]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "roi": [0, 0, 216, 289],
+                            "template": "返回双手.png"
+                        }
+                    }}
+                ]
             }
         },
         "action": {
@@ -336,7 +350,7 @@
             "type": "OCR",
             "param": {
                 "roi": [0, 1062, 720, 218],
-                "expected": ["开始旅程", "旅程"]
+                "expected": ["^开?始旅程?$"]
             }
         },
         "action": {
@@ -400,7 +414,7 @@
             "type": "OCR",
             "param": {
                 "roi": [250, 621, 431, 193],
-                "expected": ["钻石竞技场", "竞技场", "竞技"]
+                "expected": ["钻?石竞技场?"]
             }
         },
         "action": {
@@ -632,17 +646,41 @@
     },
     "导航点击福利": {
         "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [606, 800, 114, 315],
-                "expected": ["福利"]
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+                        "type": "OCR",
+                        "param": {
+                            "roi": [584, 804, 136, 323],
+                            "expected": ["[福利]"]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "roi": [584, 804, 136, 323],
+                            "template": "福利.png"
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "roi": [584, 804, 136, 323],
+                            "template": "福利2.png"
+                        }
+                    }}
+                ]
             }
         },
         "action": {
-            "type": "Click",
-            "param": {}
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
         },
-        "post_wait_freezes": 2000,
+        "post_delay": 2000,
         "timeout": 2000
     },
     "导航上划菜单": {
@@ -665,12 +703,34 @@
     },
     "导航在福利页面": {
         "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [0, 118, 720, 79],
-                "expected": ["每日签到", "每日", "签到", "方舟补给", "方舟", "补给"]
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+                        "type": "OCR",
+                        "param": {
+                            "roi": [0, 96, 720, 130],
+                            "expected": ["每日签到", "每日", "签到", "方舟补给", "方舟", "补给"]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "OCR",
+                        "param": {
+                            "roi": [258, 104, 199, 17],
+                            "expected": ["BENEFITS"]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "roi": [0, 0, 720, 195],
+                            "template": "福利中心.png"
+                        }
+                    }}
+                ]
             }
         },
+        
         "action": "DoNothing",
         "timeout": 2000
     },
@@ -880,16 +940,36 @@
 		},
 		"timeout": 2000
 	},
-    "导航在设计中心页面":{
+    "导航在设计中心页面": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["美甲"],
-				"roi": [67, 1030, 120, 95]
-			}
-		},
-        "action": "DoNothing",
-        "next": []
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+                        "type": "OCR",
+                        "param": {
+                            "roi": [67, 1030, 120, 95],
+                            "expected": ["[美甲]"]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "OCR",
+                        "param": {
+                            "roi": [92, 912, 251, 63],
+                            "expected": ["时?尚编辑室?"]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "OCR",
+                        "param": {
+                            "roi": [392, 543, 276, 98],
+                            "expected": ["服装店"]
+                        }
+                    }}
+                ]
+            }
+        },
+        "action": "DoNothing"
     },
     "导航在结伴页面": {
 		"recognition": {

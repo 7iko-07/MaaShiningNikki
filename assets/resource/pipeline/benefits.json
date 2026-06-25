@@ -22,7 +22,7 @@
 			"type": "OCR",
 			"param": {
 				"roi":[0, 119, 720, 85],
-				"expected": ["每日签到","每日","签到"]
+				"expected": ["每?日签到?"]
 			}
 		},
 		"action": {

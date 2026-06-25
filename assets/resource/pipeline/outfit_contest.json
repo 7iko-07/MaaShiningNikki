@@ -41,8 +41,11 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
 		},
 		"post_delay": 2000,
 		"next": ["导航在搭配评选赛页面", "[JumpBack]点赞搭配评选赛", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],

@@ -30,6 +30,9 @@ class ArenaCompareAction(CustomAction):
         max_rounds = self._as_int(params.get("max_rounds"), 5)
         blank_clicks = self._as_int(params.get("blank_clicks"), 10)
         blank_click_delay = self._as_float(params.get("blank_click_delay"), 1.0)
+        ok_node = params.get("ok_node", "点击OK-竞技场")
+        ok_retry_limit = self._as_int(params.get("ok_retry_limit"), 3)
+        post_challenge_delay = self._as_float(params.get("post_challenge_delay"), 1.0)
 
         if not area_a or not area_b_list or not refresh_roi:
             logger.error("arena_compare: missing required params (area_a, area_b, refresh)")
@@ -59,7 +62,17 @@ class ArenaCompareAction(CustomAction):
 
         for challenge_index in range(challenge_times):
             logger.info(f"arena_compare: challenge {challenge_index + 1}/{challenge_times}")
-            found = self._challenge_once(context, controller, area_a, area_b_list, refresh_roi, max_rounds)
+            found = self._challenge_once(
+                context,
+                controller,
+                area_a,
+                area_b_list,
+                refresh_roi,
+                max_rounds,
+                ok_node,
+                ok_retry_limit,
+                post_challenge_delay,
+            )
             if not found:
                 context.override_next(argv.node_name, [])
                 return True
@@ -90,8 +103,22 @@ class ArenaCompareAction(CustomAction):
         logger.info(f"arena_compare: remaining challenge times = {remaining}")
         return remaining
 
-    def _challenge_once(self, context, controller, area_a, area_b_list, refresh_roi, max_rounds):
-        for round_num in range(max_rounds):
+    def _challenge_once(
+        self,
+        context,
+        controller,
+        area_a,
+        area_b_list,
+        refresh_roi,
+        max_rounds,
+        ok_node,
+        ok_retry_limit,
+        post_challenge_delay,
+    ):
+        round_num = 0
+        ok_retry_count = 0
+
+        while round_num < max_rounds:
             logger.info(f"arena_compare: refresh round {round_num + 1}/{max_rounds}")
 
             job = controller.post_screencap()
@@ -109,10 +136,12 @@ class ArenaCompareAction(CustomAction):
             if player_power is None:
                 logger.warning("arena_compare: failed to OCR player power, retrying")
                 time.sleep(0.5)
+                round_num += 1
                 continue
 
             logger.info(f"arena_compare: player power = {player_power}")
 
+            ok_handled = False
             for i, area_b in enumerate(area_b_list):
                 opp_power = read_ocr_number(
                     context,
@@ -129,16 +158,55 @@ class ArenaCompareAction(CustomAction):
                 if player_power > opp_power:
                     logger.info(f"arena_compare: player > opponent {i}, clicking opponent {i}")
                     self._click_opponent(controller, area_b)
+                    if self._handle_optional_ok_popup(context, controller, ok_node, post_challenge_delay):
+                        ok_retry_count += 1
+                        ok_handled = True
+                        if ok_retry_count > ok_retry_limit:
+                            logger.warning(
+                                f"arena_compare: OK popup appeared more than {ok_retry_limit} times"
+                            )
+                            return False
+                        logger.info("arena_compare: OK popup handled, retrying power recognition")
+                        time.sleep(0.5)
+                        break
                     return True
+
+            if ok_handled:
+                continue
 
             if round_num < max_rounds - 1:
                 logger.info("arena_compare: all opponents stronger, clicking refresh")
                 self._click_roi(controller, refresh_roi)
                 time.sleep(3)
+                round_num += 1
             else:
                 logger.warning(f"arena_compare: no weaker opponent after {max_rounds} rounds")
+                return False
 
         return False
+
+    def _handle_optional_ok_popup(self, context, controller, ok_node, delay):
+        if delay > 0:
+            time.sleep(delay)
+
+        try:
+            job = controller.post_screencap()
+            job.wait()
+            detail = context.run_recognition(ok_node, controller.cached_image)
+            if not (detail and getattr(detail, "hit", False)):
+                return False
+
+            result = context.run_task(ok_node)
+            if result is None:
+                return False
+            success = getattr(result, "success", None)
+            handled = True if success is None else bool(success)
+            if handled:
+                logger.info(f"arena_compare: handled popup by task {ok_node!r}")
+            return handled
+        except Exception as e:
+            logger.warning(f"arena_compare: optional OK popup task {ok_node!r} failed: {e}")
+            return False
 
     def _click_opponent(self, controller, roi):
         x, y, w, h = roi

@@ -205,16 +205,9 @@
 			"param": {}
 		},
 		"post_delay": 10000,
-		"next": ["[JumpBack]点击OK-竞技场", "[JumpBack]在加载页面", "竞技场等待"],
+		"next": ["[JumpBack]点击OK-竞技场", "[JumpBack]在加载页面", "竞技场战力对比"],
 		"timeout": 2000
     },
-	"竞技场等待":{
-		"recognition": "DirectHit",
-		"action": "DoNothing",
-		"post_delay": 10000,
-		"next": ["[JumpBack]点击OK-竞技场", "竞技场战力对比"],
-		"timeout": 3000
-	},
     "竞技场战力对比": {
         "recognition": {
 			"type": "OCR",

@@ -22,7 +22,7 @@
 			"type": "OCR",
 			"param": {
 				"roi": [0, 190, 129, 61],
-				"expected": ["织吻为拥"]
+				"expected": ["少女的咏唱"]
 			}
 		},
 		"action": {
@@ -33,15 +33,30 @@
             }
 		},
 		"post_wait_freezes": 30000,
-		"next": ["点击活动剧情名称"],
+		"next": ["点击活动页面-空白"],
 		"timeout": 2000
     },
+	"点击活动页面-空白":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [594, 25, 21, 14]
+            }
+		},
+		"repeat": 2,
+		"repeat_delay": 500,
+		"next": ["点击活动剧情名称"]
+	},
 	"点击活动剧情名称": {
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["宾客","入席"],
-				"roi": [537, 1020, 132, 123]
+				"expected": ["演出","舞台"],
+				"roi": [512, 912, 208, 134]
 			}
 		},
 		"action": {

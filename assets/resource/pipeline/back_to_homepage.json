@@ -1,23 +1,25 @@
 {
     "是否是主页面": {
         "recognition": {
-            "type": "And",
+            "type": "Or",
             "param":{
-                "all_of": [
+                "any_of": [
                     {"recognition": {
                         "type": "TemplateMatch",
                         "param": {
                             "template": [
-                                "活动一览按钮.png"
+                                "活动.png"
                             ],
-                            "roi": [12, 837, 85, 108]
+                            "roi": [3, 249, 133, 569]
                         }
                     }},
                     {"recognition": {
-                        "type": "OCR",
+                        "type": "TemplateMatch",
                         "param": {
-                            "roi": [1, 145, 119, 669],
-                            "expected": ["心之"]
+                            "template": [
+                                "心之门.png"
+                            ],
+                            "roi": [3, 249, 133, 569]
                         }
                     }}
                 ]
@@ -79,7 +81,10 @@
 			"[JumpBack]点击返回",
             "[JumpBack]点击体力用尽确定",
             "[JumpBack]点击主页空白区域",
-            "[JumpBack]点击OK-竞技场"
+            "[JumpBack]点击OK-竞技场",
+            "[JumpBack]在加载页面",
+            "[JumpBack]在接受投稿页面",
+            "[JumpBack]导航在空白页面"
 		]
     }
 }

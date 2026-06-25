@@ -91,7 +91,25 @@
 		},
         "post_delay": 1000,
 		"timeout": 2000,
-        "next": ["在调查页面", "[JumpBack]点击返回"]
+        "next": ["点击前往下一轮调查","在调查页面", "[JumpBack]点击返回"]
+    },
+    "点击前往下一轮调查":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["[确定]"],
+				"roi": [110, 537, 505, 222]
+			}
+		},
+        "action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
+		},
+        "next": ["点击托管调查"],
+        "timeout": 3000
     },
     "在调查页面":{
         "recognition": {
