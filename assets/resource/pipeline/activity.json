@@ -49,7 +49,232 @@
 		},
 		"repeat": 2,
 		"repeat_delay": 500,
+		"next": ["点击挑战关卡","点击活动剧情名称"]
+	},
+	"点击挑战关卡":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [38, 822, 173, 63],
+				"expected": ["[挑战]"]
+			}
+		},
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
+		},
+		"enabled": false,
+		"post_delay": 1000,
+		"next": ["识别挑战是否做完了","点击挑战关卡-挑战x次","点击开始挑战"],
+		"timeout": 2000
+	},
+	"识别挑战是否做完了":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["0/5"],
+                "roi": [0, 1226, 297, 54]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+			"param": {}
+        },
+        "timeout": 5000,
+        "post_delay": 1000,
+		"next": ["点击返回活动页面"]
+	},
+	"点击返回活动页面":{
+		"recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+        },
+        "timeout": 5000,
+        "post_delay": 1000,
 		"next": ["点击活动剧情名称"]
+	},
+	"点击开始挑战":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [439, 1109, 281, 171],
+				"expected": ["开始挑战"]
+			}
+		},
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击挑战关卡-难度一-推荐搭配"],
+		"timeout": 2000
+	},
+	"点击挑战关卡-难度一-推荐搭配":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [439, 1109, 281, 171],
+				"expected": ["推荐搭配"]
+			}
+		},
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{
+					"compare_roi": [212, 258, 300, 754]
+				}
+            }
+		},
+		"post_delay": 1000,
+		"next": ["点击挑战关卡-难度一-代理评选"],
+		"timeout": 2000
+	},
+	"点击挑战关卡-难度一-代理评选":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 1034, 276, 246],
+				"expected": ["代理评选", "理评"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击挑战关卡-难度一-下一步"],
+		"timeout": 2000
+	},
+	"点击挑战关卡-难度一-下一步":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 1034, 276, 246],
+				"expected": ["下一步"]
+			}
+		},
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{
+					"compare_roi": [0, 243, 720, 931]
+				}
+            }
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击挑战关卡-难度一-确定影召"],
+		"timeout": 2000
+	},
+	"点击挑战关卡-难度一-确定影召":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 946, 720, 334],
+				"expected": ["确定"]
+			}
+		},
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击挑战关卡-难度一-跳过"],
+		"timeout": 2000
+	},
+	"点击挑战关卡-难度一-跳过":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 49, 309, 169],
+				"expected": ["跳过"]
+			}
+		},
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
+		},
+		"post_delay": 1000,
+		"next": ["点击挑战关卡-难度一-完成空白"],
+		"timeout": 2000
+	},
+	"点击挑战关卡-难度一-完成空白":{
+		"recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+                "target": [589, 39, 24, 15]
+            }
+		},
+		"post_delay": 1000,
+		"next": ["点击挑战关卡-挑战x次","点击开始挑战"],
+		"timeout": 2000,
+        "repeat": 3,
+        "repeat_delay": 2000
+	},
+	"点击挑战关卡-挑战x次":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["挑战.次"],
+				"roi": [0, 1135, 444, 145],
+				"order_by": "Horizontal",
+				"index": -1
+			}
+		},
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
+		},
+		"post_delay": 1000,
+		"next": ["点击挑战关卡-挑战x次-空白"],
+		"timeout": 2000
+	},
+	"点击挑战关卡-挑战x次-空白":{
+		"recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+                "target": [589, 39, 24, 15]
+            }
+		},
+		"post_delay": 1000,
+		"timeout": 2000,
+        "repeat": 2,
+        "repeat_delay": 500,
+		"next": ["点击返回活动页面"]
 	},
 	"点击活动剧情名称": {
         "recognition": {
@@ -66,6 +291,7 @@
                 "custom_action_param":{}
             }
 		},
+		"enabled": false,
 		"post_wait_freezes": 500,
 		"next": ["点击活动剧情"],
 		"timeout": 2000

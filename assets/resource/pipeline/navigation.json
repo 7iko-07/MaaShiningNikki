@@ -931,7 +931,8 @@
 			"type": "TemplateMatch",
 			"param": {
 				"template": "联盟眼睛.png",
-                "roi": [14, 333, 284, 225]
+                "roi": [14, 333, 284, 225],
+                "threshold": 0.9
 			}
 		},
 		"action": {
@@ -1003,6 +1004,36 @@
                 "roi": [304, 51, 111, 54]
             }
 		},
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击心阶": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [106, 1030, 270, 89],
+                "expected": ["忆?海心阶?"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
+        },
+        "next": ["导航在心阶页面"],
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航在心阶页面": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [326, 310, 86, 88],
+                "template": "心阶.png"
+            }
+        },
         "action": "DoNothing",
         "timeout": 2000
     }

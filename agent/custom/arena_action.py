@@ -33,6 +33,8 @@ class ArenaCompareAction(CustomAction):
         ok_node = params.get("ok_node", "点击OK-竞技场")
         ok_retry_limit = self._as_int(params.get("ok_retry_limit"), 3)
         post_challenge_delay = self._as_float(params.get("post_challenge_delay"), 1.0)
+        player_power_retry = self._as_int(params.get("player_power_retry"), 5)
+        player_power_retry_delay = self._as_float(params.get("player_power_retry_delay"), 1.5)
 
         if not area_a or not area_b_list or not refresh_roi:
             logger.error("arena_compare: missing required params (area_a, area_b, refresh)")
@@ -72,13 +74,14 @@ class ArenaCompareAction(CustomAction):
                 ok_node,
                 ok_retry_limit,
                 post_challenge_delay,
+                player_power_retry,
+                player_power_retry_delay,
             )
             if not found:
                 context.override_next(argv.node_name, [])
                 return True
 
-            if challenge_index < challenge_times - 1:
-                self._click_roi_repeated(controller, blank_roi, blank_clicks, blank_click_delay)
+            self._click_roi_repeated(controller, blank_roi, blank_clicks, blank_click_delay)
 
         return True
 
@@ -114,6 +117,8 @@ class ArenaCompareAction(CustomAction):
         ok_node,
         ok_retry_limit,
         post_challenge_delay,
+        player_power_retry,
+        player_power_retry_delay,
     ):
         round_num = 0
         ok_retry_count = 0
@@ -121,23 +126,16 @@ class ArenaCompareAction(CustomAction):
         while round_num < max_rounds:
             logger.info(f"arena_compare: refresh round {round_num + 1}/{max_rounds}")
 
-            job = controller.post_screencap()
-            job.wait()
-            img = controller.cached_image
-
-            player_power = read_ocr_number(
+            player_power, img = self._read_player_power(
                 context,
-                img,
-                "_arena_ocr",
+                controller,
                 area_a,
-                [r"\d[\d,]*"],
-                "arena_compare",
+                player_power_retry,
+                player_power_retry_delay,
             )
             if player_power is None:
-                logger.warning("arena_compare: failed to OCR player power, retrying")
-                time.sleep(0.5)
-                round_num += 1
-                continue
+                logger.warning("arena_compare: failed to OCR player power after retries")
+                return False
 
             logger.info(f"arena_compare: player power = {player_power}")
 
@@ -167,7 +165,7 @@ class ArenaCompareAction(CustomAction):
                             )
                             return False
                         logger.info("arena_compare: OK popup handled, retrying power recognition")
-                        time.sleep(0.5)
+                        time.sleep(player_power_retry_delay)
                         break
                     return True
 
@@ -184,6 +182,42 @@ class ArenaCompareAction(CustomAction):
                 return False
 
         return False
+
+    def _read_player_power(
+        self,
+        context,
+        controller,
+        area_a,
+        retry,
+        retry_delay,
+    ):
+        retry = max(1, retry)
+        last_img = None
+
+        for attempt in range(retry):
+            job = controller.post_screencap()
+            job.wait()
+            last_img = controller.cached_image
+
+            player_power = read_ocr_number(
+                context,
+                last_img,
+                "_arena_ocr",
+                area_a,
+                [r"\d[\d,]*"],
+                "arena_compare",
+            )
+            if player_power is not None:
+                return player_power, last_img
+
+            if attempt < retry - 1:
+                logger.warning(
+                    f"arena_compare: failed to OCR player power on "
+                    f"attempt {attempt + 1}/{retry}"
+                )
+                time.sleep(retry_delay)
+
+        return None, last_img
 
     def _handle_optional_ok_popup(self, context, controller, ok_node, delay):
         if delay > 0:

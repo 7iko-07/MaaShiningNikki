@@ -544,7 +544,7 @@
 			"type": "OCR",
 			"param": {
 				"roi": [392, 1092, 173, 162],
-				"expected": ["浏览点赞"]
+				"expected": ["[JumpBack]在加载页面","浏览点赞"]
 			}
 		},
 		"action": {

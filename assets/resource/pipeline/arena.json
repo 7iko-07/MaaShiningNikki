@@ -14,9 +14,30 @@
                 }
             }
         },
-        "next": ["点击竞技场空白", "[JumpBack]在加载页面"],
+        "next": ["新赛季确定","点击竞技场空白"],
         "timeout": 30000
     },
+	"新赛季确定":{
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["新赛季开始", "新赛季"],
+				"roi": [107, 429, 509, 388]
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target":[286, 741, 138, 52]
+				}
+			}
+		},
+		"post_delay": 2000,
+		"next": ["点击竞技场空白"],
+		"timeout": 2000
+	},
 	"点击竞技场空白":{
 		"recognition": "DirectHit",
         "action": {
@@ -231,14 +252,25 @@
                     "max_rounds": 5,
                     "剩余次数": [473, 1100, 202, 32],
                     "空白区域": [534, 114, 17, 10],
-                    "blank_clicks": 10,
                     "blank_click_delay": 1.0
                 }
             }
         },
-        "next": ["stop"],
+        "next": ["[JumpBack]在加载页面","点击空白-竞技场挑战之后"],
         "timeout": 300000
     },
+	"点击空白-竞技场挑战之后":{
+		"recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param": {
+                "target":[157, 116, 123, 70]
+            }
+        },
+		"repeat": 3,
+		"repeat_delay": 1000,
+        "timeout": 30000
+	},
 	"点击OK-竞技场":{
 		"recognition": {
 			"type": "OCR",
@@ -251,6 +283,19 @@
             "type": "Click",
             "param": {}
         },
-        "timeout": 3000
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击OK-竞技场-空白"]
+	},
+	"点击OK-竞技场-空白":{
+		"recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param": {
+                "target":[157, 116, 123, 70]
+            }
+        },
+		"repeat": 3,
+		"repeat_delay": 1000,
+        "timeout": 30000
 	}
 }
