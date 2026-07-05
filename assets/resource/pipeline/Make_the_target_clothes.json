@@ -89,11 +89,15 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {"target_offset": [339, -16, -23, -6]}
+			"type": "Custom",
+			"param": {
+                "custom_action":"click_and_wait_change",
+                "custom_action_param":{},
+                "target_offset": [339, -16, -23, -6]
+            }
 		},
 		"post_delay": 2000,
-		"next": ["计算并挑战时空回廊制衣材料"],
+		"next": ["在加载页面", "计算并挑战时空回廊制衣材料"],
 		"timeout": 2000
     },
     "计算并挑战时空回廊制衣材料": {

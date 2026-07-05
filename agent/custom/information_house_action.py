@@ -16,7 +16,7 @@ class InformationHouseAutoInvestigateAction(CustomAction):
     ) -> bool:
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
 
-        stamina_roi = params.get("stamina_roi", [73, 64, 146, 40])
+        stamina_roi = params.get("stamina_roi", [0, 0, 215, 49])
         add_button_roi = params.get("add_button_roi", [581, 604, 33, 33])
         cost_roi = params.get("cost_roi", [496, 838, 92, 35])
         minus_button_roi = params.get("minus_button_roi", params.get("confirm_button_roi", [350, 606, 35, 28]))
@@ -24,7 +24,8 @@ class InformationHouseAutoInvestigateAction(CustomAction):
 
         max_adjust = self._as_int(params.get("max_adjust"), 8)
         retry = self._as_int(params.get("retry"), 3)
-        retry_delay = self._as_float(params.get("retry_delay"), 0.5)
+        retry_delay = self._as_float(params.get("retry_delay"), 1.0)
+        load_delay = self._as_float(params.get("load_delay"), 1.5)
         click_delay = self._as_float(params.get("click_delay"), 0.8)
         initial_count = self._as_int(params.get("initial_count"), 2)
         challenge_times = self._as_int(params.get("challenge_times"), 0)
@@ -34,12 +35,16 @@ class InformationHouseAutoInvestigateAction(CustomAction):
             return False
 
         controller = context.tasker.controller
+        if load_delay > 0:
+            logger.info(f"information_house_auto_investigate: waiting {load_delay:.1f}s for page load")
+            time.sleep(load_delay)
+
         stamina = read_number_from_controller(
             context,
             controller,
             stamina_roi,
             "_information_house_ocr",
-            [r"\d+\s*/"],
+            [r"\d+\s*/", r"\d+"],
             retry=retry,
             retry_delay=retry_delay,
             log_prefix="information_house_auto_investigate",

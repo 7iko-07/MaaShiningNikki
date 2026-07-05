@@ -34,7 +34,8 @@ class MakeTargetClothesChallengeAction(CustomAction):
         stamina_cost = self._as_int(params.get("stamina_cost"), 5)
         max_multi = self._as_int(params.get("max_multi"), 10)
         retry = self._as_int(params.get("retry"), 3)
-        retry_delay = self._as_float(params.get("retry_delay"), 0.5)
+        load_delay = self._as_float(params.get("load_delay"), 3.0)
+        retry_delay = self._as_float(params.get("retry_delay"), 1.5)
         click_delay = self._as_float(params.get("click_delay"), 1.2)
         popup_close_roi = params.get("popup_close_roi", [221, 137, 137, 78])
         popup_close_delay = self._as_float(params.get("popup_close_delay"), 2.0)
@@ -46,6 +47,10 @@ class MakeTargetClothesChallengeAction(CustomAction):
         controller = context.tasker.controller
         challenge_count = None
         stamina = None
+
+        if load_delay > 0:
+            logger.info(f"make_target_clothes_challenge: waiting {load_delay:.1f}s for page load")
+            time.sleep(load_delay)
 
         for attempt in range(retry):
             controller.post_screencap().wait()
@@ -75,7 +80,8 @@ class MakeTargetClothesChallengeAction(CustomAction):
                 "make_target_clothes_challenge: OCR failed on attempt "
                 f"{attempt + 1}/{retry}, challenge_count={challenge_count}, stamina={stamina}"
             )
-            time.sleep(retry_delay)
+            if attempt < retry - 1 and retry_delay > 0:
+                time.sleep(retry_delay)
 
         if challenge_count is None:
             logger.error("make_target_clothes_challenge: failed to OCR challenge count")

@@ -145,15 +145,7 @@
             "type": "Custom",
             "param": {
                 "custom_action": "information_house_auto_investigate",
-                "custom_action_param": {
-                    "stamina_roi": [0, 0, 215, 49],
-                    "add_button_roi": [585, 594, 24, 18],
-                    "cost_roi": [493, 818, 96, 47],
-                    "minus_button_roi": [355, 597, 19, 15],
-                    "start_button_roi": [410, 756, 135, 45],
-                    "challenge_times": 0,
-                    "max_adjust": 8
-                }
+                "custom_action_param": {}
             }
         },
         "timeout": 30000
