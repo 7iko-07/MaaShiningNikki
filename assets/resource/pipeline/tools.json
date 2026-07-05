@@ -138,20 +138,45 @@
         "timeout": 1000
     },
     "在加载页面":{
-		"recognition": {
-			"type": "ColorMatch",
-			"param":{
-				"roi": [0, 1191, 138, 53],
-				"upper": [255, 228, 172],
-				"lower": [253, 197, 102],
-				"count": 1000,
-                "connected": true
-			}
-		},
-		"action": "DoNothing",
+        "recognition": {
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+                        "type": "ColorMatch",
+			            "param":{
+                            "roi": [0, 1191, 138, 53],
+                            "upper": [255, 228, 172],
+                            "lower": [253, 197, 102],
+                            "count": 1000,
+                            "connected": true
+                    }
+                    }},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "template": [
+                                "挑战加载页面.png"
+                            ],
+                            "roi": [5, 26, 715, 507]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "template": [
+                                "加载中.png"
+                            ],
+                            "roi": [310, 592, 101, 98]
+                        }
+                    }}
+                ]
+            }
+        },
+        "action": "DoNothing",
 		"post_delay": 1000,
         "timeout": 1000
-	},
+        },
     "在接受投稿页面":{
 		"recognition": {
 			"type": "OCR",

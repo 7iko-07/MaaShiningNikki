@@ -22,11 +22,12 @@ class InformationHouseAutoInvestigateAction(CustomAction):
         minus_button_roi = params.get("minus_button_roi", params.get("confirm_button_roi", [350, 606, 35, 28]))
         start_button_roi = params.get("start_button_roi", [418, 777, 125, 40])
 
-        cost_map = self._build_cost_map(params.get("cost_map"))
         max_adjust = self._as_int(params.get("max_adjust"), 8)
         retry = self._as_int(params.get("retry"), 3)
         retry_delay = self._as_float(params.get("retry_delay"), 0.5)
         click_delay = self._as_float(params.get("click_delay"), 0.8)
+        initial_count = self._as_int(params.get("initial_count"), 2)
+        challenge_times = self._as_int(params.get("challenge_times"), 0)
 
         if not all(self._valid_roi(roi) for roi in (stamina_roi, add_button_roi, cost_roi, minus_button_roi, start_button_roi)):
             logger.error("information_house_auto_investigate: invalid roi param")
@@ -49,121 +50,249 @@ class InformationHouseAutoInvestigateAction(CustomAction):
             return False
 
         logger.info(f"information_house_auto_investigate: stamina={stamina}")
-        target_clicks = self._target_clicks_for_stamina(stamina, cost_map)
-        if target_clicks is None:
+        cost = self._read_cost(
+            context,
+            controller,
+            cost_roi,
+            retry,
+            retry_delay,
+        )
+        if cost is None:
+            logger.error("information_house_auto_investigate: failed to read initial cost")
+            return False
+
+        if cost > stamina:
             logger.info(
-                "information_house_auto_investigate: stamina is not enough for any cost, "
-                f"stamina={stamina}, min_cost={min(cost_map.values())}"
+                "information_house_auto_investigate: stamina is not enough for current cost, "
+                f"stamina={stamina}, cost={cost}"
             )
             return True
 
-        target_cost = cost_map[target_clicks]
-        logger.info(
-            "information_house_auto_investigate: "
-            f"target_clicks={target_clicks}, target_cost={target_cost}"
-        )
-
-        for _ in range(target_clicks):
-            self._click_roi(controller, add_button_roi)
-            time.sleep(click_delay)
-
-        if not self._adjust_to_target_cost(
-            context,
-            controller,
-            cost_roi=cost_roi,
-            add_button_roi=add_button_roi,
-            minus_button_roi=minus_button_roi,
-            target_cost=target_cost,
-            retry=retry,
-            retry_delay=retry_delay,
-            click_delay=click_delay,
-            max_adjust=max_adjust,
-        ):
+        if challenge_times > 0:
+            target_cost = self._increase_to_target_count(
+                context,
+                controller,
+                cost_roi,
+                add_button_roi,
+                minus_button_roi,
+                stamina,
+                cost,
+                retry,
+                retry_delay,
+                click_delay,
+                initial_count,
+                challenge_times,
+                max_adjust,
+            )
+        else:
+            target_cost = self._increase_to_affordable_max(
+                context,
+                controller,
+                cost_roi,
+                add_button_roi,
+                minus_button_roi,
+                stamina,
+                cost,
+                retry,
+                retry_delay,
+                click_delay,
+                max_adjust,
+            )
+        if target_cost is None:
             return False
 
+        logger.info(
+            "information_house_auto_investigate: "
+            f"start investigate, stamina={stamina}, target_cost={target_cost}"
+        )
         self._click_roi(controller, start_button_roi)
         return True
 
-    def _build_cost_map(self, cost_map):
-        default_cost_map = {
-            0: 20,
-            1: 32,
-            2: 44,
-            3: 59,
-            4: 74,
-            5: 92,
-            6: 110,
-            7: 135,
-            8: 160,
-        }
-        if not isinstance(cost_map, dict):
-            return default_cost_map
-
-        normalized = {}
-        for clicks, cost in cost_map.items():
-            try:
-                normalized[int(clicks)] = int(cost)
-            except (TypeError, ValueError):
-                logger.warning(
-                    "information_house_auto_investigate: invalid cost_map item, "
-                    f"clicks={clicks!r}, cost={cost!r}"
-                )
-
-        return normalized or default_cost_map
-
-    def _target_clicks_for_stamina(self, stamina, cost_map):
-        candidates = [clicks for clicks, cost in cost_map.items() if cost <= stamina]
-        if not candidates:
-            return None
-        return max(candidates)
-
-    def _adjust_to_target_cost(
+    def _increase_to_target_count(
         self,
         context,
         controller,
         cost_roi,
         add_button_roi,
         minus_button_roi,
-        target_cost,
+        stamina,
+        current_cost,
+        retry,
+        retry_delay,
+        click_delay,
+        initial_count,
+        challenge_times,
+        max_adjust,
+    ):
+        target_count = max(initial_count, challenge_times)
+        add_count = min(max(0, target_count - initial_count), max(0, max_adjust))
+
+        logger.info(
+            "information_house_auto_investigate: "
+            f"initial_count={initial_count}, challenge_times={challenge_times}, add_count={add_count}"
+        )
+
+        for attempt in range(add_count):
+            logger.info(
+                "information_house_auto_investigate: "
+                f"target_increase_attempt={attempt + 1}/{add_count}, current_cost={current_cost}, stamina={stamina}"
+            )
+
+            self._click_roi(controller, add_button_roi)
+            time.sleep(click_delay)
+
+            next_cost = self._read_cost(
+                context,
+                controller,
+                cost_roi,
+                retry,
+                retry_delay,
+            )
+            if next_cost is None:
+                logger.error("information_house_auto_investigate: failed to read cost after target add")
+                return None
+
+            logger.info(
+                "information_house_auto_investigate: "
+                f"target_cost_after_add={next_cost}, previous_cost={current_cost}, stamina={stamina}"
+            )
+            if next_cost == current_cost:
+                logger.info("information_house_auto_investigate: add did not change cost before target count")
+                return current_cost
+
+            if next_cost > stamina:
+                logger.info(
+                    "information_house_auto_investigate: target cost exceeds stamina after add, "
+                    f"cost={next_cost}, stamina={stamina}, rollback_cost={current_cost}"
+                )
+                self._click_roi(controller, minus_button_roi)
+                time.sleep(click_delay)
+
+                rollback_cost = self._read_cost(
+                    context,
+                    controller,
+                    cost_roi,
+                    retry,
+                    retry_delay,
+                )
+                if rollback_cost is None:
+                    logger.error("information_house_auto_investigate: failed to read cost after target rollback")
+                    return None
+
+                if rollback_cost != current_cost:
+                    logger.warning(
+                        "information_house_auto_investigate: target rollback cost is different from expected, "
+                        f"rollback_cost={rollback_cost}, expected={current_cost}"
+                    )
+                    if rollback_cost > stamina:
+                        return None
+                    return rollback_cost
+
+                return current_cost
+
+            current_cost = next_cost
+
+        return current_cost
+
+    def _increase_to_affordable_max(
+        self,
+        context,
+        controller,
+        cost_roi,
+        add_button_roi,
+        minus_button_roi,
+        stamina,
+        current_cost,
         retry,
         retry_delay,
         click_delay,
         max_adjust,
     ):
-        for attempt in range(max(0, max_adjust) + 1):
-            cost = read_number_from_controller(
+        for attempt in range(max(0, max_adjust)):
+            logger.info(
+                "information_house_auto_investigate: "
+                f"increase_attempt={attempt + 1}, current_cost={current_cost}, stamina={stamina}"
+            )
+
+            self._click_roi(controller, add_button_roi)
+            time.sleep(click_delay)
+
+            next_cost = self._read_cost(
                 context,
                 controller,
                 cost_roi,
-                "_information_house_ocr",
-                [r"\d+"],
-                retry=retry,
-                retry_delay=retry_delay,
-                log_prefix="information_house_auto_investigate",
-                retry_label="number",
+                retry,
+                retry_delay,
             )
-            if cost is None:
-                logger.error("information_house_auto_investigate: failed to verify cost before start")
-                return False
+            if next_cost is None:
+                logger.error("information_house_auto_investigate: failed to read cost after add")
+                return None
 
             logger.info(
                 "information_house_auto_investigate: "
-                f"adjust_attempt={attempt}, current_cost={cost}, target_cost={target_cost}"
+                f"cost_after_add={next_cost}, previous_cost={current_cost}, stamina={stamina}"
             )
-            if cost == target_cost:
-                return True
+            if next_cost == current_cost:
+                logger.info("information_house_auto_investigate: add did not change cost, already max count")
+                return current_cost
 
-            if attempt >= max_adjust:
-                break
+            if next_cost > stamina:
+                logger.info(
+                    "information_house_auto_investigate: cost exceeds stamina after add, "
+                    f"cost={next_cost}, stamina={stamina}, rollback_cost={current_cost}"
+                )
+                self._click_roi(controller, minus_button_roi)
+                time.sleep(click_delay)
 
-            self._click_roi(controller, add_button_roi if cost < target_cost else minus_button_roi)
-            time.sleep(click_delay)
+                rollback_cost = self._read_cost(
+                    context,
+                    controller,
+                    cost_roi,
+                    retry,
+                    retry_delay,
+                )
+                if rollback_cost is None:
+                    logger.error("information_house_auto_investigate: failed to read cost after rollback")
+                    return None
 
-        logger.error(
-            "information_house_auto_investigate: failed to adjust cost to target, "
-            f"target_cost={target_cost}"
+                if rollback_cost != current_cost:
+                    logger.warning(
+                        "information_house_auto_investigate: rollback cost is different from expected, "
+                        f"rollback_cost={rollback_cost}, expected={current_cost}"
+                    )
+                    if rollback_cost > stamina:
+                        return None
+                    return rollback_cost
+
+                return current_cost
+
+            current_cost = next_cost
+
+        logger.info(
+            "information_house_auto_investigate: reached max_adjust while increasing, "
+            f"cost={current_cost}, max_adjust={max_adjust}"
         )
-        return False
+        return current_cost
+
+    def _read_cost(
+        self,
+        context,
+        controller,
+        cost_roi,
+        retry,
+        retry_delay,
+    ):
+        return read_number_from_controller(
+            context,
+            controller,
+            cost_roi,
+            "_information_house_ocr",
+            [r"\d+"],
+            retry=retry,
+            retry_delay=retry_delay,
+            log_prefix="information_house_auto_investigate",
+            retry_label="cost",
+        )
 
     def _click_roi(self, controller, roi):
         x, y, w, h = roi

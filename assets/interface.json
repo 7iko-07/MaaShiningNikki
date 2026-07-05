@@ -6,7 +6,7 @@
     "license": "MIT",
     "welcome": "首次使用！欢迎使用 闪现吧暖暖!",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "title": "闪现吧暖暖",
     "icon": "logo.ico",
     "mirrorchyan_multiplatform":false,
@@ -32,36 +32,50 @@
             ]
         }
     ],
+    "group": [
+        {
+            "name": "日常任务"
+        },
+        {
+            "name": "周常任务"
+        }
+    ],
     "task": [
         {
             "name": "start",
             "entry": "启动闪暖",
-            "description": "启动闪耀暖暖app，登录并进入游戏，游戏卡顿会导致持续时间较长。"
+            "description": "启动闪耀暖暖app，登录并进入游戏，游戏卡顿会导致持续时间较长。",
+            "group": ["日常任务"]
         },
         {
             "name": "好友",
             "entry": "好友任务链入口",
-            "description": "好友一键送心\n\n联盟一键送心\n\n体力一键领取"
+            "description": "好友一键送心\n\n联盟一键送心\n\n体力一键领取",
+            "group": ["日常任务"]
         },
         {
             "name": "联盟",
             "entry": "联盟任务链入口",
-            "description": "机密任务执行五次\n\n联盟捐献金币五次\n\n联盟福利一键领取"
+            "description": "机密任务执行五次\n\n联盟捐献金币五次\n\n联盟福利一键领取",
+            "group": ["日常任务"]
         },
         {
             "name": "邮件",
             "entry": "邮件任务链入口",
-            "description": "邮件奖励一键领取"
+            "description": "邮件奖励一键领取",
+            "group": ["日常任务"]
         },
         {
             "name": "福利",
             "entry": "福利任务链入口",
-            "description": "每日签到\n\n补签领取\n\n免费体力补给领取"
+            "description": "每日签到\n\n补签领取\n\n免费体力补给领取",
+            "group": ["日常任务"]
         },
         {
             "name": "结伴",
             "entry": "体力任务链入口",
-            "description": "时光钟表铺\n\n不落的帷幕\n\n印象旅航"
+            "description": "时光钟表铺\n\n不落的帷幕\n\n印象旅航",
+            "group": ["日常任务"]
         },
         {
             "name": "美甲",
@@ -69,17 +83,23 @@
             "entry": "美甲任务链入口",
             "option": [
                 "美甲特约顾客任务"
-            ]
+            ],
+            "group": ["日常任务"]
         },
         {
             "name": "制作目标服装",
             "description":  "目前只获取制衣引导的衣服的时空回廊材料\n\n必须依次设定目标，会从前往后做，遇到空会停",
-            "entry": "制作目标服装任务链入口"
+            "entry": "制作目标服装任务链入口",
+            "group": ["日常任务"]
         },
         {
             "name": "情报屋-左一",
             "description":  "只获取左一情报",
-            "entry": "情报屋任务链入口"
+            "entry": "情报屋任务链入口",
+            "option": [
+                "情报屋挑战次数"
+            ],
+            "group": ["日常任务"]
         },
         {
             "name": "回家",
@@ -87,7 +107,8 @@
             "option": [
                 "自习室是否离开"
             ],
-            "description": "采购三次番茄炒蛋\n\n采购五次金币小物\n\n自习室好感度获取"
+            "description": "采购三次番茄炒蛋\n\n采购五次金币小物\n\n自习室好感度获取",
+            "group": ["日常任务"]
         },
         {
             "name": "竞技场",
@@ -96,23 +117,30 @@
                 "竞技场刷新次数",
                 "竞技场是否搭配服装"
             ],
-            "description": "会对比当前批次，从左到右进行，玩家战力大于对方则自动挑战"
+            "description": "会对比当前批次，从左到右进行，玩家战力大于对方则自动挑战",
+            "group": ["日常任务"]
         },
         {
             "name": "搭配评选赛",
             "entry": "搭配评选赛任务链入口",
-            "description": "搭配评选赛点赞"
+            "description": "搭配评选赛点赞",
+            "group": ["日常任务"]
         },
         {
             "name": "一键领取",
             "entry": "一键领取任务链入口",
-            "description": "一键领取活跃任务\n\n一键领取时尚任务\n\n一键领取时尚提升计划"
+            "description": "一键领取活跃任务\n\n一键领取时尚任务\n\n一键领取时尚提升计划",
+            "group": ["日常任务"]
         },
         {
             "name": "少女的咏唱剧情",
             "entry": "活动任务链入口",
             "default_check": false,
-            "description": "##[color:red][b]默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！[/b][/color]"
+            "description": "##[color:red][b]默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！[/b][/color]",
+            "option": [
+                "活动"
+            ],
+            "group": ["日常任务"]
         },
         {
             "name": "回忆小铺",
@@ -120,10 +148,34 @@
             "entry": "回忆小铺任务链入口",
             "option": [
                 "回忆小铺设置"
-            ]
+            ],
+            "group": ["日常任务"]
         }
     ],
     "option": {
+        "活动":{
+            "type": "checkbox",
+            "description": "",
+            "default_case": ["挑战关卡"],
+            "cases": [
+                {
+                    "name": "挑战关卡",
+                    "pipeline_override": {
+                        "点击挑战关卡":{
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "活动剧情",
+                    "pipeline_override": {
+                        "点击活动剧情名称":{
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
         "美甲特约顾客任务":{
             "type": "switch",
             "description": "开启时美甲任务必须也开启，完成特约顾客三个手指，\n\n###**如果三个手指加起来达不到完美就会死循环，建议有一定美甲积累再做**",
@@ -173,7 +225,6 @@
                                 "max_rounds": 5,
                                 "剩余次数": [473, 1100, 202, 32],
                                 "空白区域": [534, 114, 17, 10],
-                                "blank_clicks": 10,
                                 "blank_click_delay": 1.0
                             }
                         }
@@ -268,6 +319,33 @@
                                 "continue_refresh_when_not_free": "{continue_refresh_when_not_free}",
                                 "diamond_discount_threshold": "{diamond_discount_threshold}",
                                 "diamond_price_threshold": "{diamond_price_threshold}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "情报屋挑战次数": {
+            "type": "input",
+            "label": "情报屋挑战次数",
+            "description": "配置本次托管调查的挑战次数。输入0时按原逻辑根据体力挑战最大次数；初始次数为2次，输入2时不会点击加号。",
+            "inputs": [
+                {
+                    "name": "challenge_times",
+                    "label": "挑战次数",
+                    "description": "请输入0或2-10之间的整数。0表示按体力自动挑战最大次数；情报屋默认初始为2次，每增加1次会点击一次加号。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^(0|[2-9]|10)$",
+                    "pattern_msg": "请输入0或2-10之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "情报屋自动托管调查": {
+                    "action": {
+                        "param": {
+                            "custom_action_param": {
+                                "challenge_times": "{challenge_times}"
                             }
                         }
                     }

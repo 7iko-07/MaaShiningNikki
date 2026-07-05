@@ -84,7 +84,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [181, 472, 94, 31],
+				"roi": [181, 471, 97, 511],
 				"expected": ["时空回廊"]
 			}
 		},

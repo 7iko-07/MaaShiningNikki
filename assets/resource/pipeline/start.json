@@ -25,7 +25,7 @@
 			"param": {}
 		},
 		"post_delay": 3000,
-		"next": ["点击开始","[JumpBack]在资源更新页面","stop"],
+		"next": ["点击开始","[JumpBack]在资源更新页面","[JumpBack]嗯等"],
 		"timeout": 4000
 	},
 	"在资源更新页面":{
