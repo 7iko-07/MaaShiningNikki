@@ -6,7 +6,7 @@
     "license": "MIT",
     "welcome": "首次使用！欢迎使用 闪现吧暖暖!",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "0.0.4",
+    "version": "0.0.4-fix2",
     "title": "闪现吧暖暖",
     "icon": "logo.ico",
     "mirrorchyan_multiplatform":false,
@@ -133,21 +133,21 @@
             "group": ["日常任务"]
         },
         {
-            "name": "少女的咏唱剧情",
-            "entry": "活动任务链入口",
-            "default_check": false,
-            "description": "##[color:red][b]默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！[/b][/color]",
-            "option": [
-                "活动"
-            ],
-            "group": ["日常任务"]
-        },
-        {
             "name": "回忆小铺",
             "description": "识别当前回忆小铺六个商品；遇到金币商品或低折扣非排除钻石商品时暂停，否则自动换一批",
             "entry": "回忆小铺任务链入口",
             "option": [
                 "回忆小铺设置"
+            ],
+            "group": ["日常任务"]
+        },
+        {
+            "name": "活动：金砂映琥珀",
+            "entry": "活动任务链入口",
+            "default_check": false,
+            "description": "##[color:red][b]默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！[/b][/color]",
+            "option": [
+                "活动"
             ],
             "group": ["日常任务"]
         }

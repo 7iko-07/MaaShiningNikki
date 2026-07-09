@@ -17,10 +17,10 @@ class InformationHouseAutoInvestigateAction(CustomAction):
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
 
         stamina_roi = params.get("stamina_roi", [0, 0, 215, 49])
-        add_button_roi = params.get("add_button_roi", [581, 604, 33, 33])
-        cost_roi = params.get("cost_roi", [496, 838, 92, 35])
-        minus_button_roi = params.get("minus_button_roi", params.get("confirm_button_roi", [350, 606, 35, 28]))
-        start_button_roi = params.get("start_button_roi", [418, 777, 125, 40])
+        add_button_roi = params.get("add_button_roi", [581, 590, 34, 29])
+        cost_roi = params.get("cost_roi", [496, 821, 108, 36])
+        minus_button_roi = params.get("minus_button_roi", params.get("confirm_button_roi", [348, 593, 36, 24]))
+        start_button_roi = params.get("start_button_roi", [412, 759, 132, 42])
 
         max_adjust = self._as_int(params.get("max_adjust"), 8)
         retry = self._as_int(params.get("retry"), 3)

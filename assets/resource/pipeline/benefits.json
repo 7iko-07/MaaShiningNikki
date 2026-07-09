@@ -154,14 +154,30 @@
 			"param": {}
 		},
 		"post_wait_freezes": 500,
-		"next": ["点击领取方舟体力"],
+		"next": ["点击领取方舟体力-中午"],
 		"timeout": 2000
     },
-    "点击领取方舟体力": {
+    "点击领取方舟体力-中午": {
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [418, 415, 302, 620],
+				"roi": [429, 558, 272, 110],
+				"expected": ["领取"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击领取方舟体力-晚上"],
+		"timeout": 2000
+    },
+	"点击领取方舟体力-晚上": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [438, 877, 269, 99],
 				"expected": ["领取"]
 			}
 		},

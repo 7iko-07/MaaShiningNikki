@@ -280,8 +280,13 @@
 			}
 		},
         "action": {
-            "type": "Click",
-            "param": {}
+            "type": "Custom",
+            "param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param":{
+					"compare_roi": [101, 507, 516, 270]
+				}
+			}
         },
         "timeout": 3000,
 		"next": ["[JumpBack]在加载页面","点击OK-竞技场-空白"]

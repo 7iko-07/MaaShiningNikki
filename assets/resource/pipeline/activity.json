@@ -21,8 +21,8 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [0, 190, 129, 61],
-				"expected": ["少女的咏唱"]
+				"roi": [0, 359, 115, 102],
+				"expected": ["活动"]
 			}
 		},
 		"action": {
@@ -44,7 +44,7 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [594, 25, 21, 14]
+                "target": [54, 1233, 23, 16]
             }
 		},
 		"repeat": 2,
@@ -55,7 +55,7 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [38, 822, 173, 63],
+				"roi": [530, 647, 190, 88],
 				"expected": ["[挑战]"]
 			}
 		},
@@ -280,8 +280,8 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["演出","舞台"],
-				"roi": [512, 912, 208, 134]
+				"expected": ["沙洲"],
+				"roi": [364, 1147, 222, 121]
 			}
 		},
 		"action": {

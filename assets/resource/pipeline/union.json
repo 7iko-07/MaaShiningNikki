@@ -59,8 +59,11 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
 		},
 		"post_delay": 3000,
 		"next": ["点击执行五次", "点击返回联盟"],
