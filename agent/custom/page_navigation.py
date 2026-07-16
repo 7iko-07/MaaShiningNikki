@@ -77,6 +77,7 @@ DEFAULT_ALIASES = {
 }
 
 DEFAULT_WAIT_RECOGNITIONS = ["在加载页面", "在接受投稿页面", "导航在空白页面"]
+DEFAULT_FALLBACK_STEPS = ["点击返回", "点击体力用尽确定", "点击主页空白区域", "点击OK-竞技场"]
 
 
 @AgentServer.custom_action("page_navigate")
@@ -101,37 +102,15 @@ class PageNavigateAction(CustomAction):
             logger.error(f"page_navigate: unknown target page {target_page!r}")
             return False
 
-        fallback_page = self._normalize_page(params.get("fallback_page", "主页面"), params)
-        fallback_task = params.get("fallback_task", "返回主页面")
         retry_detect = self._as_int(params.get("retry_detect"), 3)
         retry_delay = self._as_float(params.get("retry_delay"), 1)
-        verify_each_step = self._as_bool(params.get("verify_each_step"), True)
         wait_nodes = self._build_wait_nodes(params)
+        fallback_steps = self._build_fallback_steps(params)
         wait_timeout = self._as_float(params.get("wait_timeout"), 15.0)
         wait_interval = self._as_float(params.get("wait_interval"), 0.8)
+        max_steps = self._as_int(params.get("max_steps"), 30)
 
-        self._wait_while_intermediate(
-            context,
-            wait_nodes=wait_nodes,
-            timeout=wait_timeout,
-            interval=wait_interval,
-        )
-        current_page = self._detect_current_page(
-            context,
-            pages,
-            retry=retry_detect,
-            retry_delay=retry_delay,
-            preferred=target_page,
-        )
-
-        if not current_page:
-            logger.warning(
-                "page_navigate: failed to identify current page, "
-                f"running fallback task {fallback_task!r}"
-            )
-            if not self._run_task(context, fallback_task):
-                logger.error(f"page_navigate: fallback task failed: {fallback_task!r}")
-                return False
+        for step_index in range(max(1, max_steps)):
             self._wait_while_intermediate(
                 context,
                 wait_nodes=wait_nodes,
@@ -143,106 +122,26 @@ class PageNavigateAction(CustomAction):
                 pages,
                 retry=retry_detect,
                 retry_delay=retry_delay,
-                preferred=fallback_page,
-            ) or fallback_page
-
-        logger.info(f"page_navigate: current={current_page}, target={target_page}")
-        if current_page == target_page:
-            return True
-
-        path = self._shortest_path(routes, current_page, target_page)
-        if not path and current_page != fallback_page:
-            logger.warning(
-                f"page_navigate: no route from {current_page} to {target_page}, "
-                f"falling back to {fallback_page}"
+                preferred=target_page,
             )
-            if not self._go_to_fallback_page(
-                context,
-                pages=pages,
-                routes=routes,
-                current_page=current_page,
-                fallback_page=fallback_page,
-                fallback_task=fallback_task,
-                retry_detect=retry_detect,
-                retry_delay=retry_delay,
-                wait_nodes=wait_nodes,
-                wait_timeout=wait_timeout,
-                wait_interval=wait_interval,
-            ):
-                return False
-            current_page = self._detect_current_page(
-                context,
-                pages,
-                retry=retry_detect,
-                retry_delay=retry_delay,
-                preferred=fallback_page,
-            ) or fallback_page
-            path = self._shortest_path(routes, current_page, target_page)
 
-        if not path:
-            logger.error(f"page_navigate: no route from {current_page} to {target_page}")
-            return False
-
-        logger.info("page_navigate: path=" + " -> ".join([current_page] + [edge["to"] for edge in path]))
-        for edge in path:
-            for task_name in edge["tasks"]:
-                if not self._run_task(context, task_name):
-                    logger.error(f"page_navigate: route task failed: {task_name!r}")
-                    return False
-                self._wait_while_intermediate(
-                    context,
-                    wait_nodes=wait_nodes,
-                    timeout=wait_timeout,
-                    interval=wait_interval,
-                )
-
-            if verify_each_step:
-                self._wait_while_intermediate(
-                    context,
-                    wait_nodes=wait_nodes,
-                    timeout=wait_timeout,
-                    interval=wait_interval,
-                )
-                detected = self._detect_current_page(
-                    context,
-                    pages,
-                    retry=retry_detect,
-                    retry_delay=retry_delay,
-                    preferred=edge["to"],
-                )
-                if detected != edge["to"]:
-                    logger.error(
-                        "page_navigate: route verification failed, "
-                        f"expected={edge['to']}, detected={detected}"
-                    )
-                    return False
-
-        return True
-
-    def _go_to_fallback_page(
-        self,
-        context,
-        pages,
-        routes,
-        current_page,
-        fallback_page,
-        fallback_task,
-        retry_detect,
-        retry_delay,
-        wait_nodes,
-        wait_timeout,
-        wait_interval,
-    ):
-        fallback_path = self._shortest_path(routes, current_page, fallback_page)
-        if fallback_path:
             logger.info(
-                "page_navigate: fallback path="
-                + " -> ".join([current_page] + [edge["to"] for edge in fallback_path])
+                f"page_navigate: step={step_index + 1}/{max_steps}, "
+                f"current={current_page}, target={target_page}"
             )
-            for edge in fallback_path:
+            if current_page == target_page:
+                return True
+
+            path = self._shortest_path(routes, current_page, target_page) if current_page else []
+            if path:
+                logger.info(
+                    "page_navigate: path="
+                    + " -> ".join([current_page] + [edge["to"] for edge in path])
+                )
+                edge = path[0]
                 for task_name in edge["tasks"]:
                     if not self._run_task(context, task_name):
-                        logger.error(f"page_navigate: fallback route task failed: {task_name!r}")
+                        logger.error(f"page_navigate: route task failed: {task_name!r}")
                         return False
                     self._wait_while_intermediate(
                         context,
@@ -250,47 +149,30 @@ class PageNavigateAction(CustomAction):
                         timeout=wait_timeout,
                         interval=wait_interval,
                     )
+                continue
 
-                detected = self._detect_current_page(
-                    context,
-                    pages,
-                    retry=retry_detect,
-                    retry_delay=retry_delay,
-                    preferred=edge["to"],
-                )
-                if detected != edge["to"]:
-                    logger.warning(
-                        "page_navigate: fallback route verification failed, "
-                        f"expected={edge['to']}, detected={detected}"
-                    )
-                    break
-                if detected == fallback_page:
-                    return True
+            if current_page:
+                logger.warning(f"page_navigate: no route from {current_page} to {target_page}")
+            else:
+                logger.warning("page_navigate: failed to identify current page")
 
-        logger.info(f"page_navigate: running fallback task {fallback_task!r}")
-        if not self._run_task(context, fallback_task):
-            logger.error(f"page_navigate: fallback task failed: {fallback_task!r}")
-            return False
-        self._wait_while_intermediate(
-            context,
-            wait_nodes=wait_nodes,
-            timeout=wait_timeout,
-            interval=wait_interval,
-        )
-        detected = self._detect_current_page(
-            context,
-            pages,
-            retry=retry_detect,
-            retry_delay=retry_delay,
-            preferred=fallback_page,
-        )
-        if detected != fallback_page:
-            logger.error(
-                "page_navigate: fallback task did not reach fallback page, "
-                f"expected={fallback_page}, detected={detected}"
-            )
-            return False
-        return True
+            if not self._run_fallback_step(context, fallback_steps):
+                logger.error("page_navigate: no fallback step matched current screen")
+                return False
+
+        logger.error(f"page_navigate: exceeded maximum steps ({max_steps})")
+        return False
+
+    def _run_fallback_step(self, context, fallback_steps):
+        image = self._screencap(context)
+        for task_name in fallback_steps:
+            if not self._recognize(context, image, task_name):
+                continue
+            logger.info(f"page_navigate: running fallback step {task_name!r}")
+            if self._run_task(context, task_name):
+                return True
+            logger.warning(f"page_navigate: fallback step failed: {task_name!r}")
+        return False
 
     def _wait_while_intermediate(
         self,
@@ -412,6 +294,14 @@ class PageNavigateAction(CustomAction):
                 nodes.append(node_name)
         return nodes
 
+    def _build_fallback_steps(self, params):
+        steps = params.get("fallback_steps", DEFAULT_FALLBACK_STEPS)
+        if isinstance(steps, str):
+            steps = [steps]
+        if not isinstance(steps, list):
+            return list(DEFAULT_FALLBACK_STEPS)
+        return [step for step in steps if isinstance(step, str) and step]
+
     def _build_routes(self, params):
         routes = [self._normalize_route(route, params) for route in DEFAULT_ROUTES]
         for route in params.get("routes") or []:
@@ -465,12 +355,3 @@ class PageNavigateAction(CustomAction):
             return float(value)
         except (TypeError, ValueError):
             return default
-
-    def _as_bool(self, value, default):
-        if value is None:
-            return default
-        if isinstance(value, bool):
-            return value
-        if isinstance(value, str):
-            return value.lower() not in ("0", "false", "no", "off")
-        return bool(value)

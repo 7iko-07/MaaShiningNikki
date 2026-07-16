@@ -1,0 +1,155 @@
+{
+    "翻牌小游戏任务链入口": {
+		"next": ["翻牌小游戏任务链准备", "[JumpBack]返回主页面"],
+		"timeout": 2000
+    },
+	"翻牌小游戏任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "主页面"
+                }
+            }
+        },
+        "next": ["点击活动名称-翻牌","[JumpBack]上划活动条"],
+        "timeout": 30000
+    },
+    "点击活动名称-翻牌": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 200, 129, 600],
+				"expected": ["活动"]
+			}
+		},
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
+		},
+		"post_delay": 1000,
+		"next": ["点击翻转印象","左划活动菜单"],
+		"timeout": 2000
+    },
+	"左划活动菜单": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [633, 153],
+                "end": [137, 153]
+            }
+        },
+		"post_delay": 500,
+        "timeout": 1000,
+        "next": ["点击翻转印象"]
+    },
+    "点击翻转印象": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [3, 130, 713, 50],
+				"expected": ["翻?转印象?"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击开始挑战-翻转印象"],
+		"timeout": 2000
+    },
+    "点击开始挑战-翻转印象": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [231, 881, 245, 81],
+				"expected": ["开?始挑战?"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击大师"],
+		"timeout": 2000
+    },
+    "点击大师": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [508, 695, 88, 46],
+				"expected": ["大师"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 5000,
+		"next": ["翻牌小游戏"],
+		"timeout": 2000
+    },
+    "翻牌小游戏": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [76, 218, 155, 52],
+                "expected": ["倒计时"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "card_matching",
+                "custom_action_param": {}
+            }
+        },
+        "timeout": 5000,
+        "next": ["退出翻转印象"]
+    },
+    "退出翻转印象": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+        },
+        "timeout": 5000,
+        "post_delay": 1000,
+        "next": ["退出翻转印象-OK","stop"]
+    },
+    "退出翻转印象-OK": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [252, 667, 217, 85],
+				"expected": ["OK"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 5000,
+		"next": ["stop"],
+		"timeout": 2000
+    }
+}
