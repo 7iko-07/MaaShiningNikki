@@ -6,7 +6,7 @@
     "license": "MIT",
     "welcome": "首次使用！欢迎使用 闪现吧暖暖!",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "0.0.5",
+    "version": "0.0.7",
     "title": "闪现吧暖暖",
     "icon": "logo.ico",
     "mirrorchyan_multiplatform":false,
@@ -142,10 +142,10 @@
             "group": ["日常任务"]
         },
         {
-            "name": "活动：金砂映琥珀",
+            "name": "活动：恋恋温特蒙",
             "entry": "活动任务链入口",
             "default_check": false,
-            "description": "##[color:red][b]默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！[/b][/color]",
+            "description": "##[color:red][b]默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！复刻活动剧情可能有意想不到的点击，如果卡住了就自己点掉重新开一次该任务吧[/b][/color]",
             "option": [
                 "活动"
             ],
@@ -155,7 +155,7 @@
             "name": "活动：翻转印象",
             "entry": "翻牌小游戏任务链入口",
             "default_check": false,
-            "description": "请先手动进入翻牌界面并开始倒计时，再运行本任务。Agent 会自动记忆牌面并完成全部配对。",
+            "description": "自动记忆牌面并完成全部配对",
             "group": ["日常任务"]
         }
     ],

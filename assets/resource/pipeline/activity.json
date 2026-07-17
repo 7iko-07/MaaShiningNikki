@@ -21,8 +21,8 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [0, 359, 115, 102],
-				"expected": ["活动"]
+				"roi": [0, 170, 136, 93],
+				"expected": ["恋恋？温特蒙"]
 			}
 		},
 		"action": {
@@ -55,7 +55,7 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [530, 647, 190, 88],
+				"roi": [69, 172, 162, 203],
 				"expected": ["[挑战]"]
 			}
 		},
@@ -280,8 +280,8 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["沙洲"],
-				"roi": [364, 1147, 222, 121]
+				"expected": ["前往温特蒙","前往"],
+				"roi": [0, 1017, 362, 263]
 			}
 		},
 		"action": {
