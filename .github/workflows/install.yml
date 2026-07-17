@@ -63,14 +63,16 @@ jobs:
 
   windows:
     needs: meta
-    runs-on: windows-latest
+    runs-on: ${{ matrix.runner }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     strategy:
       matrix:
-        # windows-latest is x64 and cannot execute the ARM64 embedded Python
-        # needed by setup_embed_python.ps1.
-        arch: [x86_64]
+        include:
+          - arch: x86_64
+            runner: windows-latest
+          - arch: aarch64
+            runner: windows-11-arm
       fail-fast: false
 
     steps:
