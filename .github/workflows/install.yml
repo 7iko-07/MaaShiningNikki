@@ -264,6 +264,24 @@ jobs:
           echo "Cleaning up zip files..."
           find install -name "MFAAvalonia-*.zip" -delete 2>/dev/null || true
 
+      - name: Rename MFAAvalonia to MaaShiningNikki
+        shell: bash
+        run: |
+          # Linux 和 macOS 的主程序没有扩展名，只重命名可执行入口，
+          # 保留 MFAAvalonia.dll 等运行时依赖的原始名称。
+          exe_path=$(find install -type f -name "MFAAvalonia" | head -n 1)
+
+          if [ -z "$exe_path" ]; then
+            echo "Warning: MFAAvalonia executable not found in install directory."
+            exit 1
+          fi
+
+          echo "Found MFAAvalonia executable at: $exe_path"
+          exe_dir=$(dirname "$exe_path")
+          mv "$exe_path" "$exe_dir/MaaShiningNikki"
+          chmod +x "$exe_dir/MaaShiningNikki"
+          echo "MFAAvalonia renamed to MaaShiningNikki successfully"
+
       - uses: actions/upload-artifact@v7
         with:
           name: MaaShiningNikki-${{ matrix.os == 'ubuntu-latest' && 'linux' || 'macos' }}-${{ matrix.arch }}

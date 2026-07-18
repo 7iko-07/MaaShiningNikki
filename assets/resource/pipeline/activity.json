@@ -22,7 +22,7 @@
 			"type": "OCR",
 			"param": {
 				"roi": [0, 170, 136, 93],
-				"expected": ["恋恋？温特蒙"]
+				"expected": ["恋恋?温特蒙"]
 			}
 		},
 		"action": {

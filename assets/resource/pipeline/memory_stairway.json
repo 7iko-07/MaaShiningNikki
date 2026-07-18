@@ -1,0 +1,787 @@
+{
+    "心阶任务链入口": {
+		"next": ["心阶任务链准备"],
+		"timeout": 2000
+    },
+	"心阶任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "心阶"
+                }
+            }
+        },
+        "next": ["[JumpBack]在加载页面","点击心阶页面-空白"],
+        "timeout": 30000
+    },
+	"点击心阶页面-空白":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [603, 42, 21, 12]
+            }
+		},
+		"repeat": 3,
+		"repeat_delay": 1000,
+        "post_delay": 1000,
+		"next": ["点击快速挑战"]
+	},
+    "点击快速挑战":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["快速挑战", "快速"],
+				"roi": [0, 1091, 222, 89]
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+		"post_delay": 2000,
+		"next": ["[JumpBack]在加载页面","点击心阶页面-空白2"],
+		"timeout": 2000
+    },
+	"点击心阶页面-空白2":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [603, 42, 21, 12]
+            }
+		},
+		"repeat": 3,
+		"repeat_delay": 500,
+        "post_delay": 1000,
+		"next": ["点击真我之境"]
+	},
+	"点击真我之境":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["真我","之境"],
+				"roi": [362, 554, 172, 172]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+	    },
+        "post_delay": 1000,
+		"next": ["点击心阶-开始搭配","点击心阶-空白"]
+    },
+    "点击心阶-开始搭配":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["开始搭配"],
+				"roi": [104, 844, 97, 41]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                }
+			}
+        },
+        "post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击心阶-推荐搭配"]
+	},
+    "点击心阶-推荐搭配":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [582, 1179, 138, 45]
+            }
+		},
+        "post_delay": 1000,
+		"next": ["点击心阶-推荐搭配-确认"]
+	},
+    "点击心阶-推荐搭配-确认":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target": [431, 687, 127, 43]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-下一步"]
+	},
+    "点击心阶-下一步":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target": [65, 1183, 163, 44]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-装备印象"]
+	},
+    "点击心阶-装备印象":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["装备印象"],
+				"roi": [531, 384, 144, 42]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target": [531, 384, 144, 42]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-印象一键穿戴"]
+	},
+    "点击心阶-印象一键穿戴":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["一?键穿戴"],
+				"roi": [470, 1001, 135, 51]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-确定印象"]
+	},
+    "点击心阶-确定印象":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["确定"],
+				"roi": [429, 1080, 142, 46]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-确定影召"]
+	},
+    "点击心阶-确定影召":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["确定"],
+				"roi": [307, 1090, 108, 52]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-开始搭配2"]
+	},
+    "点击心阶-开始搭配2":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [303, 837, 112, 51]
+            }
+		},
+        "post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击心阶-推荐搭配2"]
+	},
+    "点击心阶-推荐搭配2":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [582, 1179, 138, 45]
+            }
+		},
+        "post_delay": 1000,
+		"next": ["点击心阶-推荐搭配-确认2"]
+	},
+    "点击心阶-推荐搭配-确认2":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target": [431, 687, 127, 43]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-下一步2"]
+	},
+    "点击心阶-下一步2":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target": [65, 1183, 163, 44]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-装备印象2"]
+	},
+    "点击心阶-装备印象2":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["装备印象"],
+				"roi": [531, 384, 144, 42]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target": [531, 384, 144, 42]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-印象一键穿戴2"]
+	},
+    "点击心阶-印象一键穿戴2":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["一?键穿戴"],
+				"roi": [470, 1001, 135, 51]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-确定印象2"]
+	},
+    "点击心阶-确定印象2":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["确定"],
+				"roi": [429, 1080, 142, 46]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-确定影召2"]
+	},
+    "点击心阶-确定影召2":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["确定"],
+				"roi": [307, 1090, 108, 52]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-开始搭配3"]
+	},
+    "点击心阶-开始搭配3":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [506, 843, 123, 47]
+            }
+		},
+        "post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击心阶-推荐搭配3"]
+	},
+    "点击心阶-推荐搭配3":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [582, 1179, 138, 45]
+            }
+		},
+        "post_delay": 1000,
+		"next": ["点击心阶-推荐搭配-确认3"]
+	},
+    "点击心阶-推荐搭配-确认3":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target": [431, 687, 127, 43]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-下一步3"]
+	},
+    "点击心阶-下一步3":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target": [65, 1183, 163, 44]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-装备印象3"]
+	},
+    "点击心阶-装备印象3":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["装备印象"],
+				"roi": [531, 384, 144, 42]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target": [531, 384, 144, 42]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-印象一键穿戴3"]
+	},
+    "点击心阶-印象一键穿戴3":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["一?键穿戴"],
+				"roi": [470, 1001, 135, 51]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-确定印象3"]
+	},
+    "点击心阶-确定印象3":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["确定"],
+				"roi": [429, 1080, 142, 46]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-确定影召3"]
+	},
+    "点击心阶-确定影召3":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["确定"],
+				"roi": [307, 1090, 108, 52]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-开始挑战"]
+	},
+    "点击心阶-开始挑战":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["开始挑战"],
+				"roi": [298, 968, 132, 47]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击心阶-空白"]
+	},
+    "点击心阶-空白":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [603, 42, 21, 12]
+            }
+		},
+		"repeat": 3,
+		"repeat_delay": 1000,
+        "post_delay": 1000,
+		"next": ["点击境遇1"]
+	},
+    "点击境遇1":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["境?遇"],
+				"roi": [0, 502, 316, 583]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击境遇1-开始挑战"]
+	},
+    "点击境遇1-开始挑战":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["开?始挑战"],
+				"roi": [0, 718, 720, 320]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击境遇1-推荐搭配"]
+	},
+    "点击境遇1-推荐搭配":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["推?荐搭配"],
+				"roi": [481, 1102, 239, 178]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击境遇1-跳过战斗","点击境遇1-下一步"]
+	},
+    "点击境遇1-跳过战斗":{
+		"recognition": {
+            "type": "ColorMatch",
+			"param": {
+				"roi":[59, 1116, 23, 17],
+				"lower": [243, 113, 129],
+				"upper": [246, 130, 140],
+				"count": 100
+			}
+        },
+        "inverse": true,
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target": [59, 1116, 23, 17],
+                    "compare_roi": [59, 1116, 23, 17]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击境遇1-下一步"]
+	},
+    "点击境遇1-下一步":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["下?一?步"],
+				"roi": [0, 1145, 301, 135]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击境遇1-下一步-空白"]
+	},
+	"点击境遇1-下一步-空白":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [603, 42, 21, 12]
+            }
+		},
+		"repeat": 3,
+		"repeat_delay": 1000,
+		"next": ["点击境遇2"]
+	},
+    "点击境遇2":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["境?遇"],
+				"roi": [284, 176, 436, 924]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击境遇2-开始挑战"]
+	},
+    "点击境遇2-开始挑战":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["开?始挑战"],
+				"roi": [0, 718, 720, 320]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击境遇2-推荐搭配"]
+	},
+    "点击境遇2-推荐搭配":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["推?荐搭配"],
+				"roi": [481, 1102, 239, 178]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击境遇2-跳过战斗","点击境遇2-下一步"]
+	},
+    "点击境遇2-跳过战斗":{
+		"recognition": {
+            "type": "ColorMatch",
+			"param": {
+				"roi":[59, 1116, 23, 17],
+				"lower": [243, 113, 129],
+				"upper": [246, 130, 140],
+				"count": 100
+			}
+        },
+        "inverse": true,
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target": [59, 1116, 23, 17],
+                    "compare_roi": [59, 1116, 23, 17]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击境遇2-下一步"]
+	},
+    "点击境遇2-下一步":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["下?一?步"],
+				"roi": [0, 1145, 301, 135]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["[JumpBack]在加载页面","点击境遇2-下一步-空白"]
+	},
+	"点击境遇2-下一步-空白":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [603, 42, 21, 12]
+            }
+		},
+		"repeat": 3,
+		"repeat_delay": 1000,
+		"next": ["stop"]
+	}
+}

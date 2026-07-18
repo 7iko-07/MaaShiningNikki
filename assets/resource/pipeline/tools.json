@@ -197,6 +197,9 @@
 				"expected": ["取消"]
 			}
 		},
+        "focus": {
+			"Node.Action.Starting": "#[color:red][b]体力或金币用尽了[/b][/color]"
+		},
 		"action": {
 			"type": "Click",
 			"param": {}

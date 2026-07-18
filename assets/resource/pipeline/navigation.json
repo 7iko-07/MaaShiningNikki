@@ -1036,5 +1036,82 @@
         },
         "action": "DoNothing",
         "timeout": 2000
+    },
+    "导航点击心之门入口": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["导航点击心之门", "导航上划左侧菜单后点击心之门"]
+    },
+    "导航点击心之门": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["心之门"],
+                "roi": [0, 123, 113, 756]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
+        },
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航上划左侧菜单后点击心之门": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [53, 653],
+                "end": [53, 213]
+            }
+        },
+        "post_delay": 500,
+        "timeout": 1000,
+        "next": ["导航点击心之门"]
+    },
+    "导航在心之门页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 109, 720, 83],
+                "expected": ["绮海","溯光","幻海","流光","谜海"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击时空回廊": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["时空回廊"],
+                "roi": [0, 769, 720, 360]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
+        },
+        "next": ["导航在时空回廊页面"],
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "导航在时空回廊页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [463, 72, 257, 345],
+                "expected": ["切?换?期数"]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
     }
 }

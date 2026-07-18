@@ -1,0 +1,96 @@
+{
+    "分享任务链入口": {
+		"next": ["分享任务链准备"],
+		"timeout": 2000
+    },
+	"分享任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "分享"
+                }
+            }
+        },
+        "post_delay": 1000,
+        "next": ["点击分享"],
+        "timeout": 30000
+    },
+    "点击分享": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[2, 97, 223, 1183],
+				"expected": ["[分享]"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击qq"],
+		"timeout": 2000
+    },
+    "点击qq": {
+        "recognition": {
+			"type": "TemplateMatch",
+			"param": {
+				"roi":[0, 1107, 720, 173],
+				"template": "qq.png",
+                "threshold": [0.9]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["关闭qq"],
+		"timeout": 2000
+    },
+    "关闭qq":{
+		"recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "StopApp",
+			"param": {"package": "com.tencent.mobileqq"}
+		},
+		"post_delay": 1000,
+		"timeout": 2000,
+		"next": ["点击分享奖励-空白"]
+	},
+	"点击分享奖励-空白":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [603, 42, 21, 12]
+            }
+		},
+		"repeat": 2,
+		"repeat_delay": 500,
+		"next": ["识别到无分享奖励","点击分享"]
+	},
+    "识别到无分享奖励": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[2, 97, 223, 1183],
+				"expected": ["[奖励]"]
+			}
+		},
+        "inverse": true,
+		"action": {},
+		"post_delay": 2000,
+		"next": ["stop"],
+		"timeout": 2000
+    }
+}

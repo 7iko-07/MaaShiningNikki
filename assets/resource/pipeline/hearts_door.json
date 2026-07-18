@@ -1,0 +1,164 @@
+{
+    "心之门任务链入口": {
+		"next": ["心之门任务链准备"],
+		"timeout": 2000
+    },
+	"心之门任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "心之门"
+                }
+            }
+        },
+        "post_delay": 1000,
+        "next": ["点击谜之海","左划心之门的阁"],
+        "timeout": 30000
+    },
+	"左划心之门的阁": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [497, 150],
+                "end": [243, 150]
+            }
+        },
+        "next": ["点击谜之海"],
+		"post_delay": 500,
+        "timeout": 1000
+    },
+    "点击谜之海": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[0, 109, 720, 83],
+				"expected": ["谜海"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["识别谜之海-感应第一次"],
+		"timeout": 2000
+    },
+    "识别谜之海-感应第一次":{
+		"recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [97, 155, 542, 866],
+                "template": "谜之海.png",
+                "threshold": [0.9]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["点击谜之海-感应第一次"]
+	},
+    "点击谜之海-感应第一次":{
+		"recognition": {
+            "type": "ColorMatch",
+			"param": {
+				"roi":[35, 1097, 21, 16],
+				"lower": [139, 147, 212],
+				"upper": [147, 153, 214],
+				"count": 100
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["点击谜之海-感应第一次-空白","点击体力用尽确定","[JumpBack]嗯等"]
+	},
+    "点击谜之海-感应第一次-空白":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["[分享]"],
+				"roi": [445, 1120, 275, 160]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target":[649, 203, 20, 16]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["识别谜之海-感应第二次"]
+	},
+    "识别谜之海-感应第二次":{
+		"recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [97, 155, 542, 866],
+                "template": "谜之海.png",
+                "threshold": [0.9]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["点击谜之海-感应第二次"]
+	},
+    "点击谜之海-感应第二次":{
+		"recognition": {
+            "type": "ColorMatch",
+			"param": {
+				"roi":[35, 1097, 21, 16],
+				"lower": [139, 147, 212],
+				"upper": [147, 153, 214],
+				"count": 100
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["点击谜之海-感应第二次-空白","点击体力用尽确定","[JumpBack]嗯等"]
+	},
+    "点击谜之海-感应第二次-空白":{
+		"recognition": {
+            "type": "OCR",
+            "param": {
+				"expected": ["[分享]"],
+				"roi": [445, 1120, 275, 160]
+			}
+        },
+        "action": {
+            "type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+                    "target":[649, 203, 20, 16]
+                }
+			}
+		},
+        "post_delay": 1000,
+        "timeout": 3000,
+		"next": ["stop"]
+	}
+}
