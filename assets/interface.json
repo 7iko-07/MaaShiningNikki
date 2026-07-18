@@ -6,8 +6,8 @@
     "license": "MIT",
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "v0.0.8-nightly.20260718",
-    "title": "闪现吧暖暖v0.0.8 #7.18 - [复刻]恋恋温特蒙7.18#",
+    "version": "v0.0.8-nightly.20260719",
+    "title": "闪现吧暖暖v0.0.8#7.19 - [复刻]恋恋温特蒙7.17#",
     "icon": "logo.ico",
     "mirrorchyan_multiplatform":false,
     "agent": {
@@ -157,7 +157,7 @@
             "name": "活动：恋恋温特蒙",
             "entry": "活动任务链入口",
             "default_check": false,
-            "description": "##[color:red][b]默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！复刻活动剧情可能有意想不到的点击，如果卡住了就自己点掉重新开一次该任务吧[/b][/color]",
+            "description": "###[color:red][b]默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！复刻活动剧情可能有意想不到的点击，如果卡住了就自己点掉重新开一次该任务吧[/b][/color]",
             "option": [
                 "活动"
             ],
