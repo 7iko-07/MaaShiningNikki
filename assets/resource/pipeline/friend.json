@@ -79,8 +79,11 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
 		},
 		"post_delay": 2000,
 		"next": ["[JumpBack]在加载页面","点击一键领取体力", "点击退出领取体力"],

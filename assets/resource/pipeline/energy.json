@@ -66,7 +66,23 @@
 			"param": {}
 		},
         "post_delay": 10000,
-		"next": ["[JumpBack]点击体力用尽确定", "点击时光钟表铺空白"],
+		"next": ["[JumpBack]时光钟表铺次数用完确定","[JumpBack]点击体力用尽确定", "点击时光钟表铺空白"],
+		"timeout": 2000
+    },
+    "时光钟表铺次数用完确定": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 498, 720, 311],
+				"expected": ["购买次数已经用完"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [317, 688, 83, 49]
+			}
+		},
 		"timeout": 2000
     },
     "点击时光钟表铺空白": {
@@ -182,7 +198,23 @@
 			"param": {}
 		},
         "post_delay": 10000,
-		"next": ["[JumpBack]点击体力用尽确定", "点击不落的帷幕空白"],
+		"next": ["[JumpBack]不落的帷幕次数用完确定","[JumpBack]点击体力用尽确定", "点击不落的帷幕空白"],
+		"timeout": 2000
+    },
+    "不落的帷幕次数用完确定": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 498, 720, 311],
+				"expected": ["购买次数已经用完"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [317, 688, 83, 49]
+			}
+		},
 		"timeout": 2000
     },
     "点击不落的帷幕空白": {
@@ -283,7 +315,23 @@
 			"param": {}
 		},
         "post_delay": 10000,
-		"next": ["[JumpBack]点击体力用尽确定", "点击印象旅航空白"],
+		"next": ["[JumpBack]印象旅航次数用完确定","[JumpBack]点击体力用尽确定", "点击印象旅航空白"],
+		"timeout": 2000
+    },
+    "印象旅航次数用完确定": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 498, 720, 311],
+				"expected": ["购买次数已经用完"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [317, 688, 83, 49]
+			}
+		},
 		"timeout": 2000
     },
     "点击印象旅航空白": {

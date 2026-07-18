@@ -114,8 +114,24 @@
                 "custom_action_param": {}
             }
         },
+        "post_delay": 2000,
         "timeout": 5000,
-        "next": ["退出翻转印象"]
+        "next": ["[JumpBack]取消再次挑战","退出翻转印象"]
+    },
+    "取消再次挑战": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [85, 538, 559, 260],
+				"expected": ["取消"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"timeout": 2000
     },
     "退出翻转印象": {
         "recognition": {
