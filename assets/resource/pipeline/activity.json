@@ -21,8 +21,8 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [0, 170, 136, 93],
-				"expected": ["恋恋?温特蒙"]
+				"roi": [3, 122, 112, 695],
+				"expected": ["活?动"]
 			}
 		},
 		"action": {
@@ -55,7 +55,7 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [69, 172, 162, 203],
+				"roi": [0, 726, 313, 158],
 				"expected": ["[挑战]"]
 			}
 		},
@@ -280,8 +280,8 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["前往温特蒙","前往"],
-				"roi": [0, 1017, 362, 263]
+				"expected": ["沉入","交界海"],
+				"roi": [217, 1059, 214, 221]
 			}
 		},
 		"action": {
