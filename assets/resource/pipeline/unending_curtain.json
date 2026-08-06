@@ -1,0 +1,339 @@
+{
+    "不落的帷幕任务链入口": {
+		"next": ["不落的帷幕任务链准备", "[JumpBack]返回主页面"],
+		"timeout": 2000
+    },
+	"重置不落的帷幕独自登场次数": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "unending_curtain_counter",
+				"custom_action_param": {
+					"operation": "reset"
+				}
+			}
+		},
+		"next": ["不落的帷幕任务链准备"]
+	},
+	"不落的帷幕任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "结伴"
+                }
+            }
+        },
+        "next": ["不落的帷幕入口"],
+        "timeout": 30000
+    },
+	"不落的帷幕入口": {
+		"recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["点击不落的帷幕", "[JumpBack]返回结伴页面"]
+    },
+    "点击不落的帷幕": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [269, 467, 282, 201],
+				"expected": ["不落的帷幕","不落"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_wait_freezes": 1000,
+		"next": ["点击上演中"],
+		"timeout": 2000
+    },
+    "点击上演中": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [284, 285, 151, 877],
+				"expected": ["上演中", "上演"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target_offset": [0, -40, 0, 0]
+			}
+		},
+		"next": ["点击高难度"],
+		"timeout": 2000
+    },
+    "点击普通难度": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 664, 720, 94],
+				"expected": ["普通", "通"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击第一幕"],
+		"timeout": 2000
+    },
+    "点击第一幕": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {
+				"roi": [64, 727, 142, 125]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击不落的帷幕-独自登场"],
+		"timeout": 2000
+    },
+	"点击不落的帷幕-独自登场": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 1082, 369, 198],
+				"expected": ["独自登场"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["初始化不落的帷幕独自登场等待"],
+		"timeout": 2000
+    },
+	"初始化不落的帷幕独自登场等待": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "unending_curtain_counter",
+				"custom_action_param": {
+					"operation": "start_wait"
+				}
+			}
+		},
+		"next": ["点击不落的帷幕-前往搭配", "点击不落的帷幕-失败空白", "不落的帷幕独自登场等待超时", "[JumpBack]嗯等"]
+	},
+	"不落的帷幕独自登场等待超时": {
+		"recognition": {
+			"type": "Custom",
+			"param": {
+				"custom_recognition": "unending_curtain_wait_timeout",
+				"custom_recognition_param": {
+					"timeout_seconds": 180
+				}
+			}
+		},
+		"action": "DoNothing",
+		"next": ["stop"]
+	},
+	"点击不落的帷幕-前往搭配": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [346, 636, 374, 158],
+				"expected": ["搭配","前往"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["[JumpBack]在加载页面","点击不落的帷幕-推荐搭配"],
+		"timeout": 2000
+    },
+	"点击不落的帷幕-推荐搭配": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [523, 1144, 197, 136],
+				"expected": ["推荐搭配"]
+			}
+		},
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
+		},
+		"post_delay": 2000,
+		"next": ["[JumpBack]在加载页面","点击不落的帷幕-下一步"],
+		"timeout": 2000
+    },
+	"点击不落的帷幕-下一步": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 1031, 386, 249],
+				"expected": ["下一步"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["[JumpBack]在加载页面","点击不落的帷幕-确定影召"],
+		"timeout": 2000
+    },
+	"点击不落的帷幕-确定影召": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [228, 1068, 267, 90],
+				"expected": ["确定"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["[JumpBack]在加载页面","点击不落的帷幕-独自登场"],
+		"timeout": 2000
+    },
+	"点击不落的帷幕-失败空白": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [277, 26, 443, 197],
+				"expected": ["战斗评分"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"repeat": 3,
+		"repeat_delay": 1000,
+		"post_delay": 2000,
+		"next": ["检查不落的帷幕独自登场次数"],
+		"timeout": 2000
+    },
+	"检查不落的帷幕独自登场次数": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "unending_curtain_counter",
+				"custom_action_param": {
+					"operation": "count",
+					"max_runs": 0
+				}
+			}
+		},
+		"next": ["点击第一幕"]
+	},
+    "点击高难度": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 664, 720, 94],
+				"expected": ["高难度", "高难"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击第八幕"],
+		"timeout": 2000
+    },
+    "点击第八幕": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [535, 731, 158, 138],
+				"expected": ["第八幕"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击不落的帷幕快速组队"],
+		"timeout": 2000
+    },
+    "点击不落的帷幕快速组队":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [487, 1138, 218, 84],
+				"expected": ["快速组队"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+        "post_delay": 10000,
+		"next": ["[JumpBack]不落的帷幕次数用完确定","[JumpBack]点击体力用尽确定", "点击不落的帷幕空白"],
+		"timeout": 2000
+    },
+    "不落的帷幕次数用完确定": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 498, 720, 311],
+				"expected": ["购买次数已经用完"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [317, 688, 83, 49]
+			}
+		},
+		"timeout": 2000
+    },
+    "点击不落的帷幕空白": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [128, 63, 61, 41]
+            }
+        },
+        "repeat": 3,
+        "next": ["点击不落的帷幕返回"]
+    },
+    "点击不落的帷幕返回": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000,
+        "post_wait_freezes": 1000,
+        "repeat": 2,
+        "repeat_delay": 2000,
+        "next": ["stop"]
+    }
+}

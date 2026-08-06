@@ -1,0 +1,69 @@
+{
+    "每周礼包任务链入口": {
+		"next": ["每周礼包任务链准备"],
+		"timeout": 2000
+    },
+	"每周礼包任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "商城"
+                }
+            }
+        },
+        "next": ["商城点击充值"],
+        "timeout": 30000
+    },
+    "商城点击充值": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[584, 90, 127, 125],
+				"expected": ["充?值"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击查看特权"],
+		"timeout": 2000
+    },
+    "点击查看特权": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[520, 491, 179, 166],
+				"expected": ["查看特权","特权"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击每周礼包"],
+		"timeout": 2000
+    },
+    "点击每周礼包": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {
+				"roi":[581, 171, 44, 26]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"repeat": 2,
+		"repeat_delay": 1000,
+		"post_delay": 2000,
+		"next": ["stop"],
+		"timeout": 2000
+    }
+}

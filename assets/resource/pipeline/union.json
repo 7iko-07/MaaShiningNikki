@@ -1,6 +1,6 @@
 {
     "联盟任务链入口": {
-		"next": ["联盟任务链准备", "[JumpBack]返回主页面"],
+		"next": ["联盟任务链准备"],
 		"timeout": 2000
     },
 	"联盟任务链准备": {
@@ -31,7 +31,7 @@
 			"param": {}
 		},
 		"post_wait_freezes": 1000,
-		"next": ["点击前往当前目标", "点掉前往当前目标-周奖励弹窗"],
+		"next": ["点击开始执行","点击前往当前目标", "点掉前往当前目标-周奖励弹窗"],
 		"timeout": 2000
 	},
 	"点掉前往当前目标-周奖励弹窗":{
@@ -66,8 +66,133 @@
 			}
 		},
 		"post_delay": 3000,
-		"next": ["点击执行五次", "点击返回联盟"],
+		"next": ["点击开始执行","点击执行五次", "点击返回联盟"],
 		"timeout": 5000
+	},
+	"点击开始执行": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["开始执行"],
+				"roi": [221, 1137, 273, 143]
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面", "点击竞技场-推荐搭配"],
+		"timeout": 2000
+    },
+	"点击竞技场-推荐搭配": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["推荐搭配"],
+				"roi": [528, 1140, 192, 140]
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面", "点击竞技场-代理评选"],
+		"timeout": 2000
+    },
+    "点击竞技场-代理评选": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["代","理","评","选"],
+				"roi": [96, 1102, 99, 44]
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"change_threshold": 0.05
+				}
+			}
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面", "点击竞技场-下一步"],
+		"timeout": 2000
+    },
+    "点击竞技场-下一步": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["下一步"],
+				"roi": [0, 1144, 268, 136]
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面", "点击竞技场-确定影召"],
+		"timeout": 2000
+    },
+    "点击竞技场-确定影召": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["确定"],
+				"roi": [223, 1083, 277, 102]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面", "[JumpBack]嗯等","等待竞技场比拼结束"],
+		"timeout": 2000
+    },
+	"等待竞技场比拼结束": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["执行任务奖励"],
+				"roi": [235, 478, 251, 69]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"next": ["[JumpBack]在加载页面", "点击竞技场-比拼-空白"],
+		"timeout": 2000
+    },
+	"点击竞技场-比拼-空白":{
+		"recognition": {
+			"type": "DirectHit",
+			"param": {
+				"roi": [333, 203, 22, 21]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"repeat": 3,
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面", "点击执行五次"],
+		"timeout": 2000
 	},
 	"点击执行五次": {
 		"pre_delay": 1000,

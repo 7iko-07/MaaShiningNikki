@@ -1,0 +1,51 @@
+{
+    "特权卡任务链入口": {
+		"next": ["特权卡任务链准备"],
+		"timeout": 2000
+    },
+	"特权卡任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "商城"
+                }
+            }
+        },
+        "next": ["商城点击特权卡"],
+        "timeout": 30000
+    },
+    "商城点击特权卡": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[425, 90, 161, 134],
+				"expected": ["月?卡"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击特权卡"],
+		"timeout": 2000
+    },
+    "点击特权卡": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {
+				"roi":[520, 575, 44, 28]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["stop"],
+		"timeout": 2000
+    }
+}

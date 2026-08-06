@@ -1,0 +1,206 @@
+{
+    "主线故事任务链入口": {
+        "next": ["主线故事任务链准备"],
+        "timeout": 2000
+    },
+    "主线故事任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "主线故事"
+                }
+            }
+        },
+        "next": ["主线点击章节入口"],
+        "timeout": 30000
+    },
+    "主线点击章节入口": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "主线章节.png",
+                "roi": [620, 35, 100, 125],
+                "threshold": 0.7
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
+        },
+        "post_delay": 800,
+        "timeout": 4000,
+        "next": ["[JumpBack]在加载页面", "主线选择卷"]
+    },
+    "主线选择卷": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [45, 405, 595, 90],
+                "expected": ["卷"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "target": [83, 434, 72, 44],
+                    "timeout": 1500,
+                    "max_retries": 1
+                }
+            }
+        },
+        "post_delay": 500,
+        "next": ["主线选择章节"]
+    },
+    "主线选择章节": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "main_storyline_select_chapter",
+                "custom_action_param": {
+                    "chapter_name": "第一章：启程",
+                    "expected": ["启程", "启"],
+                    "roi": [190, 470, 500, 620],
+                    "retry": 3,
+                    "retry_delay": 1.0
+                }
+            }
+        },
+        "next": ["[JumpBack]在加载页面", "主线查找第一章关卡"]
+    },
+    "主线查找第一章关卡": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "main_storyline_find_stage",
+                "custom_action_param": {
+                    "chapter_number": 1,
+                    "stage_suffix": 1,
+                    "reset_begin": [61, 500],
+                    "reset_end": [698, 500],
+                    "scan_begin": [698, 500],
+                    "scan_end": [61, 500],
+                    "duration": 6000,
+                    "end_hold": 2000,
+                    "reset_swipes": 3,
+                    "rounds": 3,
+                    "max_scan_swipes": 30,
+                    "panel_title_roi": [26, 332, 271, 107],
+                    "non_main_title": "挑战关卡",
+                    "panel_retry": 3,
+                    "panel_retry_delay": 1.0,
+                    "panel_load_delay": 1.0,
+                    "panel_close_roi": [320, 99, 32, 24],
+                    "panel_close_clicks": 2,
+                    "panel_close_delay": 0.5
+                }
+            }
+        },
+        "next": ["[JumpBack]在加载页面", "主线执行快捷挑战"]
+    },
+    "主线查找第二章关卡": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "main_storyline_find_stage",
+                "custom_action_param": {
+                    "chapter_number": 2,
+                    "stage_suffix": 1,
+                    "reset_begin": [61, 500],
+                    "reset_end": [698, 500],
+                    "scan_begin": [698, 500],
+                    "scan_end": [61, 500],
+                    "duration": 6000,
+                    "end_hold": 2000,
+                    "reset_swipes": 3,
+                    "rounds": 3,
+                    "max_scan_swipes": 30,
+                    "panel_title_roi": [26, 332, 271, 107],
+                    "non_main_title": "挑战关卡",
+                    "panel_retry": 3,
+                    "panel_retry_delay": 1.0,
+                    "panel_load_delay": 1.0,
+                    "panel_close_roi": [320, 99, 32, 24],
+                    "panel_close_clicks": 2,
+                    "panel_close_delay": 0.5
+                }
+            }
+        },
+        "next": ["[JumpBack]在加载页面", "主线执行快捷挑战"]
+    },
+    "主线查找第三章关卡": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "main_storyline_find_stage",
+                "custom_action_param": {
+                    "chapter_number": 3,
+                    "stage_suffix": 1,
+                    "reset_begin": [61, 500],
+                    "reset_end": [698, 500],
+                    "scan_begin": [698, 500],
+                    "scan_end": [61, 500],
+                    "duration": 6000,
+                    "end_hold": 2000,
+                    "reset_swipes": 3,
+                    "rounds": 3,
+                    "max_scan_swipes": 30,
+                    "panel_title_roi": [26, 332, 271, 107],
+                    "non_main_title": "挑战关卡",
+                    "panel_retry": 3,
+                    "panel_retry_delay": 1.0,
+                    "panel_load_delay": 1.0,
+                    "panel_close_roi": [320, 99, 32, 24],
+                    "panel_close_clicks": 2,
+                    "panel_close_delay": 0.5
+                }
+            }
+        },
+        "next": ["[JumpBack]在加载页面", "主线执行快捷挑战"]
+    },
+    "主线执行快捷挑战": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "main_storyline_challenge",
+                "custom_action_param": {
+                    "max_challenges": 0,
+                    "stamina_roi": [82, 0, 145, 40],
+                    "stamina_cost_roi": [55, 755, 205, 52],
+                    "once_button": [63, 806, 135, 67],
+                    "multi_button": [210, 806, 135, 67],
+                    "popup_close_roi": [221, 137, 137, 78],
+                    "max_multi": 10,
+                    "retry": 3,
+                    "retry_delay": 1.5,
+                    "max_rounds": 200
+                }
+            }
+        },
+        "next": ["主线挑战返回主页面"]
+    },
+    "主线挑战返回主页面": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "主页面"
+                }
+            }
+        }
+    }
+}

@@ -48,9 +48,28 @@
         },
 		"repeat": 3,
 		"repeat_delay": 1000,
-        "next": ["[JumpBack]在加载页面", "我的搭配"],
+        "next": ["[JumpBack]在加载页面","点击前往搭配","我的搭配"],
         "timeout": 30000
 	},
+	"点击前往搭配": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["前往搭配"],
+				"roi": [252, 753, 224, 95]
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
+		},
+		"post_delay": 2000,
+		"next": ["[JumpBack]在加载页面", "推荐搭配"],
+		"timeout": 2000
+    },
     "我的搭配": {
         "recognition": {
 			"type": "OCR",
@@ -79,8 +98,11 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {}
+			}
 		},
 		"post_delay": 2000,
 		"next": ["[JumpBack]在加载页面", "确认推荐搭配"],

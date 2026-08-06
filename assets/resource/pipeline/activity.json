@@ -19,12 +19,26 @@
     },
     "点击活动名称": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [3, 122, 112, 695],
-				"expected": ["活?动"]
-			}
-		},
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+						"type": "OCR",
+						"param": {
+							"roi": [3, 122, 112, 695],
+							"expected": ["重","逢","庭"]
+						}
+					}},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "roi": [3, 122, 112, 695],
+                            "template": "重逢之庭.png"
+                        }
+                    }}
+                ]
+            }
+        },
 		"action": {
 			"type": "Custom",
             "param": {
@@ -32,7 +46,7 @@
                 "custom_action_param":{}
             }
 		},
-		"post_wait_freezes": 30000,
+		"post_wait_freezes": 20000,
 		"next": ["点击活动页面-空白"],
 		"timeout": 2000
     },
@@ -278,12 +292,26 @@
 	},
 	"点击活动剧情名称": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["沉入","交界海"],
-				"roi": [217, 1059, 214, 221]
-			}
-		},
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+						"type": "OCR",
+						"param": {
+							"expected": ["前","荒","芜","花","庭"],
+							"roi": [470, 1029, 250, 251]
+						}
+				}},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "roi": [470, 1029, 250, 251],
+                            "template": "前往荒芜花庭.png"
+                        }
+                    }}
+                ]
+            }
+        },
 		"action": {
 			"type": "Custom",
             "param": {
@@ -312,7 +340,7 @@
 					"roi": [0, 0, 720, 1280],
 					"max_points": 20000,
 					"change_detection": true,
-					"exclude": [[0, 14, 120, 114], [543, 0, 177, 202],[440, 1073, 280, 112]],
+					"exclude": [[0, 14, 120, 114], [543, 0, 177, 202],[0, 1156, 155, 89]],
 					"stop_on_no_change": true
 				}
 			}

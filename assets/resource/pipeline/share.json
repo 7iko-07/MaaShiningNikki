@@ -1,8 +1,21 @@
 {
     "分享任务链入口": {
-		"next": ["分享任务链准备"],
+		"next": ["重置分享次数"],
 		"timeout": 2000
     },
+	"重置分享次数": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "share_counter",
+				"custom_action_param": {
+					"operation": "reset"
+				}
+			}
+		},
+		"next": ["分享任务链准备"]
+	},
 	"分享任务链准备": {
         "recognition": "DirectHit",
         "action": {
@@ -20,12 +33,26 @@
     },
     "点击分享": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi":[2, 97, 223, 1183],
-				"expected": ["[分享]"]
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+                        "type": "OCR",
+                        "param": {
+                            "roi":[445, 1107, 275, 173],
+							"expected": ["[分享]"]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "OCR",
+						"param": {
+							"roi":[2, 97, 223, 1183],
+							"expected": ["[分享]"]
 			}
-		},
+                    }}
+                ]
+            }
+        },
 		"action": {
 			"type": "Click",
 			"param": {}
@@ -77,20 +104,48 @@
 		},
 		"repeat": 2,
 		"repeat_delay": 500,
-		"next": ["识别到无分享奖励","点击分享"]
+		"next": ["检查分享次数"]
+	},
+	"检查分享次数": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "share_counter",
+				"custom_action_param": {
+					"operation": "count",
+					"max_shares": 0
+				}
+			}
+		},
+		"next": ["识别到无分享奖励", "点击分享"]
 	},
     "识别到无分享奖励": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi":[2, 97, 223, 1183],
-				"expected": ["[奖励]"]
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+                        "type": "OCR",
+                        "param": {
+                            "roi":[445, 1107, 275, 173],
+							"expected": ["[奖励]"]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "OCR",
+						"param": {
+							"roi":[2, 97, 223, 1183],
+							"expected": ["[奖励]"]
 			}
-		},
+                    }}
+                ]
+            }
+        },
         "inverse": true,
 		"action": {},
 		"post_delay": 2000,
-		"next": ["stop"],
+		"next": ["点击谜之海-感应第二次-空白"],
 		"timeout": 2000
     }
 }

@@ -6,8 +6,8 @@
     "license": "MIT",
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "v0.0.8-nightly.20260723",
-    "title": "闪现吧暖暖v0.0.8#7.23 - 应许之海7.23#",
+    "version": "v0.0.9-nightly.20260806",
+    "title": "闪现吧暖暖v0.0.9#8.06 - 重逢之庭#8.05",
     "icon": "logo.ico",
     "mirrorchyan_multiplatform":false,
     "agent": {
@@ -72,9 +72,27 @@
             "group": ["日常任务"]
         },
         {
-            "name": "结伴",
-            "entry": "体力任务链入口",
-            "description": "时光钟表铺\n\n不落的帷幕\n\n印象旅航",
+            "name": "时光钟表铺",
+            "entry": "时光钟表铺任务链入口",
+            "description": "时光钟表铺",
+            "option": [
+                "时光钟表铺模式"
+            ],
+            "group": ["日常任务"]
+        },
+        {
+            "name": "不落的帷幕",
+            "entry": "不落的帷幕任务链入口",
+            "description": "不落的帷幕",
+            "option": [
+                "不落的帷幕模式"
+            ],
+            "group": ["日常任务"]
+        },
+        {
+            "name": "印象旅航",
+            "entry": "印象旅航任务链入口",
+            "description": "印象旅航",
             "group": ["日常任务"]
         },
         {
@@ -87,25 +105,46 @@
             "group": ["日常任务"]
         },
         {
-            "name": "制作目标服装",
-            "description":  "目前只获取制衣引导的衣服的时空回廊材料\n\n必须依次设定目标，会从前往后做，遇到空会停",
-            "entry": "制作目标服装任务链入口",
+            "name": "情报屋",
+            "description":  "",
+            "entry": "情报屋任务链入口",
+            "option": [
+                "获取情报对象选择",
+                "情报屋挑战次数"
+            ],
             "group": ["日常任务"]
         },
         {
-            "name": "情报屋-左一",
-            "description":  "只获取左一情报",
-            "entry": "情报屋任务链入口",
+            "name": "制作目标服装",
+            "description":  "按时空回廊、心灵迷宫、主线的固定顺序获取制衣引导目标服装的材料，不会点击前往制作。",
+            "entry": "制作目标服装任务链入口",
             "option": [
-                "情报屋挑战次数"
+                "制作目标服装材料任务"
             ],
+            "group": ["日常任务"]
+        },
+        {
+            "name": "主线普通关卡",
+            "description": "选择主线卷与章节，查找指定关卡并按设置次数进行快捷挑战。0次表示尽量耗尽可用体力，不会购买体力。",
+            "entry": "主线故事任务链入口",
+            "option": [
+                "主线挑战卷",
+                "主线挑战次数"
+            ],
+            "group": ["日常任务"]
+        },
+        {
+            "name": "挑战关卡2-1",
+            "description": "挑战关卡2-1执行五次",
+            "entry": "挑战关卡任务链入口",
             "group": ["日常任务"]
         },
         {
             "name": "回家",
             "entry": "回家任务链入口",
             "option": [
-                "自习室是否离开"
+                "自习室是否离开",
+                "是否做自习室好感任务"
             ],
             "description": "采购三次番茄炒蛋\n\n采购五次金币小物\n\n自习室好感度获取",
             "group": ["日常任务"]
@@ -129,13 +168,29 @@
         {
             "name": "感应谜之海两次",
             "entry": "心之门任务链入口",
-            "description": "感应谜之海两次",
+            "option": [
+                "是否在心之门这里分享"
+            ],
+            "description": "###[color:red][b]如果误点击消耗资源概不负责，加了重重防护应该不会出现误点击消耗资源的情况。[/b][/color]",
+            "group": ["日常任务"]
+        },
+        {
+            "name": "月卡领取",
+            "entry": "月卡任务链入口",
+            "group": ["日常任务"]
+        },
+        {
+            "name": "特权卡领取",
+            "entry": "特权卡任务链入口",
             "group": ["日常任务"]
         },
         {
             "name": "分享",
             "entry": "分享任务链入口",
-            "description": "必须在模拟器下载QQ，可以不登录但必须要有，重复分享直到分享奖励领完",
+            "description": "必须在模拟器下载QQ，可以不登录但必须要有。默认重复分享直到分享奖励领完，也可设置最多分享次数。",
+            "option": [
+                "分享次数"
+            ],
             "group": ["日常任务"]
         },
         {
@@ -154,7 +209,7 @@
             "group": ["日常任务"]
         },
         {
-            "name": "活动：应许之海",
+            "name": "活动：重逢之庭",
             "entry": "活动任务链入口",
             "default_check": false,
             "description": "###[color:red][b]活动剧情默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！复刻活动剧情可能有意想不到的点击，如果卡住了就自己点掉重新开一次该任务吧[/b][/color]",
@@ -168,9 +223,482 @@
             "entry": "心阶任务链入口",
             "description": "只能起到基本的拿奖励的作用，打不了高分，想要高分自己搭配自己打一次",
             "group": ["周常任务"]
+        },
+        {
+            "name": "购买联盟三张幻券",
+            "entry": "联盟兑换幻之券任务链入口",
+            "description": "目前只能固定购买三张",
+            "group": ["周常任务"]
+        },
+        {
+            "name": "每周礼包",
+            "entry": "每周礼包任务链入口",
+            "description": "建议周常任务每周比如周日开一次就行了，不然拖慢每日进程",
+            "group": ["周常任务"]
         }
     ],
     "option": {
+        "时光钟表铺模式": {
+            "type": "select",
+            "label": "时光钟表铺模式",
+            "description": "选择本次时光钟表铺任务的执行方式。",
+            "default_case": "快速组队（关卡04）",
+            "cases": [
+                {
+                    "name": "快速组队（关卡04）",
+                    "pipeline_override": {}
+                },
+                {
+                    "name": "独自登场_循环",
+                    "option": [
+                        "时光钟表铺独自登场次数"
+                    ],
+                    "pipeline_override": {
+                        "时光钟表铺任务链入口": {
+                            "next": ["重置时光钟表铺独自登场次数", "[JumpBack]返回主页面"]
+                        },
+                        "点击时光钟表铺": {
+                            "next": ["点击01"]
+                        },
+                        "点击01": {
+                            "next": ["点击独自登场"]
+                        }
+                    }
+                }
+            ]
+        },
+        "时光钟表铺独自登场次数": {
+            "type": "input",
+            "label": "独自登场次数",
+            "description": "只能在独自登场必定失败时使用。0表示默认执行3次；1-3表示总执行次数。独自登场后将等待失败结算，单场等待超过180秒时结束任务且不计入次数。",
+            "inputs": [
+                {
+                    "name": "solo_runs",
+                    "label": "独自登场次数",
+                    "description": "请输入0-3之间的整数。0表示总共执行3次；1-3表示对应的总执行次数。单场等待失败结算超过180秒时结束任务且不计入次数。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^[0-3]$",
+                    "pattern_msg": "请输入0-3之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "检查时光钟表铺独自登场次数": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "time_clock_shop_counter",
+                            "custom_action_param": {
+                                "operation": "count",
+                                "max_runs": "{solo_runs}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "不落的帷幕模式": {
+            "type": "select",
+            "label": "不落的帷幕模式",
+            "description": "选择本次不落的帷幕任务的执行方式。",
+            "default_case": "快速组队（高难度·第八幕）",
+            "cases": [
+                {
+                    "name": "快速组队（高难度·第八幕）",
+                    "pipeline_override": {}
+                },
+                {
+                    "name": "独自登场_循环（普通难度·第一幕）",
+                    "option": [
+                        "不落的帷幕独自登场次数"
+                    ],
+                    "pipeline_override": {
+                        "不落的帷幕任务链入口": {
+                            "next": ["重置不落的帷幕独自登场次数", "[JumpBack]返回主页面"]
+                        },
+                        "点击上演中": {
+                            "next": ["点击普通难度"]
+                        },
+                        "点击第一幕": {
+                            "next": ["点击不落的帷幕-独自登场"]
+                        }
+                    }
+                }
+            ]
+        },
+        "不落的帷幕独自登场次数": {
+            "type": "input",
+            "label": "独自登场次数",
+            "description": "只能在独自登场必定失败时使用。0表示默认执行3次；1-3表示总执行次数。若未识别到失败结算页，将立即结束且不再循环。",
+            "inputs": [
+                {
+                    "name": "solo_runs",
+                    "label": "独自登场次数",
+                    "description": "请输入0-3之间的整数。0表示总共执行3次；1-3表示对应的总执行次数。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^[0-3]$",
+                    "pattern_msg": "请输入0-3之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "检查不落的帷幕独自登场次数": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "unending_curtain_counter",
+                            "custom_action_param": {
+                                "operation": "count",
+                                "max_runs": "{solo_runs}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "分享次数": {
+            "type": "input",
+            "label": "最多分享次数",
+            "description": "输入0时重复分享直到分享奖励领完；输入1-5时最多分享指定次数，若提前没有奖励则提前停止。",
+            "inputs": [
+                {
+                    "name": "max_shares",
+                    "label": "分享次数",
+                    "description": "请输入0-5之间的整数。0表示沿用原逻辑，1-5表示本次任务的最多分享次数。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^[0-5]$",
+                    "pattern_msg": "请输入0-5之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "检查分享次数": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "share_counter",
+                            "custom_action_param": {
+                                "operation": "count",
+                                "max_shares": "{max_shares}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "制作目标服装材料任务": {
+            "type": "checkbox",
+            "label": "制作目标服装材料任务",
+            "description": "选择需要执行的材料来源。无论勾选顺序如何，都会按时空回廊、心灵迷宫、主线的顺序执行。",
+            "default_case": ["时空回廊获取材料"],
+            "cases": [
+                {
+                    "name": "时空回廊获取材料",
+                    "pipeline_override": {
+                        "制作目标服装选择时空回廊": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "心灵迷宫获取材料",
+                    "option": [
+                        "制作目标服装心灵迷宫挑战次数"
+                    ],
+                    "pipeline_override": {
+                        "制作目标服装选择心灵迷宫": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "主线获取材料",
+                    "option": [
+                        "制作目标服装主线挑战次数"
+                    ],
+                    "pipeline_override": {
+                        "制作目标服装选择主线": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "制作目标服装心灵迷宫挑战次数": {
+            "type": "input",
+            "label": "心灵迷宫最大挑战次数",
+            "description": "只点击“挑战多次”。挑战次数按整个心灵迷宫材料阶段累计，实际次数不会超过设置值。",
+            "inputs": [
+                {
+                    "name": "max_challenges",
+                    "label": "最大挑战次数",
+                    "description": "输入0表示不设置挑战次数上限；输入正整数表示整个心灵迷宫阶段的挑战次数硬上限。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^(0|[1-9][0-9]?|100)$",
+                    "pattern_msg": "请输入0-100之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "批量挑战心灵迷宫制衣材料": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "make_target_clothes_batch_challenge",
+                            "custom_action_param": {
+                                "mode": "heart_maze",
+                                "sufficient_roi": [379, 355, 265, 63],
+                                "sufficient_expected": ["数量已足够"],
+                                "stamina_roi": [82, 0, 145, 40],
+                                "stamina_cost_roi": [55, 755, 205, 52],
+                                "remaining_count_roi": [298, 755, 330, 52],
+                                "multi_button": [210, 806, 135, 67],
+                                "popup_close_roi": [221, 137, 137, 78],
+                                "max_challenges": "{max_challenges}",
+                                "limit_next": ["返回制衣页面-心灵迷宫达到上限"],
+                                "max_multi": 10,
+                                "retry": 3,
+                                "retry_delay": 1.5,
+                                "max_rounds": 100
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "制作目标服装主线挑战次数": {
+            "type": "input",
+            "label": "主线最大挑战次数",
+            "description": "只点击“挑战多次”。实际次数不会超过设置值，但在无法安全凑足时可能少于设置值。",
+            "inputs": [
+                {
+                    "name": "max_challenges",
+                    "label": "最大挑战次数",
+                    "description": "输入0表示尽量耗尽剩余体力；输入正整数表示实际挑战次数的硬上限。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^(0|[1-9][0-9]{0,2})$",
+                    "pattern_msg": "请输入0-999之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "批量挑战主线制衣材料": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "make_target_clothes_batch_challenge",
+                            "custom_action_param": {
+                                "mode": "main_story",
+                                "sufficient_roi": [379, 355, 265, 63],
+                                "sufficient_expected": ["数量已足够"],
+                                "stamina_roi": [82, 0, 145, 40],
+                                "stamina_cost_roi": [55, 755, 205, 52],
+                                "multi_button": [210, 806, 135, 67],
+                                "popup_close_roi": [221, 137, 137, 78],
+                                "max_challenges": "{max_challenges}",
+                                "limit_next": ["返回制衣页面-主线达到上限"],
+                                "max_multi": 10,
+                                "retry": 3,
+                                "retry_delay": 1.5,
+                                "max_rounds": 100
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "主线挑战卷": {
+            "type": "select",
+            "label": "主线卷",
+            "description": "选择主线所在卷。首版仅开放已配置章节名的卷 I。",
+            "default_case": "卷 I",
+            "cases": [
+                {
+                    "name": "卷 I",
+                    "option": [
+                        "主线挑战卷I章节"
+                    ],
+                    "pipeline_override": {
+                        "主线选择卷": {
+                            "action": {
+                                "type": "Custom",
+                                "param": {
+                                    "custom_action": "click_and_wait_change",
+                                    "custom_action_param": {
+                                        "target": [83, 434, 72, 44],
+                                        "timeout": 1500,
+                                        "max_retries": 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "主线挑战卷I章节": {
+            "type": "select",
+            "label": "卷 I 章节",
+            "description": "按章节序号选择；定位时只识别章节名和人工筛选的安全关键词。",
+            "default_case": "第一章：启程",
+            "cases": [
+                {
+                    "name": "第一章：启程",
+                    "option": [
+                        "主线挑战关卡尾号"
+                    ],
+                    "pipeline_override": {
+                        "主线选择章节": {
+                            "action": {
+                                "type": "Custom",
+                                "param": {
+                                    "custom_action": "main_storyline_select_chapter",
+                                    "custom_action_param": {
+                                        "chapter_name": "第一章：启程",
+                                        "expected": ["启程", "启"],
+                                        "roi": [190, 470, 500, 620],
+                                        "retry": 3,
+                                        "retry_delay": 1.0
+                                    }
+                                }
+                            },
+                            "next": ["[JumpBack]在加载页面", "主线查找第一章关卡"]
+                        }
+                    }
+                },
+                {
+                    "name": "第二章：星之殇",
+                    "option": [
+                        "主线挑战关卡尾号"
+                    ],
+                    "pipeline_override": {
+                        "主线选择章节": {
+                            "action": {
+                                "type": "Custom",
+                                "param": {
+                                    "custom_action": "main_storyline_select_chapter",
+                                    "custom_action_param": {
+                                        "chapter_name": "第二章：星之殇",
+                                        "expected": ["星之殇", "殇"],
+                                        "roi": [190, 470, 500, 620],
+                                        "retry": 3,
+                                        "retry_delay": 1.0
+                                    }
+                                }
+                            },
+                            "next": ["[JumpBack]在加载页面", "主线查找第二章关卡"]
+                        }
+                    }
+                },
+                {
+                    "name": "第三章：英雄的旅程",
+                    "option": [
+                        "主线挑战关卡尾号"
+                    ],
+                    "pipeline_override": {
+                        "主线选择章节": {
+                            "action": {
+                                "type": "Custom",
+                                "param": {
+                                    "custom_action": "main_storyline_select_chapter",
+                                    "custom_action_param": {
+                                        "chapter_name": "第三章：英雄的旅程",
+                                        "expected": ["英雄的旅程", "英雄", "旅程"],
+                                        "roi": [190, 470, 500, 620],
+                                        "retry": 3,
+                                        "retry_delay": 1.0
+                                    }
+                                }
+                            },
+                            "next": ["[JumpBack]在加载页面", "主线查找第三章关卡"]
+                        }
+                    }
+                }
+            ]
+        },
+        "主线挑战关卡尾号": {
+            "type": "input",
+            "label": "关卡序号",
+            "description": "只填写连字符后的数字。例如选择第二章并填写3，程序会查找2-3。",
+            "inputs": [
+                {
+                    "name": "stage_suffix",
+                    "label": "关卡尾号",
+                    "description": "请输入1-99之间的整数，不要填写章节前缀和连字符。",
+                    "default": "1",
+                    "pipeline_type": "int",
+                    "verify": "^([1-9]|[1-9][0-9])$",
+                    "pattern_msg": "请输入1-99之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "主线查找第一章关卡": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "main_storyline_find_stage",
+                            "custom_action_param": {
+                                "chapter_number": 1,
+                                "stage_suffix": "{stage_suffix}"
+                            }
+                        }
+                    }
+                },
+                "主线查找第二章关卡": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "main_storyline_find_stage",
+                            "custom_action_param": {
+                                "chapter_number": 2,
+                                "stage_suffix": "{stage_suffix}"
+                            }
+                        }
+                    }
+                },
+                "主线查找第三章关卡": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "main_storyline_find_stage",
+                            "custom_action_param": {
+                                "chapter_number": 3,
+                                "stage_suffix": "{stage_suffix}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "主线挑战次数": {
+            "type": "input",
+            "label": "主线挑战次数",
+            "description": "0表示尽量耗尽当前可用体力；1-100表示实际挑战次数的严格上限，不会购买体力。",
+            "inputs": [
+                {
+                    "name": "main_storyline_challenges",
+                    "label": "挑战次数",
+                    "description": "请输入0-100之间的整数。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^(0|[1-9][0-9]?|100)$",
+                    "pattern_msg": "请输入0-100之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "主线执行快捷挑战": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "main_storyline_challenge",
+                            "custom_action_param": {
+                                "max_challenges": "{main_storyline_challenges}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "活动":{
             "type": "checkbox",
             "description": "",
@@ -268,6 +796,44 @@
                 }
             ]
         },
+        "是否在心之门这里分享":{
+            "type": "switch",
+            "description": "在这里只能分享一次",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {}
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "点击谜之海-感应第二次":{
+                            "next": ["点击谜之海-感应第二次-空白","点击体力用尽确定","[JumpBack]嗯等"]
+                        }
+                    }
+                }
+            ]
+        },
+        "是否做自习室好感任务":{
+            "type": "switch",
+            "description": "不能单独做自习室，选择是会做完前面任务继续做这个，选择否只是不做自习室，前面的依旧会做",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {}
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "点击空白-日常采购":{
+                            "next": ["stop"]
+                        }
+                    }
+                }
+            ]
+        },
         "自习室是否离开":{
             "type": "select",
             "description": "今日是否永久离开，不想关自习室陪伴的暖妈一定要选只是暂时离开",
@@ -277,12 +843,35 @@
                     "name": "只是暂时离开",
                     "pipeline_override": {
                         "点击退出自习室": {
-                            "next": ["点击只是暂时离开"]
+                            "next": ["[JumpBack]在加载页面", "点击只是暂时离开"]
                         }
                     }
                 },
                 {
                     "name": "结束今日行程"
+                }
+            ]
+        },
+        "获取情报对象选择":{
+            "type": "select",
+            "description": "自定义次数",
+            "default_case": "左一",
+            "cases": [
+                {
+                    "name": "左一",
+                    "pipeline_override": {
+                        "情报屋任务链入口":{
+                        "next": ["点击左一", "[JumpBack]上滑情报屋"]
+                        }
+                    }
+                },
+                {
+                    "name": "秦衣·上",
+                    "pipeline_override": {
+                        "情报屋任务链入口":{
+                        "next": ["点击秦衣·上", "[JumpBack]上滑情报屋"]
+                        }
+                    }
                 }
             ]
         },

@@ -1,0 +1,191 @@
+{
+    "挑战关卡任务链入口": {
+        "next": ["挑战关卡任务链准备"],
+        "timeout": 2000
+    },
+    "挑战关卡任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "主线故事"
+                }
+            }
+        },
+        "next": ["挑战关卡点击章节入口"],
+        "timeout": 30000
+    },
+    "挑战关卡点击章节入口": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "主线章节.png",
+                "roi": [620, 35, 100, 125],
+                "threshold": 0.7
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
+        },
+        "post_delay": 800,
+        "timeout": 4000,
+        "next": ["[JumpBack]在加载页面", "挑战关卡选择卷"]
+    },
+    "挑战关卡选择卷": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [89, 441, 66, 28],
+                "expected": ["卷"]
+            }
+        },
+        "action": {
+            "type": "Click"
+        },
+        "post_delay": 1000,
+        "timeout": 4000,
+        "next": ["[JumpBack]在加载页面", "挑战关卡选择第二章"]
+    },
+    "挑战关卡选择第二章": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [274, 648, 255, 67],
+                "expected": ["殇"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
+        },
+        "post_delay": 1000,
+        "timeout": 4000,
+        "next": ["[JumpBack]在加载页面", "挑战关卡识别2-1","不是真的就往右划三次"]
+    },
+    "挑战关卡识别2-1": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 124, 720, 310],
+                "expected": ["2-1"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
+        },
+        "post_delay": 1000,
+        "timeout": 4000,
+        "next": ["[JumpBack]在加载页面", "挑战关卡识别是真2-1","不是真的就关闭"]
+    },
+    "挑战关卡识别是真2-1": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 275, 720, 278],
+                "expected": ["挑战关卡2-1"]
+            }
+        },
+        "action": {},
+        "post_delay": 1000,
+        "timeout": 4000,
+        "next": ["[JumpBack]在加载页面", "挑战关卡2-1执行五次"]
+    },
+    "挑战关卡2-1执行五次": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 730, 203, 174],
+                "expected": ["挑战"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
+        },
+        "repeat": 12,
+        "repeat_delay": 500,
+        "post_delay": 1000,
+        "timeout": 4000,
+        "next": ["stop"]
+    },
+    "不是真的就关闭": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [322, 112, 23, 15]
+            }
+        },
+        "repeat": 2,
+        "repeat_delay": 500,
+        "post_delay": 1000,
+        "next": ["不是真的就往右划三次"],
+        "timeout": 1000
+    },
+    "不是真的就往右划三次": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [35, 584],
+                "end": [672, 581]
+            }
+        },
+        "repeat": 3,
+        "post_delay": 1000,
+        "timeout": 1000,
+        "next": ["挑战关卡慢速查找真2-1"]
+    },
+    "挑战关卡慢速查找真2-1": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "main_storyline_find_stage",
+                "custom_action_param": {
+                    "chapter_number": 2,
+                    "stage_suffix": 1,
+                    "roi": [0, 124, 720, 310],
+                    "scan_begin": [698, 500],
+                    "scan_end": [61, 500],
+                    "duration": 6000,
+                    "end_hold": 2000,
+                    "wait_after_swipe": 1.0,
+                    "max_scan_swipes": 30,
+                    "compare_roi": [0, 180, 720, 850],
+                    "pixel_threshold": 25,
+                    "change_threshold": 0.015,
+                    "panel_title_roi": [0, 275, 720, 278],
+                    "required_panel_title": "挑战关卡2-1",
+                    "panel_retry": 3,
+                    "panel_retry_delay": 1.0,
+                    "panel_load_delay": 1.0,
+                    "panel_close_roi": [322, 112, 23, 15],
+                    "panel_close_clicks": 2,
+                    "panel_close_delay": 0.5
+                }
+            }
+        },
+        "next": ["[JumpBack]在加载页面", "挑战关卡2-1执行五次"]
+    }
+}

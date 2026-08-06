@@ -1,0 +1,148 @@
+{
+    "印象旅航任务链入口": {
+		"next": ["印象旅航任务链准备", "[JumpBack]返回主页面"],
+		"timeout": 2000
+    },
+	"印象旅航任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "结伴"
+                }
+            }
+        },
+        "next": ["印象旅航入口"],
+        "timeout": 30000
+    },
+	"印象旅航入口": {
+		"recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["点击印象旅航", "[JumpBack]返回结伴页面"]
+    },
+	"点击印象旅航": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [257, 713, 294, 168],
+				"expected": ["印象旅航","印象"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击印象旅航高难度"],
+		"timeout": 2000
+    },
+    "点击印象旅航高难度": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 667, 720, 90],
+				"expected": ["高难度", "高难"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击虚渊"],
+		"timeout": 2000
+    },
+    "点击虚渊": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [533, 765, 147, 135],
+				"expected": ["虚渊","虚"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击印象旅航快速组队"],
+		"timeout": 2000
+    },
+    "点击印象旅航快速组队":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [487, 1138, 218, 84],
+				"expected": ["快速组队"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+        "post_delay": 10000,
+		"next": ["[JumpBack]印象旅航次数用完确定","[JumpBack]点击体力用尽确定", "点击印象旅航空白"],
+		"timeout": 2000
+    },
+    "印象旅航次数用完确定": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 498, 720, 311],
+				"expected": ["购买次数已经用完"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [317, 688, 83, 49]
+			}
+		},
+		"timeout": 2000
+    },
+    "点击印象旅航空白": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [121, 57, 59, 39]
+            }
+        },
+        "repeat": 3,
+        "next": ["点击印象旅航返回"]
+    },
+    "点击印象旅航返回": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000,
+        "post_wait_freezes": 1000,
+        "next": ["stop"]
+    },
+	"返回结伴页面": {
+		"recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "结伴"
+                }
+            }
+        },
+		"timeout": 30000
+	}
+}

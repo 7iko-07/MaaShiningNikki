@@ -10,3 +10,7 @@ from . import information_house_action
 from . import memory_shop
 from . import claim_rewards
 from . import card_matching
+from . import share_counter
+from . import time_clock_shop_counter
+from . import unending_curtain_counter
+from . import main_storyline

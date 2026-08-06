@@ -26,6 +26,22 @@
         "timeout": 2000,
         "post_delay": 500
     },
+    "点击秦衣·上": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["秦衣·上", "夜阑月", "夜"],
+				"roi": [346, 236, 186, 1044]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击托管调查", "点击调查中"],
+		"timeout": 2000
+    },
     "点击左一": {
         "recognition": {
 			"type": "OCR",

@@ -136,9 +136,9 @@
 				"custom_action_param": {}
 			}
 		},
-        "post_delay": 1000,
+        "post_delay": 5000,
         "timeout": 3000,
-		"next": ["点击谜之海-感应第二次-空白","点击体力用尽确定","[JumpBack]嗯等"]
+		"next": ["点击分享","点击谜之海-感应第二次-空白","点击体力用尽确定","[JumpBack]嗯等"]
 	},
     "点击谜之海-感应第二次-空白":{
 		"recognition": {

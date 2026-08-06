@@ -1044,10 +1044,24 @@
     },
     "导航点击心之门": {
         "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": ["心之门"],
-                "roi": [0, 123, 113, 756]
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+                        "type": "OCR",
+                        "param": {
+                            "expected": ["心之门"],
+                            "roi": [0, 123, 113, 756]
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "roi": [0, 123, 113, 756],
+                            "template": "心之门.png"
+                        }
+                    }}
+                ]
             }
         },
         "action": {
@@ -1110,6 +1124,56 @@
                 "roi": [463, 72, 257, 345],
                 "expected": ["切?换?期数"]
             }
+        },
+        "action": "DoNothing",
+        "timeout": 2000
+    },
+    "导航点击主线故事": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["主线故事"],
+                "roi": [260, 415, 330, 191]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
+        },
+        "next": ["主线特殊过渡页面","导航在主线故事页面"],
+        "post_delay": 2000,
+        "timeout": 2000
+    },
+    "主线特殊过渡页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [80, 60, 560, 900],
+                "expected": ["我们一起出发吧", "一起出发", "调查行动", "方舟档案", "禁区的访客"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "target": [139, 374, 24, 34]
+                }
+            }
+        },
+        "post_delay": 1000,
+        "next": ["[JumpBack]在加载页面", "导航在主线故事页面"]
+    },
+    "导航在主线故事页面": {
+        "recognition": {
+            "type": "TemplateMatch",
+                "param": {
+                    "roi": [616, 38, 104, 133],
+                    "template": "主线章节.png"
+                }
         },
         "action": "DoNothing",
         "timeout": 2000

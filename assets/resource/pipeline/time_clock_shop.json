@@ -1,0 +1,285 @@
+{
+    "时光钟表铺任务链入口": {
+		"next": ["时光钟表铺任务链准备", "[JumpBack]返回主页面"],
+		"timeout": 2000
+    },
+	"重置时光钟表铺独自登场次数": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "time_clock_shop_counter",
+				"custom_action_param": {
+					"operation": "reset"
+				}
+			}
+		},
+		"next": ["时光钟表铺任务链准备"]
+	},
+	"时光钟表铺任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "结伴"
+                }
+            }
+        },
+        "next": ["时光钟表铺入口"],
+        "timeout": 30000
+    },
+	"时光钟表铺入口": {
+		"recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["点击时光钟表铺", "[JumpBack]返回结伴页面"]
+    },
+	"点击时光钟表铺": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"expected": ["时光钟表铺", "钟表"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击04"],
+		"timeout": 2000
+    },
+	"点击01": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [66, 705, 126, 132],
+				"expected": ["1"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击独自登场"],
+		"timeout": 2000
+    },
+	"点击独自登场": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 1082, 369, 198],
+				"expected": ["独自登场"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["初始化时光钟表铺独自登场等待"],
+		"timeout": 2000
+    },
+	"初始化时光钟表铺独自登场等待": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "time_clock_shop_counter",
+				"custom_action_param": {
+					"operation": "start_wait"
+				}
+			}
+		},
+		"next": ["点击时光钟表铺-前往搭配", "点击失败空白", "时光钟表铺独自登场等待超时", "[JumpBack]嗯等"]
+	},
+	"时光钟表铺独自登场等待超时": {
+		"recognition": {
+			"type": "Custom",
+			"param": {
+				"custom_recognition": "time_clock_shop_wait_timeout",
+				"custom_recognition_param": {
+					"timeout_seconds": 180
+				}
+			}
+		},
+		"action": "DoNothing",
+		"next": ["stop"]
+	},
+	"点击时光钟表铺-前往搭配": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [346, 636, 374, 158],
+				"expected": ["搭配","前往"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["[JumpBack]在加载页面","点击时光钟表铺-推荐搭配"],
+		"timeout": 2000
+    },
+	"点击时光钟表铺-推荐搭配": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [523, 1144, 197, 136],
+				"expected": ["推荐搭配"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["[JumpBack]在加载页面","点击时光钟表铺-下一步"],
+		"timeout": 2000
+    },
+	"点击时光钟表铺-下一步": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 1031, 386, 249],
+				"expected": ["下一步"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["[JumpBack]在加载页面","点击时光钟表铺-确定影召"],
+		"timeout": 2000
+    },
+	"点击时光钟表铺-确定影召": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [228, 1068, 267, 90],
+				"expected": ["确定"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["[JumpBack]在加载页面","点击独自登场"],
+		"timeout": 2000
+    },
+	"点击失败空白": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [277, 26, 443, 197],
+				"expected": ["战斗评分"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"repeat": 3,
+		"repeat_delay": 1000,
+		"post_delay": 2000,
+		"next": ["检查时光钟表铺独自登场次数"],
+		"timeout": 2000
+    },
+	"检查时光钟表铺独自登场次数": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "time_clock_shop_counter",
+				"custom_action_param": {
+					"operation": "count",
+					"max_runs": 0
+				}
+			}
+		},
+		"next": ["点击01"]
+	},
+    "点击04": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [537, 741, 116, 113],
+				"expected": ["4"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 2000,
+		"next": ["点击时光钟表铺快速组队"],
+		"timeout": 2000
+    },
+    "点击时光钟表铺快速组队":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [487, 1138, 218, 84],
+				"expected": ["快速组队"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+        "post_delay": 10000,
+		"next": ["[JumpBack]时光钟表铺次数用完确定","[JumpBack]点击体力用尽确定", "点击时光钟表铺空白"],
+		"timeout": 2000
+    },
+    "时光钟表铺次数用完确定": {
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 498, 720, 311],
+				"expected": ["购买次数已经用完"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [317, 688, 83, 49]
+			}
+		},
+		"timeout": 2000
+    },
+    "点击时光钟表铺空白": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [432, 109, 181, 75]
+            }
+        },
+        "repeat": 3,
+        "next": ["点击时光钟表铺返回"]
+    },
+    "点击时光钟表铺返回": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000,
+        "post_wait_freezes": 1000,
+        "next": ["stop"]
+    }
+}
