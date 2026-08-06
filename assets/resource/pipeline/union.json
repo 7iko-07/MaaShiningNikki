@@ -116,13 +116,8 @@
 			}
 		},
 		"action": {
-			"type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"change_threshold": 0.05
-				}
-			}
+			"type": "Click",
+			"param": {}
 		},
 		"post_delay": 1000,
 		"next": ["[JumpBack]在加载页面", "点击竞技场-下一步"],
@@ -160,7 +155,7 @@
 			"param": {}
 		},
 		"post_delay": 1000,
-		"next": ["[JumpBack]在加载页面", "[JumpBack]嗯等","等待竞技场比拼结束"],
+		"next": ["[JumpBack]在加载页面","等待竞技场比拼结束", "[JumpBack]嗯等"],
 		"timeout": 2000
     },
 	"等待竞技场比拼结束": {
