@@ -6,8 +6,8 @@
     "license": "MIT",
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "v0.0.9-nightly.20260807",
-    "title": "闪现吧暖暖v0.0.9#8.07 - 重逢之庭#8.05",
+    "version": "v0.0.9-nightly.20260820",
+    "title": "闪现吧暖暖v0.0.9#8.20 - 【复刻】是身为焰#8.20",
     "icon": "logo.ico",
     "mirrorchyan_multiplatform":false,
     "agent": {
@@ -209,7 +209,7 @@
             "group": ["日常任务"]
         },
         {
-            "name": "活动：重逢之庭",
+            "name": "活动：是身为焰",
             "entry": "活动任务链入口",
             "default_check": false,
             "description": "###[color:red][b]活动剧情默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！复刻活动剧情可能有意想不到的点击，如果卡住了就自己点掉重新开一次该任务吧[/b][/color]",
@@ -225,6 +225,15 @@
             "group": ["周常任务"]
         },
         {
+            "name": "联盟兑换幻之券",
+            "entry": "联盟兑换幻之券任务链入口",
+            "description": "只能兑换max张也就是三张",
+            "option": [
+                "联盟商店"
+            ],
+            "group": ["周常任务"]
+        },
+        {
             "name": "每周礼包",
             "entry": "每周礼包任务链入口",
             "description": "建议周常任务每周比如周日开一次就行了，不然拖慢每日进程",
@@ -232,6 +241,24 @@
         }
     ],
     "option": {
+        "联盟商店": {
+            "type": "select",
+            "default_case": "三张幻之券",
+            "cases": [
+                {
+                    "name": "三张幻之券",
+                    "pipeline_override": {}
+                },
+                {
+                    "name": "三张幻之券+三张绮之券",
+                    "pipeline_override": {
+                        "点击联盟商店": {
+                            "next": ["[JumpBack]在加载页面","点击绮之券"]
+                        }
+                    }
+                }
+            ]
+        },
         "时光钟表铺模式": {
             "type": "select",
             "label": "时光钟表铺模式",
@@ -450,6 +477,7 @@
                                 "popup_close_roi": [221, 137, 137, 78],
                                 "max_challenges": "{max_challenges}",
                                 "limit_next": ["返回制衣页面-心灵迷宫达到上限"],
+                                "insufficient_stamina_next": ["返回制衣页面-心灵迷宫体力不足"],
                                 "max_multi": 10,
                                 "retry": 3,
                                 "retry_delay": 1.5,
@@ -491,6 +519,7 @@
                                 "popup_close_roi": [221, 137, 137, 78],
                                 "max_challenges": "{max_challenges}",
                                 "limit_next": ["返回制衣页面-主线达到上限"],
+                                "insufficient_stamina_next": ["返回制衣页面-主线达到上限"],
                                 "max_multi": 10,
                                 "retry": 3,
                                 "retry_delay": 1.5,

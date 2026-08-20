@@ -1,0 +1,193 @@
+{
+    "联盟兑换幻之券任务链入口": {
+		"next": ["联盟兑换幻之券任务链准备"],
+		"timeout": 2000
+    },
+	"联盟兑换幻之券任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "商城"
+                }
+            }
+        },
+        "next": ["点击兑换"],
+        "timeout": 30000
+    },
+	"点击兑换": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [292, 97, 141, 120],
+				"expected": ["兑换"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击联盟商店","左划兑换菜单"],
+		"timeout": 2000
+	},
+	"左划兑换菜单": {
+        "recognition": {
+            "type": "DirectHit"
+        },
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [707, 477],
+                "end": [15, 476],
+				"end_hold": 500
+            }
+        },
+		"post_delay": 500,
+		"next": ["[JumpBack]在加载页面","点击联盟商店"],
+        "timeout": 1000
+    },
+	"点击联盟商店": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [0, 424, 720, 107],
+				"expected": ["联盟"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击幻之券"],
+		"timeout": 2000
+	},
+	"点击幻之券": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [525, 548, 195, 192],
+				"expected": ["幻之?券"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击max"],
+		"timeout": 2000
+	},
+	"点击max": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [492, 650, 68, 48],
+				"expected": ["MAX"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击购买幻之券"],
+		"timeout": 2000
+	},
+	"点击购买幻之券": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [167, 716, 391, 57],
+				"expected": ["立即购买"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["点击联盟商店-空白"],
+		"timeout": 2000
+	},
+	"点击绮之券": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [525, 548, 195, 192],
+				"expected": ["绮之?券"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击max-绮之券"],
+		"timeout": 2000
+	},
+	"点击max-绮之券": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [492, 650, 68, 48],
+				"expected": ["MAX"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["[JumpBack]在加载页面","点击购买绮之券"],
+		"timeout": 2000
+	},
+	"点击购买绮之券": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [167, 716, 391, 57],
+				"expected": ["立即购买"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {}
+		},
+		"post_delay": 1000,
+		"next": ["点击联盟商店-空白"],
+		"timeout": 2000
+	},
+	"点击联盟商店-空白": {
+		"pre_delay": 1000,
+		"recognition": {
+			"type": "OCR",
+			"param": {
+				"roi": [304, 244, 315, 95],
+				"expected": ["[联盟]"]
+			}
+		},
+		"action": {
+			"type": "Click",
+			"param": {
+				"target": [351, 221, 17, 12]
+			}
+		},
+		"repeat": 2,
+		"repeat_delay": 1000,
+		"post_delay": 1000,
+		"next": ["stop"],
+		"timeout": 2000
+	}
+}

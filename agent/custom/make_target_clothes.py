@@ -206,6 +206,7 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
         popup_close_roi = params.get("popup_close_roi", [221, 137, 137, 78])
         popup_close_delay = self._as_float(params.get("popup_close_delay"), 2.0)
         max_rounds = self._as_int(params.get("max_rounds"), 100)
+        insufficient_stamina_next = params.get("insufficient_stamina_next")
         default_limit_next = (
             ["返回制衣页面-心灵迷宫达到上限"]
             if mode == "heart_maze"
@@ -288,6 +289,22 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                     logger.error(
                         "make_target_clothes_batch_challenge: failed to override next "
                         "after heart-maze attempts were exhausted"
+                    )
+                    return False
+                return True
+
+            if stamina < stamina_cost and insufficient_stamina_next:
+                logger.info(
+                    "make_target_clothes_batch_challenge: insufficient stamina; "
+                    f"stamina={stamina}, stamina_cost={stamina_cost}"
+                )
+                if not context.override_next(
+                    argv.node_name,
+                    insufficient_stamina_next,
+                ):
+                    logger.error(
+                        "make_target_clothes_batch_challenge: failed to override next "
+                        "after stamina became insufficient"
                     )
                     return False
                 return True

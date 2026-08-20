@@ -26,14 +26,14 @@
 						"type": "OCR",
 						"param": {
 							"roi": [3, 122, 112, 695],
-							"expected": ["重","逢","庭"]
+							"expected": ["身","焰"]
 						}
 					}},
                     {"recognition": {
                         "type": "TemplateMatch",
                         "param": {
                             "roi": [3, 122, 112, 695],
-                            "template": "重逢之庭.png"
+                            "template": "是身为焰.png"
                         }
                     }}
                 ]
@@ -298,15 +298,15 @@
                     {"recognition": {
 						"type": "OCR",
 						"param": {
-							"expected": ["前","荒","芜","花","庭"],
-							"roi": [470, 1029, 250, 251]
+							"expected": ["深","地","宫"],
+							"roi": [235, 1074, 235, 206]
 						}
 				}},
                     {"recognition": {
                         "type": "TemplateMatch",
                         "param": {
-                            "roi": [470, 1029, 250, 251],
-                            "template": "前往荒芜花庭.png"
+                            "roi": [235, 1074, 235, 206],
+                            "template": "深入地宫.png"
                         }
                     }}
                 ]

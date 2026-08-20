@@ -67,8 +67,13 @@
 			"param": {}
 		},
 		"post_delay": 3000,
-		"next": ["是否是主页面", "点击开始", "[JumpBack]点击跳过", "返回主页面"],
+		"next": ["是否是主页面", "点击开始", "启动后收尾"],
 		"timeout": 4000
+	},
+	"启动后收尾": {
+		"recognition": "DirectHit",
+		"action": "DoNothing",
+		"next": ["[JumpBack]点击跳过", "是否是主页面", "返回主页面"]
 	},
 	"点击跳过":{
 		"recognition": {

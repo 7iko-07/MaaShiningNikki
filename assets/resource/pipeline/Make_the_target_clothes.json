@@ -323,6 +323,7 @@
                     "popup_close_roi": [221, 137, 137, 78],
                     "max_challenges": 0,
                     "limit_next": ["返回制衣页面-心灵迷宫达到上限"],
+                    "insufficient_stamina_next": ["返回制衣页面-心灵迷宫体力不足"],
                     "max_multi": 10,
                     "retry": 3,
                     "retry_delay": 1.5,
@@ -350,6 +351,7 @@
                     "popup_close_roi": [221, 137, 137, 78],
                     "max_challenges": 0,
                     "limit_next": ["返回制衣页面-主线达到上限"],
+                    "insufficient_stamina_next": ["返回制衣页面-主线达到上限"],
                     "max_multi": 10,
                     "retry": 3,
                     "retry_delay": 1.5,
@@ -395,6 +397,11 @@
         "recognition": "DirectHit",
         "action": "DoNothing",
         "next": ["在制衣页面-心灵迷宫达到上限", "[JumpBack]点击返回制衣-心灵迷宫"]
+    },
+    "返回制衣页面-心灵迷宫体力不足": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["在制衣页面-心灵迷宫体力不足", "[JumpBack]点击返回制衣-心灵迷宫"]
     },
     "点击返回制衣-时空回廊": {
         "recognition": {
@@ -517,6 +524,25 @@
         },
         "action": "DoNothing",
         "next": ["制作目标服装心灵迷宫阶段完成"]
+    },
+    "在制衣页面-心灵迷宫体力不足": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [218, 524, 283, 92],
+                "expected": ["制衣", "目标", "添加"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_batch_finish",
+                "custom_action_param": {
+                    "mode": "heart_maze"
+                }
+            }
+        },
+        "next": ["stop"]
     },
     "复查当前服装材料-心灵迷宫": {
         "recognition": "DirectHit",
