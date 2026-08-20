@@ -193,7 +193,7 @@
             "param": {}
         },
         "post_delay": 2000,
-        "next": ["点击前往获取时空回廊制衣材料", "点击返回材料页-时空回廊"],
+        "next": ["点击前往获取时空回廊制衣材料", "点击返回材料页-时空回廊末项"],
         "timeout": 2000
     },
     "点击末项全部材料-心灵迷宫": {
@@ -651,6 +651,22 @@
         "timeout": 5000,
         "post_wait_freezes": 1000,
         "next": ["左划制衣页面-主线"]
+    },
+    "点击返回材料页-时空回廊末项": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "timeout": 5000,
+        "post_wait_freezes": 1000,
+        "next": ["制作目标服装时空回廊阶段完成"]
     },
     "点击返回材料页-心灵迷宫末项": {
         "recognition": {
