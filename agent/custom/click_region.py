@@ -32,6 +32,11 @@ class ClickRegionAction(CustomAction):
         if step_x <= 0 or step_y <= 0:
             return False
 
+        # top_to_bottom: 逐列自上向下；left_to_right: 逐行从左向右。
+        direction = params.get("direction", "top_to_bottom")
+        if direction not in ("top_to_bottom", "left_to_right"):
+            return False
+
         delay = params.get("delay", 200)
         use_random = params.get("random", False)
         max_points = params.get("max_points", 200)
@@ -67,6 +72,9 @@ class ClickRegionAction(CustomAction):
                     points.append((cx, cy))
                 cy += step_y
             cx += step_x
+
+        if direction == "left_to_right":
+            points.sort(key=lambda point: (point[1], point[0]))
 
         if use_random:
             random.shuffle(points)

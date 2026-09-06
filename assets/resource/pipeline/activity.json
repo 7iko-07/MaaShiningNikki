@@ -26,14 +26,14 @@
 						"type": "OCR",
 						"param": {
 							"roi": [3, 122, 112, 695],
-							"expected": ["身","焰"]
+							"expected": ["灵山","遥客至"]
 						}
 					}},
                     {"recognition": {
                         "type": "TemplateMatch",
                         "param": {
                             "roi": [3, 122, 112, 695],
-                            "template": "是身为焰.png"
+                            "template": "灵山遥客至.png"
                         }
                     }}
                 ]
@@ -58,7 +58,7 @@
         "action": {
             "type": "Click",
             "param": {
-                "target": [54, 1233, 23, 16]
+                "target": [352, 27, 14, 10]
             }
 		},
 		"repeat": 2,
@@ -69,8 +69,8 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [0, 726, 313, 158],
-				"expected": ["[挑战]"]
+				"roi": [30, 521, 153, 209],
+				"expected": ["[挑战关卡]"]
 			}
 		},
 		"action": {
@@ -298,15 +298,22 @@
                     {"recognition": {
 						"type": "OCR",
 						"param": {
-							"expected": ["深","地","宫"],
-							"roi": [235, 1074, 235, 206]
+							"expected": ["[入得红尘去]"],
+							"roi": [344, 1016, 172, 264]
 						}
-				}},
+					}},
                     {"recognition": {
                         "type": "TemplateMatch",
                         "param": {
-                            "roi": [235, 1074, 235, 206],
-                            "template": "深入地宫.png"
+                            "roi": [344, 1016, 172, 264],
+                            "template": "入得红尘去_白.png"
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "roi": [344, 1016, 172, 264],
+                            "template": "入得红尘去_青.png"
                         }
                     }}
                 ]
@@ -316,7 +323,9 @@
 			"type": "Custom",
             "param": {
                 "custom_action": "click_and_wait_change",
-                "custom_action_param":{}
+                "custom_action_param":{
+					"change_threshold":0.7
+				}
             }
 		},
 		"enabled": false,
@@ -334,14 +343,14 @@
 			"param": {
 				"custom_action": "click_region",
 				"custom_action_param": {
-					"step": 40,
+					"step": 70,
 					"delay": 50,
-					"random": true,
 					"roi": [0, 0, 720, 1280],
 					"max_points": 20000,
 					"change_detection": true,
 					"exclude": [[0, 14, 120, 114], [543, 0, 177, 202],[0, 1156, 155, 89]],
-					"stop_on_no_change": true
+					"stop_on_no_change": true,
+					"direction":"left_to_right"
 				}
 			}
 		},
@@ -390,12 +399,20 @@
 			}
 		},
 		"action": {
-			"type": "Click",
+			"type": "Custom",
 			"param": {
-				"target": [0, 301, 720, 804]
+				"custom_action": "click_region",
+				"custom_action_param": {
+					"step": 70,
+					"delay": 50,
+					"roi": [0, 301, 720, 804],
+					"max_points": 20000,
+					"change_detection": true,
+					"stop_on_no_change": true,
+					"direction":"left_to_right"
+				}
 			}
 		},
-        "post_delay": 100,
 		"timeout": 2000
     },
 	"点击剧情叉号":{
