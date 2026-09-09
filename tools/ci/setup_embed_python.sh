@@ -1,8 +1,8 @@
 #!/bin/bash
-# macOS 嵌入式 Python 安装脚本
+# Linux / macOS 嵌入式 Python 安装脚本
 # 使用 python-build-standalone 提供的独立 Python 环境
 
-set -e
+set -euo pipefail
 
 # 基本变量
 PYTHON_VERSION="3.12.9"
@@ -17,19 +17,20 @@ ARCH="${1:-aarch64}"
 # 参考: https://github.com/astral-sh/python-build-standalone/releases
 PBS_TAG="20250317"  # python-build-standalone release tag
 
-if [ "$ARCH" == "aarch64" ]; then
-    PLATFORM="aarch64-apple-darwin"
-elif [ "$ARCH" == "x86_64" ]; then
-    PLATFORM="x86_64-apple-darwin"
-else
+if [ "$ARCH" != "aarch64" ] && [ "$ARCH" != "x86_64" ]; then
     echo "Error: Unsupported architecture: $ARCH"
     echo "Supported architectures: aarch64, x86_64"
     exit 1
 fi
+case "$(uname -s)" in
+    Darwin) PLATFORM="${ARCH}-apple-darwin" ;;
+    Linux) PLATFORM="${ARCH}-unknown-linux-gnu" ;;
+    *) echo "Unsupported operating system"; exit 1 ;;
+esac
 
 PYTHON_URL="https://github.com/astral-sh/python-build-standalone/releases/download/${PBS_TAG}/cpython-${PYTHON_VERSION}+${PBS_TAG}-${PLATFORM}-install_only.tar.gz"
 
-echo "=== macOS Embedded Python Setup ==="
+echo "=== Embedded Python Setup ==="
 echo "Python Version: $PYTHON_VERSION"
 echo "Architecture: $ARCH"
 echo "Platform: $PLATFORM"
@@ -46,7 +47,7 @@ else
     # 下载 Python
     PYTHON_TAR="python-standalone.tar.gz"
     echo "Downloading Python from: $PYTHON_URL"
-    curl -L -o "$PYTHON_TAR" "$PYTHON_URL"
+    curl --fail --location --retry 3 -o "$PYTHON_TAR" "$PYTHON_URL"
 
     # 解压 Python
     echo "Extracting Python to: $DEST_DIR"
@@ -80,4 +81,4 @@ else
     echo "pip installed successfully."
 fi
 
-echo "=== macOS Embedded Python Setup Complete ==="
+echo "=== Embedded Python Setup Complete ==="

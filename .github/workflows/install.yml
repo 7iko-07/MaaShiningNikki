@@ -10,6 +10,8 @@ on:
       - ".github/workflows/install.yml"
       - "assets/**"
       - "**.py"
+      - "requirements.txt"
+      - "tools/ci/**"
   pull_request:
     branches:
       - "**"
@@ -17,6 +19,8 @@ on:
       - ".github/workflows/install.yml"
       - "assets/**"
       - "**.py"
+      - "requirements.txt"
+      - "tools/ci/**"
   workflow_dispatch:
 
 permissions:
@@ -32,6 +36,18 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - name: Resolve MaaFramework release once for all platforms
+        id: maafw
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { data } = await github.rest.repos.getLatestRelease({
+              owner: 'MaaXYZ', repo: 'MaaFramework'
+            });
+            if (!/^v?\d+\.\d+\.\d+$/.test(data.tag_name)) {
+              throw new Error(`Unsupported MaaFramework release: ${data.tag_name}`);
+            }
+            core.setOutput('tag', data.tag_name);
       - id: set_tag
         run: |
           is_release=${{ startsWith(github.ref, 'refs/tags/v') }}
@@ -57,6 +73,7 @@ jobs:
           echo is_release=$is_release | tee -a $GITHUB_OUTPUT
           echo is_prerelease=$is_prerelease | tee -a $GITHUB_OUTPUT
     outputs:
+      maafw_tag: ${{ steps.maafw.outputs.tag }}
       tag: ${{ steps.set_tag.outputs.tag }}
       is_release: ${{ steps.set_tag.outputs.is_release }}
       is_prerelease: ${{ steps.set_tag.outputs.is_prerelease }}
@@ -94,7 +111,7 @@ jobs:
         with:
           repository: MaaXYZ/MaaFramework
           fileName: "MAA-win-${{ matrix.arch }}*"
-          latest: true
+          tag: ${{ needs.meta.outputs.maafw_tag }}
           out-file-path: "deps"
           extract: true
 
@@ -185,20 +202,46 @@ jobs:
           echo "Cleaning up zip files..."
           find install -name "MFAAvalonia-*.zip" -delete 2>/dev/null || true
 
+      - name: Bundle and verify Python dependencies
+        shell: pwsh
+        env:
+          MAAFW_TAG: ${{ needs.meta.outputs.maafw_tag }}
+        run: |
+          & ./install/python/python.exe -I tools/ci/bundle_python_dependencies.py --framework-version $env:MAAFW_TAG
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & ./install/python/python.exe -I tools/test_agent_dependencies.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $platform = if ('${{ matrix.arch }}' -eq 'x86_64') { 'win-x64' } else { 'win-arm64' }
+          & ./install/python/python.exe -I tools/ci/check_packaged_agent.py --platform $platform
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
       - uses: actions/upload-artifact@v7
         with:
           name: MaaShiningNikki-win-${{ matrix.arch }}
-          path: "install"
+          path: |
+            install
+            !install/debug
 
   unix:
     needs: meta
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        arch: [aarch64, x86_64]
+        include:
+          - os: ubuntu-latest
+            arch: x86_64
+            runner: ubuntu-24.04
+          - os: ubuntu-latest
+            arch: aarch64
+            runner: ubuntu-24.04-arm
+          - os: macos-latest
+            arch: x86_64
+            runner: macos-15-intel
+          - os: macos-latest
+            arch: aarch64
+            runner: macos-15
       fail-fast: false
 
     steps:
@@ -220,12 +263,11 @@ jobs:
         with:
           repository: MaaXYZ/MaaFramework
           fileName: "MAA-${{ matrix.os == 'ubuntu-latest' && 'linux' || 'macos' }}-${{ matrix.arch }}*"
-          latest: true
+          tag: ${{ needs.meta.outputs.maafw_tag }}
           out-file-path: "deps"
           extract: true
 
-      - name: Setup Embed Python (macOS)
-        if: matrix.os == 'macos-latest'
+      - name: Setup Embed Python (Linux / macOS)
         shell: bash
         run: |
           chmod +x ./tools/ci/setup_embed_python.sh
@@ -282,10 +324,25 @@ jobs:
           chmod +x "$exe_dir/MaaShiningNikki"
           echo "MFAAvalonia renamed to MaaShiningNikki successfully"
 
+      - name: Bundle and verify Python dependencies
+        shell: bash
+        env:
+          MAAFW_TAG: ${{ needs.meta.outputs.maafw_tag }}
+        run: |
+          ./install/python/bin/python3 -I tools/ci/bundle_python_dependencies.py --framework-version "$MAAFW_TAG"
+          ./install/python/bin/python3 -I tools/test_agent_dependencies.py
+          platform="${{ matrix.os == 'ubuntu-latest' && 'linux' || 'osx' }}-${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }}"
+          ./install/python/bin/python3 -I tools/ci/check_packaged_agent.py --platform "$platform"
+
+      # upload-artifact 会丢失执行权限和符号链接；用 tar 保留独立 Python 的结构。
+      - name: Preserve Unix executable permissions and symlinks
+        shell: bash
+        run: tar --exclude='./debug' -cf payload.tar -C install .
+
       - uses: actions/upload-artifact@v7
         with:
           name: MaaShiningNikki-${{ matrix.os == 'ubuntu-latest' && 'linux' || 'macos' }}-${{ matrix.arch }}
-          path: "install"
+          path: "payload.tar"
 
   changelog:
     name: Generate changelog
@@ -339,7 +396,11 @@ jobs:
             if [ -d "$f" ]; then
               echo "Processing directory: $f"
               zip_file="$f-${{ needs.meta.outputs.tag }}.zip"
-              (cd "$f" && zip -r "../$zip_file" .)
+              if [ -f "$f/payload.tar" ]; then
+                tar -xpf "$f/payload.tar" -C "$f"
+                rm "$f/payload.tar"
+              fi
+              (cd "$f" && zip -ry "../$zip_file" .)
               if [ $? -eq 0 ]; then
                 echo "ZIP file created: ../$zip_file"
                 echo "Processing directory: $f"

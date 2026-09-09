@@ -32,7 +32,7 @@ arch = sys.argv[3]
 def get_agent_exec():
     if os_name == "win":
         return "./python/python.exe"
-    if os_name == "macos":
+    if os_name in ("macos", "linux"):
         return "./python/bin/python3"
     return "python3"
 
@@ -128,6 +128,7 @@ def install_resource():
     interface["agent"] = {
         "child_exec": get_agent_exec(),
         "child_args": [
+            "-I",
             "-u",
             "./agent/main.py",
         ],

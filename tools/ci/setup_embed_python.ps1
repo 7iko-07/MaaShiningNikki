@@ -1,4 +1,5 @@
 # 嵌入式Python安装脚本
+$ErrorActionPreference = "Stop"
 
 # 基本变量
 $PythonVersion = "3.12.9"

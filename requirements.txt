@@ -1,2 +1,3 @@
+# CI additionally pins maafw to the exact native release selected for the package.
 maafw>=5.7.0
 loguru>=0.7.0
