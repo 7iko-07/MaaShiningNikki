@@ -30,7 +30,7 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["秦衣·上", "夜阑月", "夜"],
+				"expected": ["秦衣·上", "夜阑月"],
 				"roi": [346, 236, 186, 1044]
 			}
 		},

@@ -26,7 +26,7 @@ class MakeTargetClothesChallengeAction(CustomAction):
 
         if not challenge_count_roi or not stamina_roi or not once_button or not multi_button:
             logger.error(
-                "make_target_clothes_challenge: missing required params "
+                "make_target_clothes_challenge: 缺少必要参数 "
                 "(challenge_count_roi, stamina_roi, once_button, multi_button)"
             )
             return False
@@ -41,7 +41,7 @@ class MakeTargetClothesChallengeAction(CustomAction):
         popup_close_delay = self._as_float(params.get("popup_close_delay"), 2.0)
 
         if stamina_cost <= 0 or max_multi <= 1:
-            logger.error("make_target_clothes_challenge: invalid stamina_cost or max_multi")
+            logger.error("make_target_clothes_challenge: 单次体力消耗或最大批量次数参数无效")
             return False
 
         controller = context.tasker.controller
@@ -49,7 +49,7 @@ class MakeTargetClothesChallengeAction(CustomAction):
         stamina = None
 
         if load_delay > 0:
-            logger.info(f"make_target_clothes_challenge: waiting {load_delay:.1f}s for page load")
+            logger.info(f"make_target_clothes_challenge: 等待页面加载 {load_delay:.1f} 秒")
             time.sleep(load_delay)
 
         for attempt in range(retry):
@@ -77,18 +77,18 @@ class MakeTargetClothesChallengeAction(CustomAction):
                 break
 
             logger.warning(
-                "make_target_clothes_challenge: OCR failed on attempt "
-                f"{attempt + 1}/{retry}, challenge_count={challenge_count}, stamina={stamina}"
+                "make_target_clothes_challenge: OCR 识别失败，尝试次数 "
+                f"{attempt + 1}/{retry}, 剩余挑战次数={challenge_count}，体力={stamina}"
             )
             if attempt < retry - 1 and retry_delay > 0:
                 time.sleep(retry_delay)
 
         if challenge_count is None:
-            logger.error("make_target_clothes_challenge: failed to OCR challenge count")
+            logger.error("make_target_clothes_challenge: 无法识别剩余挑战次数")
             return False
 
         if stamina is None:
-            logger.warning("make_target_clothes_challenge: failed to OCR stamina, assuming stamina is enough")
+            logger.warning("make_target_clothes_challenge: 无法识别体力，按体力足够处理")
             challenge_times = challenge_count
         else:
             available_by_stamina = stamina // stamina_cost
@@ -102,8 +102,8 @@ class MakeTargetClothesChallengeAction(CustomAction):
 
         logger.info(
             "make_target_clothes_challenge: "
-            f"challenge_count={challenge_count}, stamina={stamina}, "
-            f"challenge_times={challenge_times}, multi_clicks={multi_clicks}, once_clicks={once_clicks}"
+            f"剩余挑战次数={challenge_count}，体力={stamina}, "
+            f"计划挑战次数={challenge_times}，批量点击次数={multi_clicks}，单次点击次数={once_clicks}"
         )
 
         if challenge_times <= 0:
@@ -170,29 +170,30 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
         mode = params.get("mode")
         stamina_roi = params.get("stamina_roi")
         stamina_cost_roi = params.get("stamina_cost_roi")
+        once_button = params.get("once_button")
         multi_button = params.get("multi_button")
         remaining_count_roi = params.get("remaining_count_roi")
         sufficient_roi = params.get("sufficient_roi", [379, 355, 265, 63])
         sufficient_expected = params.get("sufficient_expected", ["数量已足够"])
 
         if mode not in ("heart_maze", "main_story"):
-            logger.error(f"make_target_clothes_batch_challenge: invalid mode={mode}")
+            logger.error(f"make_target_clothes_batch_challenge: 模式参数无效：{mode}")
             return False
-        if not stamina_roi or not stamina_cost_roi or not multi_button:
+        if not stamina_roi or not stamina_cost_roi or not once_button or not multi_button:
             logger.error(
-                "make_target_clothes_batch_challenge: missing required params "
-                "(stamina_roi, stamina_cost_roi, multi_button)"
+                "make_target_clothes_batch_challenge: 缺少必要参数 "
+                "(stamina_roi, stamina_cost_roi, once_button, multi_button)"
             )
             return False
         if mode == "heart_maze" and not remaining_count_roi:
             logger.error(
                 "make_target_clothes_batch_challenge: "
-                "heart_maze mode requires remaining_count_roi"
+                "心灵迷宫模式需要配置剩余挑战次数识别区域 remaining_count_roi"
             )
             return False
         if not sufficient_roi or not sufficient_expected:
             logger.error(
-                "make_target_clothes_batch_challenge: missing required params "
+                "make_target_clothes_batch_challenge: 缺少必要参数 "
                 "(sufficient_roi, sufficient_expected)"
             )
             return False
@@ -215,7 +216,7 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
         limit_next = params.get("limit_next", default_limit_next)
 
         if max_challenges < 0 or max_multi <= 0 or retry <= 0 or max_rounds <= 0:
-            logger.error("make_target_clothes_batch_challenge: invalid numeric params")
+            logger.error("make_target_clothes_batch_challenge: 数值参数无效")
             return False
 
         controller = context.tasker.controller
@@ -234,7 +235,7 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
 
         if load_delay > 0:
             logger.info(
-                f"make_target_clothes_batch_challenge: waiting {load_delay:.1f}s for page load"
+                f"make_target_clothes_batch_challenge: 等待页面加载 {load_delay:.1f} 秒"
             )
             time.sleep(load_delay)
 
@@ -247,8 +248,8 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             retry_delay=retry_delay,
         ):
             logger.info(
-                "make_target_clothes_batch_challenge: quantity is already sufficient; "
-                "skipping batch challenge"
+                "make_target_clothes_batch_challenge: 材料数量已足够，"
+                "跳过挑战"
             )
             return True
 
@@ -274,37 +275,37 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             allowance = None if max_challenges == 0 else max_challenges - challenged
             logger.info(
                 "make_target_clothes_batch_challenge: "
-                f"round={round_index + 1}, mode={mode}, stamina={stamina}, "
-                f"stamina_cost={stamina_cost}, remaining_count={remaining_count}, "
-                f"challenged={challenged}, allowance={allowance}, "
-                f"possible_batch={possible_batch}"
+                f"轮次={round_index + 1}，模式={'心灵迷宫' if mode == 'heart_maze' else '主线'}，体力={stamina}，"
+                f"单次体力消耗={stamina_cost}，剩余挑战次数={remaining_count if remaining_count is not None else '不适用'}，"
+                f"已挑战次数={challenged}，剩余允许次数={allowance if allowance is not None else '不限'}，"
+                f"本轮最多可挑战次数={possible_batch}"
             )
 
             if mode == "heart_maze" and remaining_count == 0:
                 logger.info(
-                    "make_target_clothes_batch_challenge: heart-maze remaining "
-                    "count is 0; ending the heart-maze material stage"
+                    "make_target_clothes_batch_challenge: 心灵迷宫剩余挑战"
+                    "次数为 0，结束心灵迷宫材料阶段"
                 )
                 if not context.override_next(argv.node_name, limit_next):
                     logger.error(
-                        "make_target_clothes_batch_challenge: failed to override next "
-                        "after heart-maze attempts were exhausted"
+                        "make_target_clothes_batch_challenge: 覆盖后继节点失败："
+                        "心灵迷宫挑战次数已耗尽"
                     )
                     return False
                 return True
 
             if stamina < stamina_cost and insufficient_stamina_next:
                 logger.info(
-                    "make_target_clothes_batch_challenge: insufficient stamina; "
-                    f"stamina={stamina}, stamina_cost={stamina_cost}"
+                    "make_target_clothes_batch_challenge: 体力不足，"
+                    f"体力={stamina}，单次体力消耗={stamina_cost}"
                 )
                 if not context.override_next(
                     argv.node_name,
                     insufficient_stamina_next,
                 ):
                     logger.error(
-                        "make_target_clothes_batch_challenge: failed to override next "
-                        "after stamina became insufficient"
+                        "make_target_clothes_batch_challenge: 覆盖后继节点失败："
+                        "体力不足"
                     )
                     return False
                 return True
@@ -320,7 +321,12 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                     challenged,
                 )
 
-            self._click_roi(controller, multi_button)
+            button = once_button if possible_batch == 1 else multi_button
+            logger.info(
+                "make_target_clothes_batch_challenge: "
+                f"点击{'挑战一次' if possible_batch == 1 else '批量挑战'}按钮"
+            )
+            self._click_roi(controller, button)
             time.sleep(result_delay)
             quantity_sufficient = self._has_sufficient_quantity(
                 context=context,
@@ -341,30 +347,38 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                 expected=[r"\d+\s*/\s*\d+"],
                 retry=retry,
                 retry_delay=retry_delay,
-                label="stamina after challenge",
+                label="挑战后体力",
             )
             if new_stamina is None:
                 return False
 
             consumed = stamina - new_stamina
             if consumed <= 0:
-                logger.info(
-                    "make_target_clothes_batch_challenge: stamina did not decrease; "
-                    "the batch button is no longer actionable"
+                if quantity_sufficient:
+                    return True
+                logger.warning(
+                    "make_target_clothes_batch_challenge: 体力未减少，"
+                    "未识别到材料数量已足够，结束当前材料阶段"
                 )
+                if not context.override_next(argv.node_name, limit_next):
+                    logger.error(
+                        "make_target_clothes_batch_challenge: 覆盖后继节点失败："
+                        "挑战未取得进展"
+                    )
+                    return False
                 return True
             if consumed % stamina_cost != 0:
                 logger.error(
-                    "make_target_clothes_batch_challenge: stamina delta is not divisible "
-                    f"by cost: before={stamina}, after={new_stamina}, cost={stamina_cost}"
+                    "make_target_clothes_batch_challenge: 体力变化量无法被单次消耗整除，"
+                    f"挑战前={stamina}，挑战后={new_stamina}，单次消耗={stamina_cost}"
                 )
                 return False
 
             actual_batch = consumed // stamina_cost
             if actual_batch > possible_batch:
                 logger.error(
-                    "make_target_clothes_batch_challenge: actual batch exceeded safe estimate: "
-                    f"actual={actual_batch}, estimate={possible_batch}"
+                    "make_target_clothes_batch_challenge: 实际挑战次数超过安全预估："
+                    f"实际次数={actual_batch}，预估次数={possible_batch}"
                 )
                 return False
 
@@ -381,13 +395,13 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
 
             if quantity_sufficient:
                 logger.info(
-                    "make_target_clothes_batch_challenge: quantity became sufficient; "
-                    "returning to recheck the current clothes"
+                    "make_target_clothes_batch_challenge: 材料数量已足够，"
+                    "返回复查当前服装材料"
                 )
                 return True
 
         logger.error(
-            f"make_target_clothes_batch_challenge: exceeded max_rounds={max_rounds}"
+            f"make_target_clothes_batch_challenge: 已超过最大循环轮数 {max_rounds}"
         )
         return False
 
@@ -404,13 +418,13 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
         challenged,
     ):
         logger.info(
-            "make_target_clothes_batch_challenge: stopping at challenge limit, "
-            f"challenged={challenged}, max_challenges={max_challenges}"
+            "make_target_clothes_batch_challenge: 已达到挑战次数上限，停止挑战，"
+            f"已挑战次数={challenged}，挑战次数上限={max_challenges}"
         )
         if not context.override_next(node_name, limit_next):
             logger.error(
-                "make_target_clothes_batch_challenge: failed to override next "
-                "for challenge limit"
+                "make_target_clothes_batch_challenge: 覆盖后继节点失败："
+                "已达到挑战次数上限"
             )
             return False
         return True
@@ -438,8 +452,8 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                 return True
 
             logger.info(
-                "make_target_clothes_batch_challenge: quantity-sufficient text not found "
-                f"on attempt {attempt + 1}/{retry}"
+                "make_target_clothes_batch_challenge: 未识别到“数量已足够”，"
+                f"尝试次数 {attempt + 1}/{retry}"
             )
             if attempt < retry - 1 and retry_delay > 0:
                 time.sleep(retry_delay)
@@ -465,7 +479,7 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             expected=[r"\d+\s*/\s*\d+"],
             retry=retry,
             retry_delay=retry_delay,
-            label="stamina",
+            label="体力",
         )
         if stamina is None:
             return None
@@ -478,13 +492,13 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             expected=[r".*\d+"],
             retry=retry,
             retry_delay=retry_delay,
-            label="stamina cost",
+            label="单次体力消耗",
         )
         if stamina_cost is None:
             return None
         if stamina_cost <= 0:
             logger.error(
-                f"make_target_clothes_batch_challenge: invalid stamina cost={stamina_cost}"
+                f"make_target_clothes_batch_challenge: 单次体力消耗无效：{stamina_cost}"
             )
             return None
 
@@ -498,7 +512,7 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                 expected=[r".*\d+\s*/\s*\d+"],
                 retry=retry,
                 retry_delay=retry_delay,
-                label="heart maze remaining count",
+                label="心灵迷宫剩余挑战次数",
             )
             if remaining_count is None:
                 return None
@@ -530,14 +544,14 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                 return number
 
             logger.warning(
-                "make_target_clothes_batch_challenge: failed to OCR "
-                f"{label} on attempt {attempt + 1}/{retry}"
+                "make_target_clothes_batch_challenge: OCR 识别失败："
+                f"{label} 尝试次数 {attempt + 1}/{retry}"
             )
             if attempt < retry - 1 and retry_delay > 0:
                 time.sleep(retry_delay)
 
         logger.error(
-            f"make_target_clothes_batch_challenge: failed to OCR {label}"
+            f"make_target_clothes_batch_challenge: OCR 识别失败：{label}"
         )
         return None
 
@@ -572,10 +586,10 @@ class MakeTargetClothesRecheckCurrentAction(CustomAction):
         click_interval = self._as_float(params.get("click_interval"), 0.5)
         post_delay = self._as_float(params.get("post_delay"), 1.0)
         if not isinstance(blank_roi, list) or len(blank_roi) != 4:
-            logger.error("make_target_clothes_recheck_current: invalid blank_roi")
+            logger.error("make_target_clothes_recheck_current: 空白点击区域 blank_roi 无效")
             return False
         if click_interval < 0 or post_delay < 0:
-            logger.error("make_target_clothes_recheck_current: invalid delay")
+            logger.error("make_target_clothes_recheck_current: 延迟参数无效")
             return False
 
         controller = context.tasker.controller
@@ -608,7 +622,7 @@ class MakeTargetClothesBatchFinishAction(CustomAction):
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
         mode = params.get("mode")
         if mode not in ("heart_maze", "main_story"):
-            logger.error(f"make_target_clothes_batch_finish: invalid mode={mode}")
+            logger.error(f"make_target_clothes_batch_finish: 模式参数无效：{mode}")
             return False
 
         MakeTargetClothesBatchChallengeAction.clear_task_state(
@@ -639,10 +653,10 @@ class MakeTargetClothesResetPageAction(CustomAction):
         max_swipes = self._as_int(params.get("max_swipes"), 30)
 
         if not self._valid_point(begin) or not self._valid_point(end):
-            logger.error("make_target_clothes_reset_page: invalid begin or end")
+            logger.error("make_target_clothes_reset_page: 滑动起点或终点无效")
             return False
         if max_swipes <= 0:
-            logger.error("make_target_clothes_reset_page: invalid max_swipes")
+            logger.error("make_target_clothes_reset_page: 最大滑动次数参数无效")
             return False
 
         controller = context.tasker.controller
@@ -661,7 +675,7 @@ class MakeTargetClothesResetPageAction(CustomAction):
             )
             logger.info(
                 "make_target_clothes_reset_page: "
-                f"swipe={swipe_index + 1}, changed={changed}"
+                f"滑动次数={swipe_index + 1}，画面是否变化={'是' if changed else '否'}"
             )
             if changed:
                 continue
@@ -669,7 +683,7 @@ class MakeTargetClothesResetPageAction(CustomAction):
             return True
 
         logger.error(
-            f"make_target_clothes_reset_page: exceeded max_swipes={max_swipes}"
+            f"make_target_clothes_reset_page: 已超过最大滑动次数 {max_swipes}"
         )
         return False
 
@@ -705,7 +719,7 @@ class MakeTargetClothesResetPageAction(CustomAction):
 
         logger.info(
             "make_target_clothes_reset_page: "
-            f"changed_ratio={changed_ratio:.4f}, threshold={change_threshold}"
+            f"画面变化比例={changed_ratio:.4f}，判定阈值={change_threshold}"
         )
         return changed_ratio >= change_threshold
 
@@ -750,7 +764,7 @@ class MakeTargetClothesSwipePageAction(CustomAction):
         compare_roi = params.get("compare_roi")
 
         if not self._valid_point(begin) or not self._valid_point(end):
-            logger.error("make_target_clothes_swipe_page: invalid begin or end")
+            logger.error("make_target_clothes_swipe_page: 滑动起点或终点无效")
             return False
         controller = context.tasker.controller
 
@@ -767,7 +781,7 @@ class MakeTargetClothesSwipePageAction(CustomAction):
             change_threshold=change_threshold,
         )
 
-        logger.info(f"make_target_clothes_swipe_page: changed={changed}")
+        logger.info(f"make_target_clothes_swipe_page: 画面是否变化={'是' if changed else '否'}")
 
         if changed:
             context.override_next(argv.node_name, changed_next)
@@ -809,7 +823,7 @@ class MakeTargetClothesSwipePageAction(CustomAction):
 
         logger.info(
             "make_target_clothes_swipe_page: "
-            f"changed_ratio={changed_ratio:.4f}, threshold={change_threshold}"
+            f"画面变化比例={changed_ratio:.4f}，判定阈值={change_threshold}"
         )
         return changed_ratio >= change_threshold
 

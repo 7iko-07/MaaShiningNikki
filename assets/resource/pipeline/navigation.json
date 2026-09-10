@@ -25,18 +25,35 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 1000
+        "timeout": 1000,
+        "post_delay": 0
     },
     "导航点击打开底部菜单": {
         "recognition": "DirectHit",
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [684, 1178, 14, 11]
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航底部菜单已打开"
+                    ],
+                    "target": [
+                        684,
+                        1178,
+                        14,
+                        11
+                    ]
+                }
             }
         },
-        "post_delay": 500,
-        "timeout": 1000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航底部菜单已打开"],
+        "rate_limit": 250
     },
     "导航点击返回": {
         "recognition": {
@@ -61,13 +78,10 @@
             }
         },
         "action": {
-            "type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
-			}
+            "type": "Click",
+            "param": {}
         },
-        "post_delay": 1000,
+        "post_delay": 0,
         "timeout": 5000
     },
     "导航点击设计中心入口": {
@@ -85,13 +99,22 @@
         },
         "action": {
             "type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
-			}
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航在设计中心页面"
+                    ]
+                }
+            }
         },
-        "post_delay": 2000,
-        "timeout": 1000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在设计中心页面"],
+        "rate_limit": 250
     },
     "导航右划底部菜单": {
         "recognition": "DirectHit",
@@ -102,9 +125,10 @@
                 "end": [514, 1181]
             }
         },
-        "post_delay": 500,
-        "timeout": 1000,
-        "next": ["导航识别并点击设计中心"]
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航识别并点击设计中心"],
+        "rate_limit": 250
     },
     "导航右划底部菜单后点击设计中心": {
         "recognition": "DirectHit",
@@ -126,13 +150,22 @@
         },
         "action": {
             "type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
-			}
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航在回家页面"
+                    ]
+                }
+            }
         },
-        "post_delay": 1000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在回家页面"],
+        "rate_limit": 250
     },
     "导航左划底部菜单": {
         "recognition": "DirectHit",
@@ -143,9 +176,10 @@
                 "end": [100, 1150]
             }
         },
-        "post_delay": 500,
-        "timeout": 1000,
-        "next": ["导航识别并点击回家"]
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航识别并点击回家"],
+        "rate_limit": 250
     },
     "导航左划底部菜单后点击回家": {
         "recognition": "DirectHit",
@@ -161,7 +195,8 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击美甲": {
         "recognition": {
@@ -173,13 +208,22 @@
         },
         "action": {
             "type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
-			}
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在设计中心页面"
+                    ],
+                    "target_nodes": [
+                        "导航在美甲页面"
+                    ]
+                }
+            }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在美甲页面"],
+        "rate_limit": 250
     },
     "导航在美甲页面": {
         "recognition": {
@@ -190,7 +234,8 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击我的店铺": {
         "recognition": {
@@ -202,13 +247,22 @@
         },
         "action": {
             "type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
-			}
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在美甲页面"
+                    ],
+                    "target_nodes": [
+                        "导航在美甲我的店铺页面"
+                    ]
+                }
+            }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在美甲我的店铺页面"],
+        "rate_limit": 250
     },
     "导航在美甲我的店铺页面": {
         "recognition": {
@@ -219,7 +273,8 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击雇佣店员": {
         "recognition": {
@@ -278,23 +333,33 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在设计中心页面"
+                    ],
+                    "target_nodes": [
+                        "导航在制衣页面"
+                    ]
+                }
             }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在制衣页面"],
+        "rate_limit": 250
     },
     "导航在制衣页面": {
         "recognition": {
             "type": "OCR",
             "param": {
                 "roi": [260, 518, 196, 108],
-                "expected": ["制衣", "目标", "添加"]
+                "expected": ["制衣"]
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击全部材料": {
         "recognition": {
@@ -322,12 +387,21 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在设计中心页面"
+                    ],
+                    "target_nodes": [
+                        "导航在情报屋页面"
+                    ]
+                }
             }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在情报屋页面"],
+        "rate_limit": 250
     },
     "导航在情报屋页面": {
         "recognition": {
@@ -338,7 +412,8 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击开始旅程入口": {
         "recognition": "DirectHit",
@@ -356,12 +431,21 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航旅程页面已打开"
+                    ]
+                }
             }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航旅程页面已打开"],
+        "rate_limit": 250
     },
     "导航左划底部菜单后点击开始旅程": {
         "recognition": "DirectHit",
@@ -372,9 +456,10 @@
                 "end": [100, 1150]
             }
         },
-        "post_delay": 500,
-        "timeout": 1000,
-        "next": ["导航点击开始旅程"]
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航点击开始旅程"],
+        "rate_limit": 250
     },
     "导航点击结伴": {
         "recognition": {
@@ -387,12 +472,21 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在独自页面"
+                    ],
+                    "target_nodes": [
+                        "导航在结伴页面"
+                    ]
+                }
             }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在结伴页面"],
+        "rate_limit": 250
     },
     "导航点击独自": {
         "recognition": {
@@ -403,11 +497,23 @@
             }
         },
         "action": {
-            "type": "Click",
-            "param": {}
+            "type": "Custom",
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航旅程页面已打开"
+                    ],
+                    "target_nodes": [
+                        "导航在独自页面"
+                    ]
+                }
+            }
         },
-        "post_delay": 1000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在独自页面"],
+        "rate_limit": 250
     },
     "导航点击钻石竞技场": {
         "recognition": {
@@ -420,13 +526,23 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在独自页面"
+                    ],
+                    "target_nodes": [
+                        "导航在竞技场页面",
+                        "新赛季竞技场-我知道了",
+                        "新赛季竞技场段位-确认"
+                    ]
+                }
             }
         },
         "next": ["导航在竞技场页面", "[JumpBack]新赛季竞技场-我知道了", "[JumpBack]新赛季竞技场段位-确认"],
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "rate_limit": 250
     },
     "新赛季竞技场-我知道了":{
         "recognition": {
@@ -475,7 +591,8 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击搭配评选赛": {
         "recognition": {
@@ -488,12 +605,21 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在独自页面"
+                    ],
+                    "target_nodes": [
+                        "导航在搭配评选赛页面"
+                    ]
+                }
             }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在搭配评选赛页面"],
+        "rate_limit": 250
     },
     "导航点击我当评委": {
         "recognition": {
@@ -527,18 +653,35 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 1000
+        "timeout": 1000,
+        "post_delay": 0
     },
     "导航点击打开侧边菜单": {
         "recognition": "DirectHit",
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [662, 72, 18, 11]
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航侧边菜单已打开"
+                    ],
+                    "target": [
+                        662,
+                        72,
+                        18,
+                        11
+                    ]
+                }
             }
         },
-        "post_delay": 500,
-        "timeout": 1000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航侧边菜单已打开"],
+        "rate_limit": 250
     },
     "导航点击邮件入口": {
         "recognition": "DirectHit",
@@ -554,11 +697,23 @@
             }
         },
         "action": {
-            "type": "Click",
-            "param": {}
+            "type": "Custom",
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航在邮件页面"
+                    ]
+                }
+            }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在邮件页面"],
+        "rate_limit": 250
     },
     "导航在邮件页面": {
         "recognition": {
@@ -569,7 +724,8 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击好友入口": {
         "recognition": "DirectHit",
@@ -608,12 +764,21 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航在好友页面"
+                    ]
+                }
             }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在好友页面"],
+        "rate_limit": 250
     },
     "导航下划侧边菜单后点击好友": {
         "recognition": "DirectHit",
@@ -624,9 +789,10 @@
                 "end": [670, 570]
             }
         },
-        "post_delay": 500,
-        "timeout": 1000,
-        "next": ["导航点击好友"]
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航点击好友"],
+        "rate_limit": 250
     },
     "导航在好友页面": {
         "recognition": {
@@ -637,7 +803,8 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击福利入口": {
         "recognition": "DirectHit",
@@ -676,12 +843,21 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航在福利页面"
+                    ]
+                }
             }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在福利页面"],
+        "rate_limit": 250
     },
     "导航上划菜单": {
         "recognition": "DirectHit",
@@ -692,9 +868,10 @@
                 "end": [670, 226]
             }
         },
-        "post_delay": 500,
-        "timeout": 1000,
-        "next": ["导航点击福利"]
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航点击福利"],
+        "rate_limit": 250
     },
     "导航上划菜单后点击福利": {
         "recognition": "DirectHit",
@@ -732,7 +909,8 @@
         },
         
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击任务入口": {
         "recognition": "DirectHit",
@@ -748,11 +926,23 @@
             }
         },
         "action": {
-            "type": "Click",
-            "param": {}
+            "type": "Custom",
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航在任务页面"
+                    ]
+                }
+            }
         },
-        "post_delay": 1000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在任务页面"],
+        "rate_limit": 250
     },
     "导航在任务页面": {
         "recognition": {
@@ -763,7 +953,8 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击商城入口": {
         "recognition": "DirectHit",
@@ -779,11 +970,23 @@
             }
         },
         "action": {
-            "type": "Click",
-            "param": {}
+            "type": "Custom",
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航在商城页面"
+                    ]
+                }
+            }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在商城页面"],
+        "rate_limit": 250
     },
     "导航下划侧边菜单后点击商城": {
         "recognition": "DirectHit",
@@ -794,9 +997,10 @@
                 "end": [670, 226]
             }
         },
-        "post_delay": 500,
-        "timeout": 1000,
-        "next": ["导航点击商城"]
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航点击商城"],
+        "rate_limit": 250
     },
     "导航点击联盟入口": {
         "recognition": "DirectHit",
@@ -812,9 +1016,10 @@
                 "end": [670, 570]
             }
         },
-        "post_delay": 500,
-        "timeout": 1000,
-        "next": ["导航点击联盟"]
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航点击联盟"],
+        "rate_limit": 250
     },
     "导航点击联盟": {
         "recognition": {
@@ -848,12 +1053,21 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param":{}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航在联盟页面"
+                    ]
+                }
             }
         },
-        "post_delay": 1000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在联盟页面"],
+        "rate_limit": 250
     },
     "导航在美甲评价页面":{
 		"recognition": {
@@ -864,7 +1078,8 @@
 			}
 		},
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航在美甲此刻投稿页面":{
         "recognition": {
@@ -875,7 +1090,8 @@
 			}
 		},
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击此刻投稿": {
         "recognition": {
@@ -886,14 +1102,23 @@
 			}
 		},
 		"action": {
-			"type": "Custom",
+            "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param":{}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在美甲页面"
+                    ],
+                    "target_nodes": [
+                        "导航在美甲此刻投稿页面"
+                    ]
+                }
             }
-		},
-		"post_delay": 2000,
-		"timeout": 2000
+        },
+		"post_delay": 0,
+		"timeout": 15000,
+        "next": ["导航在美甲此刻投稿页面"],
+        "rate_limit": 250
     },
     "导航点击浏览点赞": {
         "recognition": {
@@ -904,14 +1129,23 @@
 			}
 		},
 		"action": {
-			"type": "Custom",
+            "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param":{}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在美甲此刻投稿页面"
+                    ],
+                    "target_nodes": [
+                        "导航在美甲评价页面"
+                    ]
+                }
             }
-		},
-        "post_delay": 1000,
-		"timeout": 2000
+        },
+        "post_delay": 0,
+		"timeout": 15000,
+        "next": ["导航在美甲评价页面"],
+        "rate_limit": 250
     },
     "导航在空白页面": {
         "recognition": {
@@ -970,7 +1204,8 @@
                 ]
             }
         },
-        "action": "DoNothing"
+        "action": "DoNothing",
+        "post_delay": 0
     },
     "导航在结伴页面": {
 		"recognition": {
@@ -994,7 +1229,8 @@
                 "roi": [556, 0, 164, 196]
             }
 		},
-        "action": "DoNothing"
+        "action": "DoNothing",
+        "post_delay": 0
     },
     "导航在商城页面":{
         "recognition": {
@@ -1005,7 +1241,8 @@
             }
 		},
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击心阶": {
         "recognition": {
@@ -1018,13 +1255,21 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在独自页面"
+                    ],
+                    "target_nodes": [
+                        "导航在心阶页面"
+                    ]
+                }
             }
         },
         "next": ["导航在心阶页面"],
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "rate_limit": 250
     },
     "导航在心阶页面": {
         "recognition": {
@@ -1035,7 +1280,8 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击心之门入口": {
         "recognition": "DirectHit",
@@ -1067,12 +1313,21 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "是否是主页面"
+                    ],
+                    "target_nodes": [
+                        "导航在心之门页面"
+                    ]
+                }
             }
         },
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在心之门页面"],
+        "rate_limit": 250
     },
     "导航上划左侧菜单后点击心之门": {
         "recognition": "DirectHit",
@@ -1083,9 +1338,10 @@
                 "end": [53, 213]
             }
         },
-        "post_delay": 500,
-        "timeout": 1000,
-        "next": ["导航点击心之门"]
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航点击心之门"],
+        "rate_limit": 250
     },
     "导航在心之门页面": {
         "recognition": {
@@ -1096,7 +1352,8 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
     },
     "导航点击时空回廊": {
         "recognition": {
@@ -1109,13 +1366,21 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在独自页面"
+                    ],
+                    "target_nodes": [
+                        "导航在时空回廊页面"
+                    ]
+                }
             }
         },
         "next": ["导航在时空回廊页面"],
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "rate_limit": 250
     },
     "导航在时空回廊页面": {
         "recognition": {
@@ -1126,7 +1391,29 @@
             }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
+    },
+    "导航主线返回独自": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "main_story_return_to_solo"
+            }
+        },
+        "post_delay": 0
+    },
+    "导航在调查行动页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [80, 790, 330, 140],
+                "expected": ["调查行动", "方舟档案"]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 0
     },
     "导航点击主线故事": {
         "recognition": {
@@ -1139,13 +1426,22 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {}
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": [
+                        "导航在独自页面"
+                    ],
+                    "target_nodes": [
+                        "主线特殊过渡页面",
+                        "导航在主线故事页面"
+                    ]
+                }
             }
         },
         "next": ["主线特殊过渡页面","导航在主线故事页面"],
-        "post_delay": 2000,
-        "timeout": 2000
+        "post_delay": 0,
+        "timeout": 15000,
+        "rate_limit": 250
     },
     "主线特殊过渡页面": {
         "recognition": {
@@ -1158,14 +1454,27 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
+                "custom_action": "navigation_click",
                 "custom_action_param": {
-                    "target": [139, 374, 24, 34]
+                    "source_nodes": [
+                        "主线特殊过渡页面"
+                    ],
+                    "target_nodes": [
+                        "导航在主线故事页面"
+                    ],
+                    "target": [
+                        139,
+                        374,
+                        24,
+                        34
+                    ]
                 }
             }
         },
-        "post_delay": 1000,
-        "next": ["[JumpBack]在加载页面", "导航在主线故事页面"]
+        "post_delay": 0,
+        "next": ["[JumpBack]在加载页面", "导航在主线故事页面"],
+        "rate_limit": 250,
+        "timeout": 15000
     },
     "导航在主线故事页面": {
         "recognition": {
@@ -1176,6 +1485,41 @@
                 }
         },
         "action": "DoNothing",
-        "timeout": 2000
+        "timeout": 2000,
+        "post_delay": 0
+    },
+    "导航在独自页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["主线故事"],
+                "roi": [260, 415, 330, 191]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 0,
+        "rate_limit": 250,
+        "timeout": 15000
+    },
+    "导航旅程页面已打开": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["独自"],
+                "roi": [24, 1118, 368, 162]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 0,
+        "rate_limit": 250,
+        "timeout": 15000
+    },
+    "导航确保独自页面": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "post_delay": 0,
+        "rate_limit": 250,
+        "timeout": 15000,
+        "next": ["导航在独自页面", "导航点击独自"]
     }
 }

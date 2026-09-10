@@ -129,7 +129,8 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [431, 687, 127, 43]
+                    "target": [431, 687, 127, 43],
+					"compare_roi": [86, 494, 544, 296]
                 }
 			}
 		},
@@ -147,7 +148,8 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [65, 1183, 163, 44]
+                    "target": [65, 1183, 163, 44],
+					"compare_roi": [14, 252, 700, 914]
                 }
 			}
 		},
@@ -168,7 +170,8 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [531, 384, 144, 42]
+                    "target": [531, 384, 144, 42],
+					"compare_roi": [14, 252, 700, 914]
                 }
 			}
 		},
@@ -188,7 +191,9 @@
             "type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action_param": {
+					"compare_roi": [28, 243, 669, 246]
+				}
 			}
 		},
         "post_delay": 1000,
@@ -207,7 +212,9 @@
             "type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action_param": {
+					"compare_roi": [14, 252, 700, 914]
+				}
 			}
 		},
         "post_delay": 1000,
@@ -226,7 +233,9 @@
             "type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action_param": {
+					"compare_roi": [14, 252, 700, 914]
+				}
 			}
 		},
         "post_delay": 1000,
@@ -271,7 +280,8 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [431, 687, 127, 43]
+                    "target": [431, 687, 127, 43],
+					"compare_roi": [86, 495, 539, 292]
                 }
 			}
 		},
@@ -289,7 +299,8 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [65, 1183, 163, 44]
+                    "target": [65, 1183, 163, 44],
+					"compare_roi": [5, 249, 715, 912]
                 }
 			}
 		},
@@ -310,7 +321,8 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [531, 384, 144, 42]
+                    "target": [531, 384, 144, 42],
+					"compare_roi": [5, 249, 715, 912]
                 }
 			}
 		},
@@ -330,7 +342,9 @@
             "type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action_param": {
+					"compare_roi": [19, 241, 701, 252]
+				}
 			}
 		},
         "post_delay": 1000,
@@ -349,7 +363,9 @@
             "type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action_param": {
+					"compare_roi": [17, 260, 687, 899]
+				}
 			}
 		},
         "post_delay": 1000,
@@ -368,7 +384,9 @@
             "type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action_param": {
+					"compare_roi": [17, 260, 687, 899]
+				}
 			}
 		},
         "post_delay": 1000,
@@ -413,7 +431,8 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [431, 687, 127, 43]
+                    "target": [431, 687, 127, 43],
+					"compare_roi": [90, 498, 533, 292]
                 }
 			}
 		},
@@ -431,7 +450,8 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [65, 1183, 163, 44]
+                    "target": [65, 1183, 163, 44],
+					"compare_roi": [17, 259, 687, 905]
                 }
 			}
 		},
@@ -452,7 +472,8 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [531, 384, 144, 42]
+                    "target": [531, 384, 144, 42],
+					"compare_roi": [17, 259, 687, 905]
                 }
 			}
 		},
@@ -472,7 +493,9 @@
             "type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action_param": {
+					"compare_roi": [31, 242, 664, 247]
+				}
 			}
 		},
         "post_delay": 1000,
@@ -491,7 +514,9 @@
             "type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action_param": {
+					"compare_roi": [14, 155, 691, 1020]
+				}
 			}
 		},
         "post_delay": 1000,
@@ -510,7 +535,9 @@
             "type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action_param": {
+					"compare_roi": [14, 155, 691, 1020]
+				}
 			}
 		},
         "post_delay": 1000,
@@ -529,7 +556,9 @@
             "type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action_param": {
+					"compare_roi": [29, 306, 653, 502]
+				}
 			}
 		},
         "post_delay": 1000,

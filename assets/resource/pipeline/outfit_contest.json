@@ -14,60 +14,148 @@
                 }
             }
         },
-        "next": ["点击我当评委","我要参赛-停止"],
+        "next": ["点击我当评委", "我要参赛-停止", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
         "timeout": 30000
     },
-	"我要参赛-停止":{
-		"recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["我要参赛","参赛","赛"],
-				"roi": [530, 1111, 190, 158]
-			}
-		},
-		"focus": {
-			"Node.Action.Starting": "#[color:red][b]参赛需要自行搭配[/b][/color]"
-		},
-		"post_delay": 2000,
-		"next": ["stop"],
-		"timeout": 2000
-	},
+    "我要参赛-停止": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["我要参赛", "参赛", "赛"],
+                "roi": [530, 1111, 190, 158]
+            }
+        },
+        "focus": {
+            "Node.Action.Starting": "#[color:red][b]参赛需要自行搭配[/b][/color]"
+        },
+        "post_delay": 2000,
+        "next": ["stop"],
+        "timeout": 2000
+    },
     "点击我当评委": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["我当评委","当评","评委"],
-				"roi": [346, 1092, 374, 188]
-			}
-		},
-		"action": {
-			"type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
-			}
-		},
-		"post_delay": 2000,
-		"next": ["导航在搭配评选赛页面", "[JumpBack]点赞搭配评选赛", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
-		"timeout": 2000
+            "type": "OCR",
+            "param": {
+                "expected": ["我当评委", "当评", "评委"],
+                "roi": [346, 1092, 374, 188]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [620, 1200]
+            }
+        },
+        "post_delay": 250,
+        "next": ["点赞搭配评选赛", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
+        "timeout": 30000,
+        "rate_limit": 250
     },
     "点赞搭配评选赛": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["赞"],
-				"roi": [431, 1037, 242, 239]
-			}
-		},
-		"action": {
-			"type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
-			}
-		},
-        "repeat": 2,
-        "repeat_delay": 3000,
-		"timeout": 2000
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "ColorMatch",
+                            "param": {
+                                "roi": [532, 1075, 20, 20],
+                                "method": 4,
+                                "lower": [215, 175, 115],
+                                "upper": [255, 220, 185],
+                                "count": 300
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": ["赞"],
+                                "roi": [490, 1115, 115, 55]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [540, 1140]
+            }
+        },
+        "post_delay": 250,
+        "next": ["搭配评选赛关闭奖励", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
+        "timeout": 30000,
+        "rate_limit": 250
+    },
+    "搭配评选赛关闭奖励": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": ["恭喜获得"],
+                                "roi": [195, 300, 335, 90]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": ["拂梦之?证"],
+                                "roi": [38, 431, 646, 366]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [540, 1140]
+            }
+        },
+        "post_delay": 250,
+        "next": ["点赞搭配评选赛", "搭配评选赛评委结束", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
+        "timeout": 30000,
+        "rate_limit": 250
+    },
+    "搭配评选赛评委结束": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": ["排行榜"],
+                                "roi": [556, 0, 164, 196]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": ["我当评委|当评|评委"],
+                                "roi": [533, 1110, 173, 169]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 0,
+        "next": []
     }
 }

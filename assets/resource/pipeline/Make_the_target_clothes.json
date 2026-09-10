@@ -76,10 +76,10 @@
             "param": {
                 "custom_action": "make_target_clothes_reset_page",
                 "custom_action_param": {
-                    "begin": [314, 823],
-                    "end": [630, 823],
+                    "begin": [25, 833],
+                    "end": [683, 833],
                     "duration": 500,
-                    "end_hold": 200,
+                    "end_hold": 0,
                     "wait_after_swipe": 0.5,
                     "pixel_threshold": 25,
                     "change_threshold": 0.01,
@@ -97,10 +97,10 @@
             "param": {
                 "custom_action": "make_target_clothes_reset_page",
                 "custom_action_param": {
-                    "begin": [314, 823],
-                    "end": [630, 823],
+                    "begin": [25, 833],
+                    "end": [683, 833],
                     "duration": 500,
-                    "end_hold": 200,
+                    "end_hold": 0,
                     "wait_after_swipe": 0.5,
                     "pixel_threshold": 25,
                     "change_threshold": 0.01,
@@ -118,10 +118,10 @@
             "param": {
                 "custom_action": "make_target_clothes_reset_page",
                 "custom_action_param": {
-                    "begin": [314, 823],
-                    "end": [630, 823],
+                    "begin": [25, 833],
+                    "end": [683, 833],
                     "duration": 500,
-                    "end_hold": 200,
+                    "end_hold": 0,
                     "wait_after_swipe": 0.5,
                     "pixel_threshold": 25,
                     "change_threshold": 0.01,
@@ -319,6 +319,7 @@
                     "stamina_roi": [82, 0, 145, 40],
                     "stamina_cost_roi": [55, 755, 205, 52],
                     "remaining_count_roi": [298, 755, 330, 52],
+                    "once_button": [68, 817, 108, 40],
                     "multi_button": [210, 806, 135, 67],
                     "popup_close_roi": [221, 137, 137, 78],
                     "max_challenges": 0,
@@ -347,6 +348,7 @@
                     "sufficient_expected": ["数量已足够"],
                     "stamina_roi": [82, 0, 145, 40],
                     "stamina_cost_roi": [55, 755, 205, 52],
+                    "once_button": [68, 817, 108, 40],
                     "multi_button": [210, 806, 135, 67],
                     "popup_close_roi": [221, 137, 137, 78],
                     "max_challenges": 0,
@@ -707,10 +709,9 @@
             "param": {
                 "custom_action": "make_target_clothes_swipe_page",
                 "custom_action_param": {
-                    "begin": [630, 823],
-                    "end": [314, 823],
-                    "duration": 6000,
-                    "end_hold": 2000,
+                    "begin": [338, 823],
+                    "end": [0, 823],
+                    "end_hold": 1500,
                     "wait_after_swipe": 1.0,
                     "pixel_threshold": 25,
                     "change_threshold": 0.01,
@@ -736,10 +737,9 @@
             "param": {
                 "custom_action": "make_target_clothes_swipe_page",
                 "custom_action_param": {
-                    "begin": [630, 823],
-                    "end": [314, 823],
-                    "duration": 6000,
-                    "end_hold": 2000,
+                    "begin": [338, 823],
+                    "end": [0, 823],
+                    "end_hold": 1500,
                     "wait_after_swipe": 1.0,
                     "pixel_threshold": 25,
                     "change_threshold": 0.01,
@@ -765,10 +765,9 @@
             "param": {
                 "custom_action": "make_target_clothes_swipe_page",
                 "custom_action_param": {
-                    "begin": [630, 823],
-                    "end": [314, 823],
-                    "duration": 6000,
-                    "end_hold": 2000,
+                    "begin": [338, 823],
+                    "end": [0, 823],
+                    "end_hold": 1500,
                     "wait_after_swipe": 1.0,
                     "pixel_threshold": 25,
                     "change_threshold": 0.01,

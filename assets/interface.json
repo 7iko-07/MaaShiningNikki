@@ -6,8 +6,8 @@
     "license": "MIT",
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "v0.0.9-nightly.20260907",
-    "title": "闪现吧暖暖v0.0.9#9.7 - 灵山遥客至#9.3",
+    "version": "v0.0.10-nightly.20260910",
+    "title": "闪现吧暖暖v0.0.10#9.10 - 灵山遥客至#9.3",
     "icon": "logo.ico",
     "mirrorchyan_multiplatform":false,
     "agent": {
@@ -227,7 +227,7 @@
         {
             "name": "联盟兑换幻之券",
             "entry": "联盟兑换幻之券任务链入口",
-            "description": "只能兑换max张也就是三张",
+            "description": "可多选幻之券、绮之券，各自设置1～3张；库存或联盟币不足时按可买数量购买，并显示结果。",
             "option": [
                 "联盟商店"
             ],
@@ -242,22 +242,74 @@
     ],
     "option": {
         "联盟商店": {
-            "type": "select",
-            "default_case": "三张幻之券",
+            "type": "checkbox",
+            "label": "联盟商店",
+            "description": "按幻之券、绮之券顺序购买；库存或联盟币不足时购买可买数量，并提示未买满原因。",
+            "default_case": [
+                "幻之券"
+            ],
             "cases": [
                 {
-                    "name": "三张幻之券",
-                    "pipeline_override": {}
+                    "name": "幻之券",
+                    "option": [
+                        "联盟商店幻之券购买数量"
+                    ],
+                    "pipeline_override": {
+                        "联盟商店选择幻之券": {
+                            "enabled": true
+                        }
+                    }
                 },
                 {
-                    "name": "三张幻之券+三张绮之券",
+                    "name": "绮之券",
+                    "option": [
+                        "联盟商店绮之券购买数量"
+                    ],
                     "pipeline_override": {
-                        "点击联盟商店": {
-                            "next": ["[JumpBack]在加载页面","点击绮之券"]
+                        "联盟商店选择绮之券": {
+                            "enabled": true
                         }
                     }
                 }
             ]
+        },
+        "联盟商店幻之券购买数量": {
+            "type": "input",
+            "label": "幻之券购买数量",
+            "inputs": [
+                {
+                    "name": "quantity",
+                    "label": "购买张数",
+                    "default": "3",
+                    "pipeline_type": "int",
+                    "verify": "^[1-3]$",
+                    "pattern_msg": "请输入1～3之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "联盟商店选择幻之券": {
+                    "repeat": "{quantity}"
+                }
+            }
+        },
+        "联盟商店绮之券购买数量": {
+            "type": "input",
+            "label": "绮之券购买数量",
+            "inputs": [
+                {
+                    "name": "quantity",
+                    "label": "购买张数",
+                    "default": "3",
+                    "pipeline_type": "int",
+                    "verify": "^[1-3]$",
+                    "pattern_msg": "请输入1～3之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "联盟商店选择绮之券": {
+                    "repeat": "{quantity}"
+                }
+            }
         },
         "时光钟表铺模式": {
             "type": "select",
@@ -473,6 +525,7 @@
                                 "stamina_roi": [82, 0, 145, 40],
                                 "stamina_cost_roi": [55, 755, 205, 52],
                                 "remaining_count_roi": [298, 755, 330, 52],
+                                "once_button": [68, 817, 108, 40],
                                 "multi_button": [210, 806, 135, 67],
                                 "popup_close_roi": [221, 137, 137, 78],
                                 "max_challenges": "{max_challenges}",
@@ -515,6 +568,7 @@
                                 "sufficient_expected": ["数量已足够"],
                                 "stamina_roi": [82, 0, 145, 40],
                                 "stamina_cost_roi": [55, 755, 205, 52],
+                                "once_button": [68, 817, 108, 40],
                                 "multi_button": [210, 806, 135, 67],
                                 "popup_close_roi": [221, 137, 137, 78],
                                 "max_challenges": "{max_challenges}",

@@ -64,7 +64,7 @@
 			"param": {}
 		},
 		"post_delay": 1000,
-		"next": ["[JumpBack]在加载页面","点击幻之券"],
+		"next": ["[JumpBack]在加载页面","联盟商店执行购买"],
 		"timeout": 2000
 	},
 	"点击幻之券": {
@@ -72,7 +72,7 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [525, 548, 195, 192],
+				"roi": [164, 550, 556, 682],
 				"expected": ["幻之?券"]
 			}
 		},
@@ -123,7 +123,7 @@
 		"recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [525, 548, 195, 192],
+				"roi": [164, 550, 556, 682],
 				"expected": ["绮之?券"]
 			}
 		},
@@ -189,5 +189,21 @@
 		"post_delay": 1000,
 		"next": ["stop"],
 		"timeout": 2000
-	}
+	},
+    "联盟商店执行购买": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "union_shop_buy"
+            }
+        }
+    },
+    "联盟商店选择幻之券": {
+        "enabled": false,
+        "repeat": 3
+    },
+    "联盟商店选择绮之券": {
+        "enabled": false,
+        "repeat": 3
+    }
 }

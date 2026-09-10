@@ -63,7 +63,7 @@
 | --- | --- |
 | 绝大多数 Windows 电脑 | `MaaShiningNikki-win-x86_64-vXXX.zip` |
 
-解压后运行 `MaaShiningNikki.exe`，选择安卓端控制器并连接模拟器或设备即可。首次启动会根据 `config/pip_config.json` 检查并安装 Agent 依赖。
+解压后运行 `MaaShiningNikki.exe`，选择安卓端控制器并连接模拟器或设备即可。完整发行包已包含 Python 和 Agent 依赖，启动时不再联网安装或更新依赖；旧的 `config/pip_config.json` 不再生效。更新时请使用完整发行包，避免混用不同版本的 `python/` 与 `runtimes/` 目录。
 
 如果无法启动，请先安装 [`Visual C++ 可再发行程序包`](https://aka.ms/vs/17/release/vc_redist.x64.exe) 和对应 `.NET` 桌面运行时，然后重启电脑。
 
