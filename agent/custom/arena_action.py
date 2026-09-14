@@ -120,11 +120,13 @@ class ArenaCompareAction(CustomAction):
         player_power_retry,
         player_power_retry_delay,
     ):
-        round_num = 0
+        # Keep the max_rounds parameter name for existing interface configurations.
+        # The limit counts refresh clicks, excluding the initial recognition.
+        refresh_count = 0
         ok_retry_count = 0
 
-        while round_num < max_rounds:
-            logger.info(f"arena_compare: refresh round {round_num + 1}/{max_rounds}")
+        while refresh_count <= max_rounds:
+            logger.info(f"arena_compare: recognizing opponents, refreshes used {refresh_count}/{max_rounds}")
 
             player_power, img = self._read_player_power(
                 context,
@@ -172,13 +174,13 @@ class ArenaCompareAction(CustomAction):
             if ok_handled:
                 continue
 
-            if round_num < max_rounds - 1:
-                logger.info("arena_compare: all opponents stronger, clicking refresh")
+            if refresh_count < max_rounds:
+                logger.info(f"arena_compare: no weaker opponent, clicking refresh {refresh_count + 1}/{max_rounds}")
                 self._click_roi(controller, refresh_roi)
+                refresh_count += 1
                 time.sleep(3)
-                round_num += 1
             else:
-                logger.warning(f"arena_compare: no weaker opponent after {max_rounds} rounds")
+                logger.warning(f"arena_compare: no weaker opponent after {refresh_count} refreshes")
                 return False
 
         return False

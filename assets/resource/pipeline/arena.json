@@ -248,8 +248,49 @@
 			"param": {}
 		},
 		"post_delay": 10000,
-		"next": ["[JumpBack]点击OK-竞技场", "[JumpBack]在加载页面", "竞技场战力对比"],
+		"next": ["[JumpBack]点击OK-竞技场", "[JumpBack]在加载页面", "竞技场挑战策略分流"],
 		"timeout": 2000
+    },
+    "竞技场挑战策略分流": {
+        "recognition": "DirectHit",
+        "next": [
+            "竞技场战力对比"
+        ]
+    },
+    "竞技场稳守段位": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": [
+                    "我的搭配",
+                    "我的",
+                    "搭配"
+                ],
+                "roi": [413, 486, 307, 193]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "arena_compare",
+                "custom_action_param": {
+                    "area_a": [171, 675, 316, 26],
+                    "area_b": [
+                        [492, 1043, 217, 42]
+                    ],
+                    "refresh": [153, 1114, 89, 27],
+                    "max_rounds": 5,
+                    "剩余次数": [473, 1100, 202, 32],
+                    "空白区域": [534, 114, 17, 10],
+                    "blank_click_delay": 1.0
+                }
+            }
+        },
+        "next": [
+            "[JumpBack]在加载页面",
+            "点击空白-竞技场挑战之后"
+        ],
+        "timeout": 300000
     },
     "竞技场战力对比": {
         "recognition": {
