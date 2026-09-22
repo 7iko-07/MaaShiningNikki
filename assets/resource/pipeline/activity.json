@@ -26,14 +26,14 @@
 						"type": "OCR",
 						"param": {
 							"roi": [3, 122, 112, 695],
-							"expected": ["灵山","遥客至"]
+							"expected": ["叶灼春","一叶灼春","灼"]
 						}
 					}},
                     {"recognition": {
                         "type": "TemplateMatch",
                         "param": {
                             "roi": [3, 122, 112, 695],
-                            "template": "灵山遥客至.png"
+                            "template": "一叶灼春.png"
                         }
                     }}
                 ]
@@ -298,22 +298,15 @@
                     {"recognition": {
 						"type": "OCR",
 						"param": {
-							"expected": ["[入得红尘去]"],
-							"roi": [344, 1016, 172, 264]
+							"expected": ["[进入剧情]"],
+							"roi": [568, 453, 152, 359]
 						}
 					}},
                     {"recognition": {
                         "type": "TemplateMatch",
                         "param": {
-                            "roi": [344, 1016, 172, 264],
-                            "template": "入得红尘去_白.png"
-                        }
-                    }},
-                    {"recognition": {
-                        "type": "TemplateMatch",
-                        "param": {
-                            "roi": [344, 1016, 172, 264],
-                            "template": "入得红尘去_青.png"
+                            "roi": [568, 453, 152, 359],
+                            "template": "进入剧情.png"
                         }
                     }}
                 ]
@@ -366,8 +359,83 @@
 			"param": {}
 		},
 		"post_wait_freezes": 500,
-		"next": ["识别剧情过完了并停止任务", "[JumpBack]点击聊天框", "[JumpBack]点击剧情叉号","[Anchor]点击活动剧情"],
+		"next": ["识别剧情过完了并停止任务", "[JumpBack]开始推演真相", "[JumpBack]点击聊天框", "[JumpBack]点击剧情叉号","[Anchor]点击活动剧情"],
 		"timeout": 2000
+    },
+    "开始推演真相": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [451, 873, 186, 49],
+                "expected": ["开始推演真相"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "next": ["求助暖暖"],
+        "timeout": 20000
+    },
+    "求助暖暖": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 1122, 246, 158],
+                "expected": ["求助暖暖"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "next": ["听暖暖的"],
+        "timeout": 20000
+    },
+    "听暖暖的": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [364, 648, 356, 137],
+                "expected": ["听暖暖的"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "next": ["推理真相"],
+        "timeout": 20000
+    },
+    "推理真相": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [361, 1084, 359, 84],
+                "expected": ["推理真相"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "next": ["推理成功"],
+        "timeout": 20000
+    },
+    "推理成功": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [174, 144, 379, 174],
+                "expected": ["推理成功"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [347, 50, 24, 14]
+            }
+        }
     },
     "点击聊天框":{
         "recognition": {

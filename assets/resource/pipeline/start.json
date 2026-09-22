@@ -1,4 +1,44 @@
 {
+    "启动账号记录初始化": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "start_account_session",
+                "custom_action_param": {"multi": false}
+            }
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动切换账号": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 548, 550, 320],
+                "expected": ["登\\s*出", "其他账号登录"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "switch_account",
+                "custom_action_param": {"suffix": ""}
+            }
+        },
+        "next": ["启动切换服务器"],
+        "timeout": 15000
+    },
+    "启动切换服务器": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "switch_server",
+                "custom_action_param": {"server": ""}
+            }
+        },
+        "next": ["点击开始"]
+    },
     "启动闪暖":{
 		"recognition": {
 			"type": "DirectHit",

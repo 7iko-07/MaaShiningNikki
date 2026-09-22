@@ -1,6 +1,14 @@
 {
     "竞技场任务链入口": {
-        "next": ["竞技场任务链准备", "[JumpBack]返回主页面"],
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "arena_weekly",
+                "custom_action_param": {"operation": "enter"}
+            }
+        },
+        "next": ["竞技场任务链准备"],
         "timeout": 2000
     },
     "竞技场任务链准备": {
@@ -10,12 +18,63 @@
             "param": {
                 "custom_action": "page_navigate",
                 "custom_action_param": {
-                    "target": "竞技场"
+                    "target": "竞技场入口区域",
+                    "pages": {"竞技场入口区域": ["竞技场导航到达"]},
+                    "routes": [{
+                        "from": "独自",
+                        "to": "竞技场入口区域",
+                        "tasks": ["竞技场导航点击入口"]
+                    }]
                 }
             }
         },
-        "next": ["新赛季确定","点击竞技场空白"],
+        "next": ["竞技场每周页面处理"],
         "timeout": 30000
+    },
+    "竞技场导航点击入口": {
+        "recognition": {
+            "type": "Or",
+            "param": {"any_of": ["导航点击钻石竞技场"]}
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": ["导航在独自页面"],
+                    "target_nodes": ["竞技场导航到达"]
+                }
+            }
+        },
+        "next": ["竞技场导航到达"],
+        "timeout": 30000,
+        "post_delay": 0,
+        "rate_limit": 250
+    },
+    "竞技场导航到达": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "竞技场页面已就绪",
+                    "新赛季确定",
+                    "新赛季竞技场-我知道了",
+                    "新赛季竞技场段位-确认",
+                    "竞技场上周成绩页面",
+                    "竞技场每周奖励页面",
+                    "竞技场本周搭配主题页面"
+                ]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 0
+    },
+    "竞技场页面已就绪": {
+        "recognition": {
+            "type": "Or",
+            "param": {"any_of": ["竞技场挑战返回页面", "点击前往搭配"]}
+        },
+        "action": "DoNothing"
     },
 	"新赛季确定":{
 		"recognition": {
@@ -35,22 +94,108 @@
 			}
 		},
 		"post_delay": 2000,
-		"next": ["[JumpBack]在加载页面", "点击竞技场空白"],
-		"timeout": 2000
+		"next": ["竞技场每周页面处理"],
+		"timeout": 30000
 	},
-	"点击竞技场空白":{
-		"recognition": "DirectHit",
-        "action": {
-            "type": "Click",
+    "竞技场每周页面处理": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": [
+            "新赛季确定",
+            "[JumpBack]新赛季竞技场-我知道了",
+            "[JumpBack]新赛季竞技场段位-确认",
+            "[JumpBack]点击OK-竞技场",
+            "竞技场上周成绩页面",
+            "竞技场搭配分流",
+            "竞技场每周奖励页面",
+            "竞技场本周搭配主题页面"
+        ],
+        "timeout": 30000
+    },
+    "竞技场上周成绩页面": {
+        "recognition": {
+            "type": "OCR",
             "param": {
-                "target":[157, 116, 123, 70]
+                "expected": ["上周成绩"],
+                "roi": [50, 280, 620, 430]
             }
         },
-		"repeat": 3,
-		"repeat_delay": 1000,
-        "next": ["[JumpBack]在加载页面","点击前往搭配","我的搭配"],
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "target": [157, 116, 123, 70],
+                    "compare_roi": [80, 400, 560, 420],
+                    "pixel_threshold": 40,
+                    "change_threshold": 0.12
+                }
+            }
+        },
+        "next": ["竞技场每周页面处理"],
         "timeout": 30000
-	},
+    },
+    "竞技场每周奖励页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["金币"],
+                "roi": [50, 460, 620, 320]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "target": [157, 116, 123, 70],
+                    "compare_roi": [80, 400, 560, 420],
+                    "pixel_threshold": 40,
+                    "change_threshold": 0.12
+                }
+            }
+        },
+        "next": ["竞技场每周页面处理"],
+        "timeout": 30000
+    },
+    "竞技场本周搭配主题页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["搭配主题"],
+                "roi": [50, 400, 620, 360]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "target": [157, 116, 123, 70],
+                    "compare_roi": [80, 400, 560, 420],
+                    "pixel_threshold": 40,
+                    "change_threshold": 0.12
+                }
+            }
+        },
+        "next": ["竞技场每周页面处理"],
+        "timeout": 30000
+    },
+    "竞技场搭配分流": {
+        "recognition": {
+            "type": "Or",
+            "param": {"any_of": ["竞技场页面已就绪"]}
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "arena_weekly",
+                "custom_action_param": {"operation": "choose", "mode": "never"}
+            }
+        },
+        "next": ["竞技场挑战策略分流"],
+        "timeout": 30000
+    },
 	"点击前往搭配": {
         "recognition": {
 			"type": "OCR",
@@ -67,14 +212,14 @@
 			}
 		},
 		"post_delay": 2000,
-		"next": ["[JumpBack]在加载页面", "推荐搭配"],
-		"timeout": 2000
+		"next": ["推荐搭配"],
+		"timeout": 30000
     },
     "我的搭配": {
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"expected": ["我的搭配", "我的", "搭配"],
+				"expected": ["^我的\\s*搭配$"],
 				"roi": [387, 473, 333, 202]
 			}
 		},
@@ -86,8 +231,8 @@
 			}
 		},
 		"post_delay": 2000,
-		"next": ["[JumpBack]在加载页面", "推荐搭配"],
-		"timeout": 2000
+		"next": ["推荐搭配"],
+		"timeout": 30000
     },
     "推荐搭配": {
         "recognition": {
@@ -105,8 +250,8 @@
 			}
 		},
 		"post_delay": 2000,
-		"next": ["[JumpBack]在加载页面", "确认推荐搭配"],
-		"timeout": 2000
+		"next": ["确认推荐搭配"],
+		"timeout": 30000
     },
     "确认推荐搭配": {
         "recognition": {
@@ -126,8 +271,8 @@
 			}
 		},
 		"post_delay": 1000,
-		"next": ["[JumpBack]在加载页面", "确认推荐搭配下一步1"],
-		"timeout": 2000
+		"next": ["确认推荐搭配下一步1"],
+		"timeout": 30000
     },
     "确认推荐搭配下一步1": {
         "recognition": {
@@ -145,8 +290,8 @@
 			}
 		},
 		"post_delay": 1000,
-		"next": ["[JumpBack]在加载页面", "确定竞技场影召1"],
-		"timeout": 2000
+		"next": ["确定竞技场影召1"],
+		"timeout": 30000
     },
     "确定竞技场影召1": {
         "recognition": {
@@ -161,8 +306,8 @@
 			"param": {}
 		},
 		"post_delay": 1000,
-		"next": ["[JumpBack]在加载页面", "确认推荐搭配下一步2"],
-		"timeout": 2000
+		"next": ["确认推荐搭配下一步2"],
+		"timeout": 30000
     },
     "确认推荐搭配下一步2": {
         "recognition": {
@@ -180,8 +325,8 @@
 			}
 		},
 		"post_delay": 1000,
-		"next": ["[JumpBack]在加载页面", "确定竞技场影召2"],
-		"timeout": 2000
+		"next": ["确定竞技场影召2"],
+		"timeout": 30000
     },
     "确定竞技场影召2": {
         "recognition": {
@@ -196,8 +341,8 @@
 			"param": {}
 		},
 		"post_delay": 1000,
-		"next": ["[JumpBack]在加载页面", "确认推荐搭配下一步3"],
-		"timeout": 2000
+		"next": ["确认推荐搭配下一步3"],
+		"timeout": 30000
     },
     "确认推荐搭配下一步3": {
         "recognition": {
@@ -215,8 +360,8 @@
 			}
 		},
 		"post_delay": 1000,
-		"next": ["[JumpBack]在加载页面", "确定竞技场影召3"],
-		"timeout": 2000
+		"next": ["确定竞技场影召3"],
+		"timeout": 30000
     },
     "确定竞技场影召3": {
         "recognition": {
@@ -231,8 +376,8 @@
 			"param": {}
 		},
 		"post_delay": 1000,
-		"next": ["[JumpBack]在加载页面", "返回竞技场战力对比页面"],
-		"timeout": 2000
+		"next": ["返回竞技场战力对比页面"],
+		"timeout": 30000
     },
 
     "返回竞技场战力对比页面": {
@@ -248,11 +393,32 @@
 			"param": {}
 		},
 		"post_delay": 10000,
-		"next": ["[JumpBack]点击OK-竞技场", "[JumpBack]在加载页面", "竞技场挑战策略分流"],
-		"timeout": 2000
+		"next": ["[JumpBack]点击OK-竞技场", "竞技场搭配完成确认"],
+		"timeout": 30000
+    },
+    "竞技场搭配完成确认": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["^我的\\s*搭配$"],
+                "roi": [387, 473, 333, 202]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "arena_weekly",
+                "custom_action_param": {"operation": "complete"}
+            }
+        },
+        "next": ["竞技场挑战策略分流"],
+        "timeout": 30000
     },
     "竞技场挑战策略分流": {
-        "recognition": "DirectHit",
+        "recognition": {
+            "type": "Or",
+            "param": {"any_of": ["竞技场挑战返回页面"]}
+        },
         "next": [
             "竞技场战力对比"
         ]
@@ -281,16 +447,10 @@
                     "refresh": [153, 1114, 89, 27],
                     "max_rounds": 5,
                     "剩余次数": [473, 1100, 202, 32],
-                    "空白区域": [534, 114, 17, 10],
-                    "blank_click_delay": 1.0
+                    "result_node": "竞技场挑战结果处理"
                 }
             }
-        },
-        "next": [
-            "[JumpBack]在加载页面",
-            "点击空白-竞技场挑战之后"
-        ],
-        "timeout": 300000
+        }
     },
     "竞技场战力对比": {
         "recognition": {
@@ -314,26 +474,117 @@
                     "refresh": [153, 1114, 89, 27],
                     "max_rounds": 5,
                     "剩余次数": [473, 1100, 202, 32],
-                    "空白区域": [534, 114, 17, 10],
-                    "blank_click_delay": 1.0
+                    "result_node": "竞技场挑战结果处理"
+                }
+            }
+        }
+    },
+    "竞技场挑战结果处理": {
+		"recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": ["竞技场快速挑战结果页面"],
+        "timeout": 30000
+	},
+    "竞技场快速挑战结果页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["快速挑战", "快速", "挑战"],
+                "roi": [120, 180, 480, 200]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "target": [157, 116, 123, 70],
+                    "compare_roi": [35, 320, 650, 430],
+                    "pixel_threshold": 35,
+                    "change_threshold": 0.12
                 }
             }
         },
-        "next": ["[JumpBack]在加载页面","点击空白-竞技场挑战之后"],
-        "timeout": 300000
-    },
-	"点击空白-竞技场挑战之后":{
-		"recognition": "DirectHit",
-        "action": {
-            "type": "Click",
-            "param": {
-                "target":[157, 116, 123, 70]
-            }
-        },
-		"repeat": 3,
-		"repeat_delay": 1000,
+        "next": ["竞技场挑战奖励页面"],
         "timeout": 30000
 	},
+    "竞技场挑战奖励页面": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": ["恭喜获得", "恭喜", "获得"],
+                                "roi": [100, 340, 520, 180]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": ["礼赞之花", "礼赞", "金币"],
+                                "roi": [140, 520, 440, 230]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "target": [157, 116, 123, 70],
+                    "compare_roi": [35, 320, 650, 430],
+                    "pixel_threshold": 35,
+                    "change_threshold": 0.12
+                }
+            }
+        },
+        "next": ["竞技场排名提升页面", "竞技场挑战返回页面"],
+        "timeout": 30000
+	},
+    "竞技场排名提升页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["排名提升"],
+                "roi": [124, 151, 465, 198]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "compare_roi": [35, 320, 650, 430],
+                    "pixel_threshold": 35,
+                    "change_threshold": 0.12,
+                    "max_retries": 3,
+                    "timeout": 3000,
+                    "fail_on_timeout": true
+                }
+            }
+        },
+        "next": ["竞技场挑战返回页面"],
+        "timeout": 30000
+    },
+    "竞技场挑战返回页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["^我的\\s*搭配$"],
+                "roi": [387, 473, 333, 202]
+            }
+        },
+        "action": "DoNothing",
+        "timeout": 30000
+    },
 	"点击OK-竞技场":{
 		"recognition": {
 			"type": "OCR",
@@ -347,23 +598,12 @@
             "param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param":{
-					"compare_roi": [101, 507, 516, 270]
+					"compare_roi": [101, 507, 516, 270],
+                    "max_retries": 3,
+                    "timeout": 3000,
+                    "fail_on_timeout": true
 				}
 			}
-        },
-        "timeout": 3000,
-		"next": ["[JumpBack]在加载页面","点击OK-竞技场-空白"]
-	},
-	"点击OK-竞技场-空白":{
-		"recognition": "DirectHit",
-        "action": {
-            "type": "Click",
-            "param": {
-                "target":[157, 116, 123, 70]
-            }
-        },
-		"repeat": 3,
-		"repeat_delay": 1000,
-        "timeout": 30000
+        }
 	}
 }

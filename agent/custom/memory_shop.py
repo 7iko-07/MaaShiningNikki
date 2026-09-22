@@ -76,6 +76,18 @@ class MemoryShopCheckAction(CustomAction):
         argv: CustomAction.RunArg,
     ) -> bool:
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
+        # Independent UI options use separate nodes so their overrides do not
+        # replace one another's custom_action_param object.
+        for key, node_name in (
+            ("auto_buy_gold", "回忆小铺自动购买金币商品"),
+            ("diamond_discount_threshold", "回忆小铺钻石暂停折扣"),
+            ("diamond_price_threshold", "回忆小铺钻石暂停价格"),
+            ("continue_refresh_when_not_free", "回忆小铺非免费继续刷新"),
+        ):
+            config = context.get_node_data(node_name) or {}
+            attached = config.get("attach", {})
+            if "value" in attached:
+                params[key] = attached["value"]
 
         slots = params.get("slots", DEFAULT_SLOTS)
         refresh_roi = params.get("refresh_roi", [516, 1167, 190, 49])

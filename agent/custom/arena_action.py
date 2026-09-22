@@ -1,20 +1,35 @@
 import json
 import time
+from enum import Enum, auto
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
 from utils import logger, read_ocr_number
+from utils.arena_state import in_settlement
+
+
+class ChallengeOutcome(Enum):
+    CHALLENGED = auto()
+    STOPPED = auto()
+    FAILED = auto()
+
+
+class PopupOutcome(Enum):
+    ABSENT = auto()
+    HANDLED = auto()
+    FAILED = auto()
 
 
 @AgentServer.custom_action("arena_compare")
 class ArenaCompareAction(CustomAction):
-    DEFAULT_BLANK_ROI = [540, 113, 29, 15]
-
     def run(
         self,
         context: Context,
         argv: CustomAction.RunArg,
     ) -> bool:
+        if in_settlement():
+            logger.info("竞技场结算中，停止挑战")
+            return context.override_next(argv.node_name, [])
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
         area_a = params.get("area_a")
         area_b_list = params.get("area_b", [])
@@ -25,12 +40,9 @@ class ArenaCompareAction(CustomAction):
             "remaining_roi",
             "剩余次数",
         )
-        blank_roi = self._get_first_param(params, "blank_roi", "空白区域") or self.DEFAULT_BLANK_ROI
-
         max_rounds = self._as_int(params.get("max_rounds"), 5)
-        blank_clicks = self._as_int(params.get("blank_clicks"), 10)
-        blank_click_delay = self._as_float(params.get("blank_click_delay"), 1.0)
         ok_node = params.get("ok_node", "点击OK-竞技场")
+        result_node = params.get("result_node", "竞技场挑战结果处理")
         ok_retry_limit = self._as_int(params.get("ok_retry_limit"), 3)
         post_challenge_delay = self._as_float(params.get("post_challenge_delay"), 1.0)
         player_power_retry = self._as_int(params.get("player_power_retry"), 5)
@@ -48,23 +60,20 @@ class ArenaCompareAction(CustomAction):
         if not self._valid_roi_list(area_b_list):
             logger.error("arena_compare: invalid area_b")
             return False
-        if remaining_count_roi and not self._valid_roi(remaining_count_roi):
+        if not self._valid_roi(remaining_count_roi):
             logger.error("arena_compare: invalid remaining_count_roi")
             return False
-        if not self._valid_roi(blank_roi):
-            logger.error("arena_compare: invalid blank_roi")
-            return False
-
         controller = context.tasker.controller
         challenge_times = self._read_challenge_times(context, controller, remaining_count_roi)
+        if challenge_times is None:
+            return False
         if challenge_times <= 0:
             logger.info(f"arena_compare: no remaining challenge times, challenge_times={challenge_times}")
-            context.override_next(argv.node_name, [])
-            return True
+            return context.override_next(argv.node_name, [])
 
         for challenge_index in range(challenge_times):
             logger.info(f"arena_compare: challenge {challenge_index + 1}/{challenge_times}")
-            found = self._challenge_once(
+            outcome = self._challenge_once(
                 context,
                 controller,
                 area_a,
@@ -77,34 +86,36 @@ class ArenaCompareAction(CustomAction):
                 player_power_retry,
                 player_power_retry_delay,
             )
-            if not found:
-                context.override_next(argv.node_name, [])
-                return True
+            if outcome is ChallengeOutcome.STOPPED:
+                return context.override_next(argv.node_name, [])
+            if outcome is not ChallengeOutcome.CHALLENGED:
+                return False
 
-            self._click_roi_repeated(controller, blank_roi, blank_clicks, blank_click_delay)
+            if not self._run_result_flow(context, result_node):
+                logger.warning(f"arena_compare: challenge result flow {result_node!r} failed")
+                return False
 
-        return True
+        return context.override_next(argv.node_name, [])
 
     def _read_challenge_times(self, context, controller, remaining_count_roi):
         if not remaining_count_roi:
-            return 1
+            return None
 
-        job = controller.post_screencap()
-        job.wait()
-        remaining = read_ocr_number(
-            context,
-            controller.cached_image,
-            "_arena_ocr_remainging_count",
-            remaining_count_roi,
-            [r"\d+\s*/\s*\d+"],
-            "arena_compare",
-        )
-        if remaining is None:
-            logger.warning("arena_compare: failed to OCR remaining count, falling back to one challenge")
-            return 1
-
-        logger.info(f"arena_compare: remaining challenge times = {remaining}")
-        return remaining
+        for attempt in range(3):
+            if not controller.post_screencap().wait().succeeded:
+                logger.error("arena_compare: remaining count screenshot failed")
+                return None
+            remaining = read_ocr_number(
+                context, controller.cached_image, "_arena_ocr_remaining_count",
+                remaining_count_roi, [r"\d+\s*/\s*\d+"], "arena_compare",
+            )
+            if remaining is not None:
+                logger.info(f"arena_compare: remaining challenge times = {remaining}")
+                return remaining
+            if attempt < 2:
+                time.sleep(1)
+        logger.error("arena_compare: remaining count OCR failed after 3 attempts")
+        return None
 
     def _challenge_once(
         self,
@@ -126,6 +137,9 @@ class ArenaCompareAction(CustomAction):
         ok_retry_count = 0
 
         while refresh_count <= max_rounds:
+            if in_settlement():
+                logger.info("竞技场已进入结算期，停止挑战")
+                return ChallengeOutcome.STOPPED
             logger.info(f"arena_compare: recognizing opponents, refreshes used {refresh_count}/{max_rounds}")
 
             player_power, img = self._read_player_power(
@@ -137,53 +151,72 @@ class ArenaCompareAction(CustomAction):
             )
             if player_power is None:
                 logger.warning("arena_compare: failed to OCR player power after retries")
-                return False
+                return ChallengeOutcome.FAILED
 
             logger.info(f"arena_compare: player power = {player_power}")
 
             ok_handled = False
             for i, area_b in enumerate(area_b_list):
-                opp_power = read_ocr_number(
-                    context,
-                    img,
-                    "_arena_ocr",
-                    area_b,
-                    [r"\d[\d,]*"],
-                    "arena_compare",
-                )
+                opp_power = self._read_opponent_power(context, controller, img, area_b)
                 if opp_power is None:
-                    logger.warning(f"arena_compare: failed to OCR opponent {i}")
-                    continue
+                    logger.error(f"arena_compare: opponent {i} OCR failed after retries")
+                    return ChallengeOutcome.FAILED
                 logger.info(f"arena_compare: opponent {i} power = {opp_power}")
                 if player_power > opp_power:
+                    if in_settlement():
+                        logger.info("竞技场已进入结算期，不再发起挑战")
+                        return ChallengeOutcome.STOPPED
                     logger.info(f"arena_compare: player > opponent {i}, clicking opponent {i}")
-                    self._click_opponent(controller, area_b)
-                    if self._handle_optional_ok_popup(context, controller, ok_node, post_challenge_delay):
+                    if not self._click_opponent(controller, area_b):
+                        logger.error("arena_compare: opponent click failed")
+                        return ChallengeOutcome.FAILED
+                    popup = self._handle_optional_ok_popup(context, controller, ok_node, post_challenge_delay)
+                    if popup is PopupOutcome.FAILED:
+                        return ChallengeOutcome.FAILED
+                    if popup is PopupOutcome.HANDLED:
                         ok_retry_count += 1
                         ok_handled = True
                         if ok_retry_count > ok_retry_limit:
                             logger.warning(
                                 f"arena_compare: OK popup appeared more than {ok_retry_limit} times"
                             )
-                            return False
+                            return ChallengeOutcome.FAILED
                         logger.info("arena_compare: OK popup handled, retrying power recognition")
                         time.sleep(player_power_retry_delay)
                         break
-                    return True
+                    return ChallengeOutcome.CHALLENGED
 
             if ok_handled:
                 continue
 
             if refresh_count < max_rounds:
+                if in_settlement():
+                    logger.info("竞技场已进入结算期，不再刷新对手")
+                    return ChallengeOutcome.STOPPED
                 logger.info(f"arena_compare: no weaker opponent, clicking refresh {refresh_count + 1}/{max_rounds}")
-                self._click_roi(controller, refresh_roi)
+                if not self._click_roi(controller, refresh_roi):
+                    logger.error("arena_compare: refresh click failed")
+                    return ChallengeOutcome.FAILED
                 refresh_count += 1
                 time.sleep(3)
             else:
                 logger.warning(f"arena_compare: no weaker opponent after {refresh_count} refreshes")
-                return False
+                return ChallengeOutcome.STOPPED
 
-        return False
+        return ChallengeOutcome.FAILED
+
+    def _read_opponent_power(self, context, controller, image, roi):
+        for attempt in range(3):
+            power = read_ocr_number(context, image, "_arena_ocr", roi,
+                                    [r"\d[\d,]*"], "arena_compare")
+            if power is not None:
+                return power
+            if attempt < 2:
+                time.sleep(1)
+                if not controller.post_screencap().wait().succeeded:
+                    return None
+                image = controller.cached_image
+        return None
 
     def _read_player_power(
         self,
@@ -197,8 +230,9 @@ class ArenaCompareAction(CustomAction):
         last_img = None
 
         for attempt in range(retry):
-            job = controller.post_screencap()
-            job.wait()
+            if not controller.post_screencap().wait().succeeded:
+                logger.error("arena_compare: player power screenshot failed")
+                return None, last_img
             last_img = controller.cached_image
 
             player_power = read_ocr_number(
@@ -226,37 +260,37 @@ class ArenaCompareAction(CustomAction):
             time.sleep(delay)
 
         try:
-            job = controller.post_screencap()
-            job.wait()
+            if not controller.post_screencap().wait().succeeded:
+                return PopupOutcome.FAILED
             detail = context.run_recognition(ok_node, controller.cached_image)
-            if not (detail and getattr(detail, "hit", False)):
-                return False
+            if not (detail and detail.hit):
+                return PopupOutcome.ABSENT
 
             result = context.run_task(ok_node)
-            if result is None:
-                return False
-            success = getattr(result, "success", None)
-            handled = True if success is None else bool(success)
-            if handled:
-                logger.info(f"arena_compare: handled popup by task {ok_node!r}")
-            return handled
+            if not (result and result.status.succeeded):
+                logger.error(f"arena_compare: popup task {ok_node!r} failed")
+                return PopupOutcome.FAILED
+            logger.info(f"arena_compare: handled popup by task {ok_node!r}")
+            return PopupOutcome.HANDLED
         except Exception as e:
             logger.warning(f"arena_compare: optional OK popup task {ok_node!r} failed: {e}")
+            return PopupOutcome.FAILED
+
+    def _run_result_flow(self, context, result_node):
+        try:
+            result = context.run_task(result_node)
+            return bool(result and result.status.succeeded)
+        except Exception as e:
+            logger.warning(f"arena_compare: result flow {result_node!r} failed: {e}")
             return False
 
     def _click_opponent(self, controller, roi):
         x, y, w, h = roi
-        controller.post_click(x + w // 2 - 60, y + h // 2 - 100).wait()
+        return controller.post_click(x + w // 2 - 60, y + h // 2 - 100).wait().succeeded
 
     def _click_roi(self, controller, roi):
         x, y, w, h = roi
-        controller.post_click(x + w // 2, y + h // 2).wait()
-
-    def _click_roi_repeated(self, controller, roi, count, delay):
-        for _ in range(max(0, count)):
-            self._click_roi(controller, roi)
-            if delay > 0:
-                time.sleep(delay)
+        return controller.post_click(x + w // 2, y + h // 2).wait().succeeded
 
     def _valid_roi(self, value):
         return isinstance(value, list) and len(value) == 4

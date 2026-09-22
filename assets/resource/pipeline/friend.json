@@ -26,10 +26,20 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"compare_roi": [140, 615, 390, 50],
+					"after_click_delay": 100,
+					"interval": 100,
+					"timeout": 2500,
+					"max_retries": 1,
+					"pixel_threshold": 25,
+					"change_threshold": 0.15
+				}
+			}
 		},
-		"post_delay": 2000,
 		"next": ["[JumpBack]在加载页面","点击领取体力"],
 		"timeout": 2000
     },
@@ -50,7 +60,6 @@
 				}
 			}
 		},
-		"post_delay": 2000,
 		"next": ["点击联盟一键送心"],
 		"timeout": 2000
     },
@@ -63,10 +72,20 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"compare_roi": [140, 615, 390, 50],
+					"after_click_delay": 100,
+					"interval": 100,
+					"timeout": 2500,
+					"max_retries": 1,
+					"pixel_threshold": 25,
+					"change_threshold": 0.15
+				}
+			}
 		},
-		"post_delay": 2000,
 		"next": ["stop"],
 		"timeout": 2000
     },
@@ -82,10 +101,18 @@
 			"type": "Custom",
             "param": {
                 "custom_action": "click_and_wait_change",
-                "custom_action_param":{}
+                "custom_action_param": {
+					"compare_roi": [55, 300, 610, 620],
+					"after_click_delay": 100,
+					"interval": 100,
+					"timeout": 3000,
+					"max_retries": 2,
+					"pixel_threshold": 25,
+					"change_threshold": 0.10,
+					"fail_on_timeout": true
+				}
             }
 		},
-		"post_delay": 2000,
 		"next": ["[JumpBack]在加载页面","点击一键领取体力", "点击退出领取体力"],
 		"timeout": 2000
     },
@@ -93,16 +120,27 @@
         "recognition": {
 			"type": "OCR",
 			"param": {
-				"roi": [57, 324, 608, 726],
+				"roi": [40, 280, 640, 770],
 				"expected": ["一键领取", "键领取", "键领"]
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"compare_roi": [55, 300, 610, 620],
+					"after_click_delay": 100,
+					"interval": 100,
+					"timeout": 3000,
+					"max_retries": 2,
+					"pixel_threshold": 25,
+					"change_threshold": 0.10,
+					"fail_on_timeout": true
+				}
+			}
 		},
-		"post_delay": 2000,
-		"next": ["点击退出领取体力"],
+		"next": ["[JumpBack]在加载页面", "点击退出领取体力"],
 		"timeout": 2000
     },
     "点击退出领取体力": {
@@ -111,15 +149,23 @@
 			"param": {}
 		},
 		"action": {
-			"type": "Click",
+			"type": "Custom",
 			"param": {
-                "target": [207, 114, 153, 68]
+				"custom_action": "click_and_wait_change",
+				"custom_action_param": {
+					"target": [207, 114, 153, 68],
+					"compare_roi": [55, 300, 610, 620],
+					"after_click_delay": 100,
+					"interval": 100,
+					"timeout": 3000,
+					"max_retries": 2,
+					"pixel_threshold": 25,
+					"change_threshold": 0.10,
+					"fail_on_timeout": true
+				}
             }
 		},
-		"post_delay": 1000,
-		"next": ["点击联盟体力页"],
-		"timeout": 2000,
-        "repeat": 5,
-        "repeat_delay": 500
+		"next": ["[JumpBack]在加载页面", "点击联盟体力页"],
+		"timeout": 2000
     }
 }

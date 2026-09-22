@@ -14,7 +14,7 @@
                 }
             }
         },
-        "next": ["点击一键领取邮件"],
+        "next": ["点击一键领取邮件","没有邮件需要领取"],
         "timeout": 30000
     },
     "点击一键领取邮件": {
@@ -29,8 +29,28 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_delay": 2000,
-		"next": ["stop"],
+		"next": ["返回主页面"],
+		"timeout": 2000
+    },
+    "没有邮件需要领取":{
+        "recognition": {
+			"type": "OCR",
+			"param": {
+				"roi":[50, 244, 616, 785],
+				"expected": ["当前还没有收到邮件"]
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "target": [353, 1088, 21, 23],
+                    "compare_roi": [55, 246, 613, 781]
+                }
+            }
+		},
+		"next": ["返回主页面"],
 		"timeout": 2000
     }
 }

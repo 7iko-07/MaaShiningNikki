@@ -145,7 +145,7 @@
             "param": {}
         },
         "post_delay": 2000,
-        "next": ["点击前往获取时空回廊制衣材料", "点击返回材料页-时空回廊"],
+        "next": ["材料已收集完毕-时空回廊", "点击前往获取时空回廊制衣材料", "点击返回材料页-时空回廊"],
         "timeout": 2000
     },
     "点击全部材料-心灵迷宫": {
@@ -161,7 +161,7 @@
             "param": {}
         },
         "post_delay": 2000,
-        "next": ["点击前往获取心灵迷宫制衣材料", "点击返回材料页-心灵迷宫"],
+        "next": ["材料已收集完毕-心灵迷宫", "点击前往获取心灵迷宫制衣材料", "点击返回材料页-心灵迷宫"],
         "timeout": 2000
     },
     "点击全部材料-主线": {
@@ -177,7 +177,7 @@
             "param": {}
         },
         "post_delay": 2000,
-        "next": ["点击前往获取主线制衣材料", "点击返回材料页-主线"],
+        "next": ["材料已收集完毕-主线", "点击前往获取主线制衣材料", "点击返回材料页-主线"],
         "timeout": 2000
     },
     "点击末项全部材料-时空回廊": {
@@ -193,7 +193,7 @@
             "param": {}
         },
         "post_delay": 2000,
-        "next": ["点击前往获取时空回廊制衣材料", "点击返回材料页-时空回廊末项"],
+        "next": ["材料已收集完毕-时空回廊末项", "点击前往获取时空回廊制衣材料", "点击返回材料页-时空回廊末项"],
         "timeout": 2000
     },
     "点击末项全部材料-心灵迷宫": {
@@ -209,7 +209,7 @@
             "param": {}
         },
         "post_delay": 2000,
-        "next": ["点击前往获取心灵迷宫制衣材料", "点击返回材料页-心灵迷宫末项"],
+        "next": ["材料已收集完毕-心灵迷宫末项", "点击前往获取心灵迷宫制衣材料", "点击返回材料页-心灵迷宫末项"],
         "timeout": 2000
     },
     "点击末项全部材料-主线": {
@@ -225,7 +225,7 @@
             "param": {}
         },
         "post_delay": 2000,
-        "next": ["点击前往获取主线制衣材料", "点击返回材料页-主线末项"],
+        "next": ["材料已收集完毕-主线末项", "点击前往获取主线制衣材料", "点击返回材料页-主线末项"],
         "timeout": 2000
     },
     "点击前往获取时空回廊制衣材料": {
@@ -295,10 +295,10 @@
             "param": {
                 "custom_action": "make_target_clothes_challenge",
                 "custom_action_param": {
-                    "challenge_count_roi": [320, 832, 252, 57],
+                    "challenge_count_roi": [324, 752, 285, 57],
                     "stamina_roi": [0, 0, 218, 37],
-                    "once_button": [63, 895, 116, 40],
-                    "multi_button": [218, 895, 117, 44]
+                    "once_button": [68, 818, 110, 42],
+                    "multi_button": [220, 814, 115, 45]
                 }
             }
         },
@@ -880,8 +880,127 @@
             "param": {}
         },
         "post_delay": 2000,
-        "next": ["点击前往获取时空回廊制衣材料", "点击返回-制衣2"],
+        "next": ["材料已收集完毕", "点击前往获取时空回廊制衣材料", "点击返回-制衣2"],
         "timeout": 2000
+    },
+    "材料已收集完毕-时空回廊": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [234, 662, 256, 100],
+                "expected": ["前往制作"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_materials_complete"
+            }
+        },
+        "post_delay": 1000,
+        "next": ["左划制衣页面-时空回廊"]
+    },
+    "材料已收集完毕-时空回廊末项": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [234, 662, 256, 100],
+                "expected": ["前往制作"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_materials_complete"
+            }
+        },
+        "post_delay": 1000,
+        "next": ["制作目标服装时空回廊阶段完成"]
+    },
+    "材料已收集完毕-心灵迷宫": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [234, 662, 256, 100],
+                "expected": ["前往制作"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_materials_complete"
+            }
+        },
+        "post_delay": 1000,
+        "next": ["左划制衣页面-心灵迷宫"]
+    },
+    "材料已收集完毕-心灵迷宫末项": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [234, 662, 256, 100],
+                "expected": ["前往制作"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_materials_complete"
+            }
+        },
+        "post_delay": 1000,
+        "next": ["制作目标服装心灵迷宫阶段完成"]
+    },
+    "材料已收集完毕-主线": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [234, 662, 256, 100],
+                "expected": ["前往制作"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_materials_complete"
+            }
+        },
+        "post_delay": 1000,
+        "next": ["左划制衣页面-主线"]
+    },
+    "材料已收集完毕-主线末项": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [234, 662, 256, 100],
+                "expected": ["前往制作"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_materials_complete"
+            }
+        },
+        "post_delay": 1000,
+        "next": ["制作目标服装主线阶段完成"]
+    },
+    "材料已收集完毕": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [234, 662, 256, 100],
+                "expected": ["前往制作"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_materials_complete"
+            }
+        },
+        "post_delay": 1000,
+        "next": ["左划制衣页面"]
     },
     "点击前往制作": {
         "enabled": false,

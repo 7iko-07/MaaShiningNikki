@@ -68,5 +68,21 @@
         "timeout": 3000,
         "post_delay": 500,
         "next": ["商城检查回忆小铺商品"]
+    },
+    "回忆小铺自动购买金币商品": {
+        "recognition": "DirectHit",
+        "attach": {}
+    },
+    "回忆小铺钻石暂停折扣": {
+        "recognition": "DirectHit",
+        "attach": {}
+    },
+    "回忆小铺钻石暂停价格": {
+        "recognition": "DirectHit",
+        "attach": {}
+    },
+    "回忆小铺非免费继续刷新": {
+        "recognition": "DirectHit",
+        "attach": {}
     }
 }

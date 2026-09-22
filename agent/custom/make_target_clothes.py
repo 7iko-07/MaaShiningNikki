@@ -9,6 +9,18 @@ from maa.pipeline import JActionType, JSwipe
 from utils import logger, read_ocr_number, read_ocr_text
 
 
+@AgentServer.custom_action("make_target_clothes_materials_complete")
+class MakeTargetClothesMaterialsCompleteAction(CustomAction):
+    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        logger.info("材料已收集完毕")
+        # 仅执行一次 Esc，不跟随通用节点的后续任务链。
+        result = context.run_action("点击esc")
+        if result is None or not result.success:
+            logger.error("材料已收集完毕：关闭弹窗失败")
+            return False
+        return True
+
+
 @AgentServer.custom_action("make_target_clothes_challenge")
 class MakeTargetClothesChallengeAction(CustomAction):
 
