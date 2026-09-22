@@ -26,10 +26,14 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+				"custom_action":"click_and_wait_change",
+				"custom_action_param":{
+					"compare_roi": [71, 250, 587, 717]
+				}
+			}
 		},
-		"post_delay": 2000,
 		"next": ["点击前往采购小物", "点击日常采购"],
 		"timeout": 2000
     },
@@ -77,7 +81,7 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["点击番茄炒蛋"],
+		"next": ["点击番茄炒蛋","[JumpBack]上划日常采购"],
 		"timeout": 2000
     },
     "点击番茄炒蛋":{
@@ -193,7 +197,7 @@
         "repeat": 2,
         "repeat_delay": 500,
 		"post_delay": 1000,
-		"next": ["[JumpBack]点击确定活力不足","[JumpBack]点击体力用尽确定","上划日常采购"],
+		"next": ["点击晴雨伞","[JumpBack]点击确定活力不足","[JumpBack]点击体力用尽确定","[JumpBack]上划日常采购"],
 		"timeout": 2000
     },
     "上划日常采购": {
@@ -207,7 +211,6 @@
                 "end": [360, 660]
             }
         },
-		"next": ["点击晴雨伞"],
 		"post_delay": 1000,
         "timeout": 1000
     },

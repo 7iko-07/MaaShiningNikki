@@ -546,7 +546,7 @@
                 }
             }
         },
-        "next": ["竞技场排名提升页面", "竞技场挑战返回页面"],
+        "next": ["竞技场排名提升页面", "竞技场段位晋级页面", "竞技场挑战返回页面"],
         "timeout": 30000
 	},
     "竞技场排名提升页面": {
@@ -560,18 +560,37 @@
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "click_and_wait_change",
+                "custom_action": "arena_close_rank_popup",
                 "custom_action_param": {
-                    "compare_roi": [35, 320, 650, 430],
-                    "pixel_threshold": 35,
-                    "change_threshold": 0.12,
-                    "max_retries": 3,
-                    "timeout": 3000,
-                    "fail_on_timeout": true
+                    "max_clicks": 3,
+                    "timeout": 10000,
+                    "total_timeout": 20000
                 }
             }
         },
-        "next": ["竞技场挑战返回页面"],
+        "next": ["竞技场挑战奖励页面", "竞技场挑战返回页面"],
+        "timeout": 30000
+    },
+    "竞技场段位晋级页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["段位晋级"],
+                "roi": [129, 163, 443, 175]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "arena_close_rank_popup",
+                "custom_action_param": {
+                    "max_clicks": 3,
+                    "timeout": 10000,
+                    "total_timeout": 20000
+                }
+            }
+        },
+        "next": ["竞技场挑战奖励页面", "竞技场挑战返回页面"],
         "timeout": 30000
     },
     "竞技场挑战返回页面": {

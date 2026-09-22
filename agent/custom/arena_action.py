@@ -20,6 +20,96 @@ class PopupOutcome(Enum):
     FAILED = auto()
 
 
+@AgentServer.custom_action("arena_close_rank_popup")
+class ArenaCloseRankPopupAction(CustomAction):
+    """动画变化不代表关闭；只在文字仍可见时补点，限时确认消失。"""
+
+    POPUP_NODES = ("竞技场排名提升页面", "竞技场段位晋级页面")
+
+    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
+        timeout = max(1, int(params.get("timeout", 10000))) / 1000
+        total_timeout = max(1, int(params.get("total_timeout", 20000))) / 1000
+        max_clicks = max(1, int(params.get("max_clicks", 3)))
+        controller = context.tasker.controller
+        started = time.monotonic()
+        total_deadline = started + total_timeout
+        deadline = min(total_deadline, started + timeout)
+        current_node = argv.node_name
+        if current_node not in self.POPUP_NODES:
+            logger.error(f"arena_close_rank_popup: unknown popup {current_node}")
+            return False
+        next_click = 0.0
+        clicks = dict.fromkeys(self.POPUP_NODES, 0)
+        absent_count = 0
+        try:
+            while time.monotonic() < deadline:
+                if context.tasker.stopping:
+                    return False
+                if not controller.post_screencap().wait().succeeded:
+                    logger.error("arena_close_rank_popup: screenshot failed")
+                    return False
+                image = controller.cached_image
+                # Recognition only: never recursively execute this action/next.
+                detail = context.run_recognition(current_node, image)
+                if detail is None:
+                    logger.error("arena_close_rank_popup: recognition failed to start")
+                    return False
+                if context.tasker.stopping or time.monotonic() >= deadline:
+                    return False
+                if detail.hit:
+                    absent_count = 0
+                    if clicks[current_node] < max_clicks and time.monotonic() >= next_click:
+                        box = detail.box
+                        if box is None or box.w <= 0 or box.h <= 0:
+                            logger.error("arena_close_rank_popup: invalid text box")
+                            return False
+                        if not controller.post_click(
+                            int(box.x + box.w / 2), int(box.y + box.h / 2)
+                        ).wait().succeeded:
+                            logger.error("arena_close_rank_popup: click failed")
+                            return False
+                        clicks[current_node] += 1
+                        next_click = time.monotonic() + 1.0
+                        logger.info(f"arena_close_rank_popup: node={current_node}, click {clicks[current_node]}/{max_clicks}")
+                else:
+                    absent_count += 1
+                    if absent_count >= 3:
+                        other_node = next(node for node in self.POPUP_NODES if node != current_node)
+                        other = context.run_recognition(other_node, image)
+                        if other is None:
+                            logger.error(f"arena_close_rank_popup: recognition failed to start: {other_node}")
+                            return False
+                        if context.tasker.stopping or time.monotonic() >= deadline:
+                            return False
+                        if other.hit:
+                            logger.info(f"arena_close_rank_popup: {current_node} disappeared, switching to {other_node}")
+                            current_node = other_node
+                            absent_count = 0
+                            # Keep per-type click counts and a shared deadline even if animations alternate.
+                            deadline = min(total_deadline, time.monotonic() + timeout)
+                            time.sleep(min(0.3, max(0, deadline - time.monotonic())))
+                            continue
+                        # Hand rewards back to Pipeline; only recognize here, never run its next chain.
+                        for exit_node in ("竞技场挑战奖励页面", "竞技场挑战返回页面"):
+                            ready = context.run_recognition(exit_node, image)
+                            if ready is None:
+                                logger.error(f"arena_close_rank_popup: recognition failed to start: {exit_node}")
+                                return False
+                            if context.tasker.stopping or time.monotonic() >= deadline:
+                                return False
+                            if ready.hit:
+                                logger.info(f"arena_close_rank_popup: text disappeared, next={exit_node}, clicks={clicks}")
+                                return True
+                # Exhausting clicks does not end the wait: the animation can finish itself.
+                time.sleep(min(0.3, max(0, deadline - time.monotonic())))
+        except Exception as exc:
+            logger.error(f"arena_close_rank_popup: failed: {exc}")
+            return False
+        logger.error(f"arena_close_rank_popup: timeout, clicks={clicks}, absent_count={absent_count}")
+        return False
+
+
 @AgentServer.custom_action("arena_compare")
 class ArenaCompareAction(CustomAction):
     def run(

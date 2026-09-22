@@ -140,6 +140,193 @@ class ArenaActionTests(unittest.TestCase):
         self.context.run_task.assert_not_called()
 
 
+class RankPopupActionTests(unittest.TestCase):
+    def setUp(self):
+        self.context = Mock()
+        self.context.tasker.stopping = False
+        self.controller = self.context.tasker.controller
+        self.controller.post_screencap.return_value.wait.return_value.succeeded = True
+        self.controller.post_click.return_value.wait.return_value.succeeded = True
+        self.now = 0.0
+        self.frame = -1
+        self.visible = lambda: True
+        self.promotion_visible = lambda: False
+        self.reward_visible = lambda: False
+        self.entry = "竞技场排名提升页面"
+        self.ready = True
+        self.click_times = []
+        self.clicked_nodes = []
+        self.controller.post_screencap.side_effect = self.capture
+        self.controller.post_click.side_effect = self.click
+        self.context.run_recognition.side_effect = self.recognize
+        for patcher in (patch.object(arena.time, "monotonic", side_effect=lambda: self.now),
+                        patch.object(arena.time, "sleep", side_effect=self.sleep)):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def sleep(self, seconds):
+        self.now += seconds
+
+    def capture(self):
+        self.frame += 1
+        return self.controller.post_screencap.return_value
+
+    def click(self, x, y):
+        self.click_times.append(self.now)
+        self.clicked_nodes.append(self.last_popup)
+        return self.controller.post_click.return_value
+
+    def recognize(self, node, image):
+        if node == "竞技场排名提升页面":
+            hit = self.visible()
+        elif node == "竞技场段位晋级页面":
+            hit = self.promotion_visible()
+        elif node == "竞技场挑战奖励页面":
+            hit = self.reward_visible()
+        else:
+            hit = self.ready
+        if hit and node in arena.ArenaCloseRankPopupAction.POPUP_NODES:
+            self.last_popup = node
+        return SimpleNamespace(
+            hit=hit,
+            box=SimpleNamespace(x=100 + self.frame, y=200, w=40, h=30))
+
+    def run_action(self):
+        return arena.ArenaCloseRankPopupAction().run(self.context, SimpleNamespace(
+            node_name=self.entry,
+            custom_action_param=json.dumps({"timeout": 10000, "max_clicks": 3})))
+
+    def test_waits_for_animation_after_three_clicks(self):
+        self.visible = lambda: self.now < 4
+        self.assertTrue(self.run_action())
+        self.assertEqual(len(self.click_times), 3)
+        self.assertGreater(self.now, 4)
+        self.assertTrue(all(b - a >= 1 for a, b in zip(self.click_times, self.click_times[1:])))
+        # Each click follows the freshly recognized moving text, not the initial box.
+        points = [call.args for call in self.controller.post_click.call_args_list]
+        self.assertEqual(points[0], (120, 215))
+        self.assertGreater(points[1][0], points[0][0])
+
+    def test_transient_ocr_misses_do_not_finish_or_click(self):
+        frames = [True, False, False, True, False, False, False]
+        self.visible = lambda: frames[min(self.frame, len(frames) - 1)]
+        self.assertTrue(self.run_action())
+        self.assertEqual(self.frame, 6)
+        self.assertEqual(len(self.click_times), 1)
+
+    def test_natural_disappearance_needs_no_click(self):
+        self.visible = lambda: False
+        self.assertTrue(self.run_action())
+        self.assertEqual(self.frame, 2)
+        self.controller.post_click.assert_not_called()
+
+    def test_persistent_text_times_out_after_only_three_clicks(self):
+        self.assertFalse(self.run_action())
+        self.assertEqual(len(self.click_times), 3)
+        self.assertAlmostEqual(self.now, 10)
+
+    def test_disappearance_without_arena_is_not_success(self):
+        self.visible = lambda: False
+        self.ready = False
+        self.assertFalse(self.run_action())
+        self.controller.post_click.assert_not_called()
+        self.assertAlmostEqual(self.now, 10)
+
+    def test_recognition_error_is_not_disappearance(self):
+        self.context.run_recognition.side_effect = None
+        self.context.run_recognition.return_value = None
+        self.assertFalse(self.run_action())
+        self.controller.post_click.assert_not_called()
+
+    def test_failed_capture_or_click_propagates(self):
+        self.controller.post_screencap.return_value.wait.return_value.succeeded = False
+        self.assertFalse(self.run_action())
+        self.controller.post_click.assert_not_called()
+        self.controller.post_screencap.return_value.wait.return_value.succeeded = True
+        self.controller.post_click.return_value.wait.return_value.succeeded = False
+        self.assertFalse(self.run_action())
+        self.assertEqual(len(self.click_times), 1)
+
+    def test_cancellation_prevents_click(self):
+        self.context.tasker.stopping = True
+        self.assertFalse(self.run_action())
+        self.controller.post_click.assert_not_called()
+
+    def test_promotion_alone_uses_same_disappearance_check(self):
+        self.entry = "竞技场段位晋级页面"
+        self.visible = lambda: False
+        self.promotion_visible = lambda: self.now < 2
+        self.assertTrue(self.run_action())
+        self.assertEqual(set(self.clicked_nodes), {"竞技场段位晋级页面"})
+        self.assertGreaterEqual(self.now, 2.6)
+
+    def test_rank_then_promotion_does_not_exit_on_visible_background(self):
+        self.visible = lambda: self.now < 1
+        self.promotion_visible = lambda: 1 <= self.now < 3
+        self.assertTrue(self.run_action())
+        self.assertEqual(set(self.clicked_nodes), set(arena.ArenaCloseRankPopupAction.POPUP_NODES))
+        self.assertGreaterEqual(self.now, 3.6)
+
+    def test_promotion_then_rank_does_not_exit_on_visible_background(self):
+        self.entry = "竞技场段位晋级页面"
+        self.promotion_visible = lambda: self.now < 1
+        self.visible = lambda: 1 <= self.now < 3
+        self.assertTrue(self.run_action())
+        self.assertEqual(self.clicked_nodes[0], "竞技场段位晋级页面")
+        self.assertIn("竞技场排名提升页面", self.clicked_nodes)
+        self.assertGreaterEqual(self.now, 3.6)
+
+    def test_alternating_popups_share_deadline_and_per_type_click_limits(self):
+        self.visible = lambda: int(self.now / 1.2) % 2 == 0
+        self.promotion_visible = lambda: not self.visible()
+        self.assertFalse(self.run_action())
+        self.assertAlmostEqual(self.now, 20)
+        for node in arena.ArenaCloseRankPopupAction.POPUP_NODES:
+            self.assertLessEqual(self.clicked_nodes.count(node), 3)
+        self.assertTrue(all(b - a >= 1 for a, b in zip(self.click_times, self.click_times[1:])))
+
+    def test_other_popup_recognition_error_is_not_clear_screen(self):
+        self.visible = lambda: False
+        recognize = self.recognize
+        self.context.run_recognition.side_effect = lambda node, image: (
+            None if node == "竞技场段位晋级页面" else recognize(node, image))
+        self.assertFalse(self.run_action())
+        self.controller.post_click.assert_not_called()
+
+    def test_reward_after_either_animation_exits_without_arena_or_reward_click(self):
+        for entry in arena.ArenaCloseRankPopupAction.POPUP_NODES:
+            with self.subTest(entry=entry):
+                self.entry = entry
+                self.visible = lambda: False
+                self.promotion_visible = lambda: False
+                self.reward_visible = lambda: True
+                self.ready = False
+                self.frame = -1
+                self.context.run_recognition.reset_mock()
+                self.assertTrue(self.run_action())
+                self.assertEqual(self.frame, 2)
+                self.controller.post_click.assert_not_called()
+                self.context.run_task.assert_not_called()
+                nodes = [call.args[0] for call in self.context.run_recognition.call_args_list]
+                self.assertEqual(nodes[-1], "竞技场挑战奖励页面")
+                self.assertNotIn("竞技场挑战返回页面", nodes)
+
+    def test_visible_animation_is_not_skipped_for_reward(self):
+        self.reward_visible = lambda: True
+        self.assertFalse(self.run_action())
+        self.assertEqual(len(self.click_times), 3)
+        nodes = [call.args[0] for call in self.context.run_recognition.call_args_list]
+        self.assertNotIn("竞技场挑战奖励页面", nodes)
+
+    def test_reward_recognition_error_is_not_clear_screen(self):
+        self.visible = lambda: False
+        recognize = self.recognize
+        self.context.run_recognition.side_effect = lambda node, image: (
+            None if node == "竞技场挑战奖励页面" else recognize(node, image))
+        self.assertFalse(self.run_action())
+        self.controller.post_click.assert_not_called()
+
+
 class ScreenController(CustomController):
     """仅生成空白截图，通过识别回调模拟页面，不连接设备。"""
     def __init__(self):
@@ -285,6 +472,39 @@ class ArenaPipelineTests(unittest.TestCase):
         self.assertFalse(self.execute("竞技场挑战奖励页面", overrides).status.succeeded)
         self.assertNotIn("竞技场挑战返回页面", self.executed)
 
+    def test_promotion_precedes_visible_arena_after_rewards(self):
+        self.controller.screen = "竞技场挑战奖励页面"
+        self.transitions = {"竞技场挑战奖励页面": "竞技场段位晋级页面",
+                            "竞技场段位晋级页面": "竞技场挑战返回页面"}
+        overrides = {"竞技场挑战返回页面": {"recognition": "DirectHit"}}
+        self.assertTrue(self.execute("竞技场挑战奖励页面", overrides).status.succeeded)
+        self.assertEqual(self.executed, ["竞技场挑战奖励页面", "竞技场段位晋级页面",
+                                         "竞技场挑战返回页面"])
+
+    def test_reward_after_either_animation_precedes_visible_arena(self):
+        for entry in arena.ArenaCloseRankPopupAction.POPUP_NODES:
+            with self.subTest(entry=entry):
+                self.executed = []
+                self.controller.screen = entry
+                self.transitions = {entry: "竞技场挑战奖励页面",
+                                    "竞技场挑战奖励页面": "竞技场挑战返回页面"}
+                overrides = {"竞技场挑战返回页面": {"recognition": "DirectHit"}}
+                self.assertTrue(self.execute(entry, overrides).status.succeeded)
+                self.assertEqual(self.executed, [entry, "竞技场挑战奖励页面", "竞技场挑战返回页面"])
+
+    def test_reward_close_failure_after_animation_stops_flow(self):
+        self.controller.screen = "竞技场段位晋级页面"
+        self.transitions = {"竞技场段位晋级页面": "竞技场挑战奖励页面"}
+        self.assertTrue(self.resource.register_custom_action(
+            "failed_reward_close", ScreenAction(lambda context, argv: False)))
+        overrides = {
+            "竞技场挑战奖励页面": {"action": {"type": "Custom", "param": {
+                "custom_action": "failed_reward_close"}}},
+            "竞技场挑战返回页面": {"recognition": "DirectHit"},
+        }
+        self.assertFalse(self.execute("竞技场段位晋级页面", overrides).status.succeeded)
+        self.assertNotIn("竞技场挑战返回页面", self.executed)
+
     def test_delayed_weekly_page_is_processed_before_dispatch(self):
         captures = [0]
         def capture():
@@ -343,6 +563,7 @@ class NativePipelineProcessTests(unittest.TestCase):
 def load_tests(loader, tests, pattern):
     return unittest.TestSuite([
         loader.loadTestsFromTestCase(ArenaActionTests),
+        loader.loadTestsFromTestCase(RankPopupActionTests),
         loader.loadTestsFromTestCase(NativePipelineProcessTests),
     ])
 
