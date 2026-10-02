@@ -41,8 +41,12 @@ def main():
         for dist in importlib.metadata.distributions()
         if dist.metadata["Name"].lower() not in {"pip", "setuptools", "wheel"}
     }
-    if importlib.metadata.version("maafw") != expected:
-        raise RuntimeError("Installed maafw does not match the native release")
+    actual = importlib.metadata.version("maafw")
+    # 部分 wheel 的 Version 元数据保留 v 前缀；与发行标签使用相同规则校验。
+    if framework_version(actual) != expected:
+        raise RuntimeError(
+            f"Installed maafw {actual!r} does not match the native release {expected!r}"
+        )
     (root / "python-dependencies.json").write_text(
         json.dumps({"maafw_version": expected, "packages": packages},
                    ensure_ascii=False, indent=2) + "\n", encoding="utf-8",
