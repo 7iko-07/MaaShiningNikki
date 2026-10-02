@@ -129,22 +129,26 @@ class PageNavigateAction(CustomAction):
         wait_interval = max(0.1, self._as_float(params.get("wait_interval"), 0.25))
         max_steps = self._as_int(params.get("max_steps"), 30)
         preferred_page = target_page
+        current_page = None
 
         for step_index in range(max(1, max_steps)):
-            if not self._wait_while_intermediate(
-                context,
-                wait_nodes=wait_nodes,
-                timeout=wait_timeout,
-                interval=wait_interval,
-            ):
-                return False
-            current_page = self._detect_current_page(
-                context,
-                pages,
-                retry=retry_detect,
-                retry_delay=retry_delay,
-                preferred=preferred_page,
-            )
+            # A completed route already confirmed its destination on fresh images.
+            # Detect again only at entry or after an unverified fallback action.
+            if current_page is None:
+                if not self._wait_while_intermediate(
+                    context,
+                    wait_nodes=wait_nodes,
+                    timeout=wait_timeout,
+                    interval=wait_interval,
+                ):
+                    return False
+                current_page = self._detect_current_page(
+                    context,
+                    pages,
+                    retry=retry_detect,
+                    retry_delay=retry_delay,
+                    preferred=preferred_page,
+                )
 
             logger.info(
                 f"page_navigate: step={step_index + 1}/{max_steps}, "
@@ -174,11 +178,13 @@ class PageNavigateAction(CustomAction):
                         },
                     }}}):
                         return False
-                for task_name in edge["tasks"]:
+                for task_index, task_name in enumerate(edge["tasks"]):
                     if not self._run_task(route_context, task_name):
                         logger.error(f"page_navigate: route task failed: {task_name!r}")
                         return False
-                    if not self._wait_while_intermediate(
+                    # Keep guards between tasks; the final task is guarded by
+                    # the two-observation destination wait below.
+                    if task_index < len(edge["tasks"]) - 1 and not self._wait_while_intermediate(
                         context,
                         wait_nodes=wait_nodes,
                         timeout=wait_timeout,
@@ -190,7 +196,10 @@ class PageNavigateAction(CustomAction):
                     wait_timeout, wait_interval,
                 ):
                     return False
+                current_page = edge["to"]
                 preferred_page = edge["to"]
+                if current_page == target_page:
+                    return True
                 continue
 
             if current_page:
@@ -201,6 +210,7 @@ class PageNavigateAction(CustomAction):
             if not self._run_fallback_step(context, fallback_steps):
                 logger.error("page_navigate: no fallback step matched current screen")
                 return False
+            current_page = None
 
         logger.error(f"page_navigate: exceeded maximum steps ({max_steps})")
         return False
@@ -466,7 +476,7 @@ class NavigationClickAction(CustomAction):
             return False
         navigation = PageNavigateAction()
         started = time.monotonic()
-        deadline = started + 15.0
+        deadline = started + navigation._as_float(params.get("timeout"), 15000) / 1000.0
         next_click = started
         clicks = 0
         target_seen = False

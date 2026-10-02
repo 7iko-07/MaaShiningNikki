@@ -771,12 +771,13 @@
                     ],
                     "target_nodes": [
                         "导航在好友页面"
-                    ]
+                    ],
+                    "timeout": 30000
                 }
             }
         },
         "post_delay": 0,
-        "timeout": 15000,
+        "timeout": 30000,
         "next": ["导航在好友页面"],
         "rate_limit": 250
     },

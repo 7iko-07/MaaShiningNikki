@@ -8,7 +8,8 @@ from maa.custom_action import CustomAction
 from maa.context import Context
 from maa.pipeline import JActionType, JOCR, JRecognitionType, JSwipe
 
-from utils import logger, read_number_from_controller
+from utils import extract_ocr_text, logger, read_number_from_controller
+from utils.stage_number import read_stage_candidates
 
 
 RETURN_HOME_NEXT = ["主线挑战返回主页面"]
@@ -67,6 +68,7 @@ class _MainStorylineBase:
         timeout=5.0,
         interval=0.3,
         max_clicks=2,
+        log_success=True,
     ):
         x, y, w, h = box
         click_x = x + w // 2
@@ -87,31 +89,34 @@ class _MainStorylineBase:
                     change_threshold,
                 )
                 if changed:
-                    logger.info(
-                        "main_storyline: click detected page change, "
-                        f"ratio={ratio:.4f}"
-                    )
+                    if log_success:
+                        logger.info(
+                            f"主线：点击后画面已变化，变化比例={ratio:.4f}"
+                        )
                     return True
             logger.warning(
-                "main_storyline: click did not change page, "
-                f"attempt={click_index + 1}/{max_clicks}"
+                f"主线：点击后画面未变化，尝试={click_index + 1}/{max_clicks}"
             )
             before = self._screencap(controller)
 
         return False
 
-    def _swipe(self, context, begin, end, duration, end_hold):
+    def _swipe(self, context, begin, end, duration=None, end_hold=None):
+        timing = {}
+        if duration is not None:
+            timing["duration"] = duration
+        if end_hold is not None:
+            timing["end_hold"] = end_hold
         result = context.run_action_direct(
             JActionType.Swipe,
             JSwipe(
                 begin=begin,
                 end=end,
-                duration=duration,
-                end_hold=end_hold,
+                **timing,
             ),
         )
         if not result or not result.success:
-            raise RuntimeError("main_storyline: swipe action failed")
+            raise RuntimeError("主线滑动失败")
 
     def _image_changed(
         self,
@@ -166,7 +171,7 @@ class MainStorylineSelectChapterAction(_MainStorylineBase, CustomAction):
             expected = [expected]
         expected = [self._normalize_text(item) for item in expected if str(item).strip()]
         if not chapter_name or not expected:
-            logger.error("main_storyline_select_chapter: missing chapter_name or expected")
+            logger.error("主线章节选择：缺少章节名称或识别关键词")
             context.override_next(argv.node_name, RETURN_HOME_NEXT)
             return True
 
@@ -183,8 +188,7 @@ class MainStorylineSelectChapterAction(_MainStorylineBase, CustomAction):
                         continue
 
                     logger.info(
-                        "main_storyline_select_chapter: "
-                        f"matched chapter={chapter_name!r}, text={text!r}, box={box}"
+                        f"主线章节选择：命中章节={chapter_name!r}，OCR 原文={text!r}，坐标={box}"
                     )
                     if self._click_box_and_wait_change(
                         controller,
@@ -195,8 +199,7 @@ class MainStorylineSelectChapterAction(_MainStorylineBase, CustomAction):
                         return True
 
                     logger.warning(
-                        "main_storyline_select_chapter: chapter did not open; "
-                        "it may still be locked"
+                        "主线章节选择：点击后未打开章节，章节可能尚未解锁"
                     )
                     context.override_next(argv.node_name, RETURN_HOME_NEXT)
                     return True
@@ -205,10 +208,10 @@ class MainStorylineSelectChapterAction(_MainStorylineBase, CustomAction):
                     time.sleep(retry_delay)
 
             logger.error(
-                f"main_storyline_select_chapter: chapter not found: {chapter_name!r}"
+                f"主线章节选择：未找到章节 {chapter_name!r}"
             )
         except Exception as exc:
-            logger.exception(f"main_storyline_select_chapter: {exc}")
+            logger.exception(f"主线章节选择异常：{exc}")
 
         context.override_next(argv.node_name, RETURN_HOME_NEXT)
         return True
@@ -228,10 +231,10 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
         roi = params.get("roi", [0, 105, 720, 1045])
         reset_begin = params.get("reset_begin", [61, 500])
         reset_end = params.get("reset_end", [698, 500])
-        scan_begin = params.get("scan_begin", [698, 500])
-        scan_end = params.get("scan_end", [61, 500])
-        duration = self._as_int(params.get("duration"), 6000)
-        end_hold = self._as_int(params.get("end_hold"), 2000)
+        scan_begin = params.get("scan_begin", [614, 602])
+        scan_end = params.get("scan_end", [0, 602])
+        duration = self._as_int(params.get("duration"), None)
+        end_hold = self._as_int(params.get("end_hold"), 500)
         wait_after_swipe = self._as_float(params.get("wait_after_swipe"), 1.0)
         rounds = max(1, self._as_int(params.get("rounds"), 3))
         reset_swipes = max(1, self._as_int(params.get("reset_swipes"), 3))
@@ -252,8 +255,7 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
 
         if not 1 <= chapter_number <= 99 or not 1 <= stage_suffix <= 99:
             logger.error(
-                "main_storyline_find_stage: invalid stage, "
-                f"chapter={chapter_number}, suffix={stage_suffix}"
+                f"主线关卡查找：关卡参数无效，章节={chapter_number}，尾号={stage_suffix}"
             )
             context.override_next(argv.node_name, RETURN_HOME_NEXT)
             return True
@@ -314,8 +316,6 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
                     context,
                     reset_begin,
                     reset_end,
-                    duration,
-                    end_hold,
                     wait_after_swipe,
                     reset_swipes,
                 )
@@ -323,17 +323,11 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
                 list_is_at_front = True
 
             for round_index in range(rounds):
-                logger.info(
-                    "main_storyline_find_stage: "
-                    f"starting search round {round_index + 1}/{rounds} for {target}"
-                )
                 if not list_is_at_front:
                     self._reset_stage_list(
                         context,
                         reset_begin,
                         reset_end,
-                        duration,
-                        end_hold,
                         wait_after_swipe,
                         reset_swipes,
                     )
@@ -364,8 +358,6 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
                             context,
                             reset_begin,
                             reset_end,
-                            duration,
-                            end_hold,
                             wait_after_swipe,
                             reset_swipes,
                         )
@@ -412,8 +404,6 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
                             context,
                             reset_begin,
                             reset_end,
-                            duration,
-                            end_hold,
                             wait_after_swipe,
                             reset_swipes,
                         )
@@ -428,20 +418,14 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
                         pixel_threshold,
                         change_threshold,
                     )
-                    logger.info(
-                        "main_storyline_find_stage: "
-                        f"round={round_index + 1}, swipe={swipe_index + 1}, "
-                        f"changed={changed}, ratio={ratio:.4f}"
-                    )
                     if not changed:
                         break
 
             logger.error(
-                "main_storyline_find_stage: target not found after three reset scans: "
-                f"{target}"
+                f"主线关卡查找：完成 {rounds} 轮复位搜索后仍未找到目标={target}"
             )
         except Exception as exc:
-            logger.exception(f"main_storyline_find_stage: {exc}")
+            logger.exception(f"主线关卡查找异常：{exc}")
 
         context.override_next(argv.node_name, RETURN_HOME_NEXT)
         return True
@@ -498,16 +482,8 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
                         panel_retry_delay,
                         panel_load_delay,
                     ):
-                        logger.info(
-                            "main_storyline_find_stage: required stage panel found, "
-                            f"target={target}, title={required_panel_title!r}"
-                        )
                         return True
 
-                    logger.info(
-                        "main_storyline_find_stage: candidate panel title did not match; "
-                        f"target={target}, required={required_panel_title!r}"
-                    )
                     self._close_non_main_panel(
                         controller,
                         panel_close_roi,
@@ -524,45 +500,128 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
                     pixel_threshold,
                     change_threshold,
                 )
-                logger.info(
-                    "main_storyline_find_stage: required-panel scan, "
-                    f"swipe={swipe_index + 1}/{max_scan_swipes}, "
-                    f"changed={changed}, ratio={ratio:.4f}"
-                )
                 if not changed:
                     logger.error(
-                        "main_storyline_find_stage: stage list reached the end before "
-                        f"finding title={required_panel_title!r} for target={target}"
+                        f"主线关卡查找：关卡列表已到末尾，仍未找到目标={target}、标题={required_panel_title!r}"
                     )
                     return False
 
             logger.error(
-                "main_storyline_find_stage: required stage panel not found after "
-                f"{max_scan_swipes} swipes: target={target}, "
-                f"title={required_panel_title!r}"
+                f"主线关卡查找：扫描 {max_scan_swipes} 次后仍未找到目标={target}、标题={required_panel_title!r}"
             )
         except Exception as exc:
-            logger.exception(f"main_storyline_find_stage: required-panel scan failed: {exc}")
+            logger.exception(f"主线关卡查找：指定面板扫描异常：{exc}")
 
         return False
 
     def _find_stage(self, context, controller, roi, target, threshold, image=None):
         image = image if image is not None else self._screencap(controller)
+        region = self._box_list(roi)
+        if not region or region[2] <= 0 or region[3] <= 0:
+            return None
+        x, y, w, h = region
+        left, top = max(0, x), max(0, y)
+        right, bottom = min(image.shape[1], x + w), min(image.shape[0], y + h)
+        if right <= left or bottom <= top:
+            return None
+
+        candidates = self._stage_candidates(image, [left, top, right - left, bottom - top])
+        for candidate in candidates:
+            if candidate.complete and candidate.text == target:
+                return candidate.box
+
+        # Template rejection must not suppress OCR. Preserve unknown slots,
+        # counts and known characters; a partial label is not a shorter label.
+        ocr_items = []
+        seen = set()
         for item in self._ocr_items(context, image, roi, threshold):
-            text = self._normalize_stage_text(getattr(item, "text", ""))
+            text = str(getattr(item, "text", ""))
             box = self._box_list(getattr(item, "box", None))
-            if not text or not box:
+            if not box or box[2] <= 0 or box[3] <= 0:
                 continue
-            candidates = [f"{left}-{right}" for left, right in re.findall(
-                r"(?<!\d)(\d{1,2})-(\d{1,2})(?!\d)", text
-            )]
-            if target in candidates:
-                logger.info(
-                    "main_storyline_find_stage: "
-                    f"matched target={target}, text={text!r}, box={box}"
-                )
-                return box
+            key = (text, tuple(box))
+            if key not in seen:
+                seen.add(key)
+                ocr_items.append((text, box))
+
+        for candidate in candidates:
+            raw = " / ".join(text for text, box in ocr_items if self._boxes_overlap(box, candidate.box))
+            if self._verify_stage_candidate(context, image, candidate, target, raw, threshold):
+                return candidate.box
+
+        # If background strokes prevented whole-image segmentation, use an
+        # OCR box only to locate a larger crop, never as permission to click.
+        for raw, box in ocr_items:
+            if not re.fullmatch(r"[0-9-]{1,5}", self._normalize_stage_text(raw)):
+                continue
+            if any(self._boxes_overlap(box, candidate.box) for candidate in candidates):
+                continue
+            padding_x, padding_y = max(12, box[3]), max(4, box[3] // 4)
+            x1, y1 = max(left, box[0] - padding_x), max(top, box[1] - padding_y)
+            x2, y2 = min(right, box[0] + box[2] + padding_x), min(bottom, box[1] + box[3] + padding_y)
+            if x2 <= x1 or y2 <= y1:
+                continue
+            crop_box = [x1, y1, x2 - x1, y2 - y1]
+            local_candidates = self._stage_candidates(image, crop_box)
+            overlapping = [candidate for candidate in local_candidates if self._boxes_overlap(box, candidate.box)]
+            if not overlapping:
+                local = self._read_stage_crop(context, image, crop_box, threshold)
+            for candidate in overlapping:
+                if self._verify_stage_candidate(context, image, candidate, target, raw, threshold):
+                    return candidate.box
+
         return None
+
+    def _stage_candidates(self, image, box):
+        x, y, w, h = box
+        candidates = read_stage_candidates(image[y:y + h, x:x + w])
+        for candidate in candidates:
+            candidate.box[0] += x
+            candidate.box[1] += y
+        return candidates
+
+    def _verify_stage_candidate(self, context, image, candidate, target, raw, threshold):
+        reason = candidate.check_target(target)
+        local = ""
+        if not reason:
+            local = self._read_stage_crop(context, image, candidate.box, threshold)
+            if self._stage_text_matches(local, target):
+                return True
+        return False
+
+    def _stage_text_matches(self, text, target):
+        text = self._normalize_stage_text(text)
+        # No optional digit and no substring of a longer number.
+        if re.fullmatch(r"[0-9]+", text):
+            return text == target.replace("-", "")
+        return bool(re.fullmatch(r"[0-9]{1,2}-[0-9]{1,2}", text)) and text == target
+
+    def _boxes_overlap(self, a, b):
+        return (
+            a[0] < b[0] + b[2] and b[0] < a[0] + a[2]
+            and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]
+        )
+
+    def _read_stage_crop(self, context, image, box, threshold):
+        x, y, w, h = box
+        padding = max(3, h // 5)
+        crop = image[
+            max(0, y - padding):min(image.shape[0], y + h + padding),
+            max(0, x - padding):min(image.shape[1], x + w + padding),
+        ]
+        if crop.size == 0:
+            return ""
+        enlarged = np.repeat(np.repeat(crop, 3, axis=0), 3, axis=1)
+        result = context.run_recognition_direct(
+            JRecognitionType.OCR,
+            JOCR(
+                roi=(0, 0, enlarged.shape[1], enlarged.shape[0]),
+                only_rec=True,
+                threshold=threshold,
+            ),
+            enlarged,
+        )
+        return extract_ocr_text(result) if result and result.hit else ""
 
     def _open_stage(self, controller, box, target):
         if self._click_box_and_wait_change(
@@ -570,9 +629,10 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
             box,
             compare_roi=[0, 120, 720, 1080],
             change_threshold=0.06,
+            log_success=False,
         ):
             return True
-        logger.warning(f"main_storyline_find_stage: failed to open target {target}")
+        logger.warning(f"主线关卡查找：点击后未打开目标={target}")
         return False
 
     def _is_non_main_panel(
@@ -596,13 +656,6 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
             retry_delay,
             load_delay,
         )
-        if matched:
-            logger.info("main_storyline_find_stage: non-main stage panel detected")
-        else:
-            logger.info(
-                "main_storyline_find_stage: non-main title not detected; "
-                "treating the current panel as the main-story quick-challenge panel"
-            )
         return matched
 
     def _panel_has_title(
@@ -625,10 +678,6 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
             for item in self._ocr_items(context, image, roi, threshold):
                 text = self._normalize_panel_text(getattr(item, "text", ""))
                 if normalized_expected and normalized_expected in text:
-                    logger.info(
-                        "main_storyline_find_stage: stage panel title matched, "
-                        f"text={text!r}, expected={normalized_expected!r}, roi={roi}"
-                    )
                     return True
             if attempt < retry - 1 and retry_delay > 0:
                 time.sleep(retry_delay)
@@ -638,10 +687,6 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
     def _close_non_main_panel(self, controller, roi, clicks, delay, target):
         for click_index in range(clicks):
             self._click_roi(controller, roi)
-            logger.info(
-                "main_storyline_find_stage: closing non-main stage panel, "
-                f"target={target}, click={click_index + 1}/{clicks}"
-            )
             if click_index < clicks - 1 and delay > 0:
                 time.sleep(delay)
 
@@ -650,17 +695,11 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
         context,
         begin,
         end,
-        duration,
-        end_hold,
         wait_after_swipe,
         swipes,
     ):
         for swipe_index in range(swipes):
-            self._swipe(context, begin, end, duration, end_hold)
-            logger.info(
-                "main_storyline_find_stage: resetting stage list to the front, "
-                f"swipe={swipe_index + 1}/{swipes}"
-            )
+            self._swipe(context, begin, end)
             if wait_after_swipe > 0:
                 time.sleep(wait_after_swipe)
 
@@ -692,7 +731,7 @@ class MainStorylineChallengeAction(_MainStorylineBase, CustomAction):
 
         if max_challenges < 0 or max_challenges > 100:
             logger.error(
-                f"main_storyline_challenge: invalid max_challenges={max_challenges}"
+                f"主线快捷挑战：挑战次数参数无效，最大次数={max_challenges}"
             )
             return True
 
@@ -711,8 +750,8 @@ class MainStorylineChallengeAction(_MainStorylineBase, CustomAction):
                     [r"\d+\s*/\s*\d+"],
                     retry=retry,
                     retry_delay=retry_delay,
-                    log_prefix="main_storyline_challenge",
-                    retry_label="stamina",
+                    log_prefix="主线快捷挑战",
+                    retry_label="体力",
                 )
                 stamina_cost = read_number_from_controller(
                     context,
@@ -722,23 +761,21 @@ class MainStorylineChallengeAction(_MainStorylineBase, CustomAction):
                     [r"\d+"],
                     retry=retry,
                     retry_delay=retry_delay,
-                    log_prefix="main_storyline_challenge",
-                    retry_label="stamina cost",
+                    log_prefix="主线快捷挑战",
+                    retry_label="每次消耗体力",
                 )
                 if stamina is None or stamina_cost is None or stamina_cost <= 0:
                     logger.error(
-                        "main_storyline_challenge: quick-challenge panel was not recognized; "
-                        "the stage may not support quick challenge"
+                        "主线快捷挑战：未识别到快捷挑战面板，当前关卡可能不支持快捷挑战"
                     )
                     return True
 
                 possible_batch = min(max_multi, stamina // stamina_cost)
                 allowance = None if max_challenges == 0 else max_challenges - challenged
                 logger.info(
-                    "main_storyline_challenge: "
-                    f"round={round_index + 1}, stamina={stamina}, cost={stamina_cost}, "
-                    f"challenged={challenged}, allowance={allowance}, "
-                    f"possible_batch={possible_batch}"
+                    f"主线快捷挑战：轮次={round_index + 1}，体力={stamina}，每次消耗={stamina_cost}，"
+                    f"已挑战次数={challenged}，剩余次数上限={allowance if allowance is not None else '不限'}，"
+                    f"可批量挑战次数={possible_batch}"
                 )
 
                 if possible_batch <= 0 or (allowance is not None and allowance <= 0):
@@ -762,8 +799,8 @@ class MainStorylineChallengeAction(_MainStorylineBase, CustomAction):
                     [r"\d+\s*/\s*\d+"],
                     retry=retry,
                     retry_delay=retry_delay,
-                    log_prefix="main_storyline_challenge",
-                    retry_label="stamina after challenge",
+                    log_prefix="主线快捷挑战",
+                    retry_label="挑战后体力",
                 )
                 if new_stamina is None:
                     return True
@@ -771,30 +808,27 @@ class MainStorylineChallengeAction(_MainStorylineBase, CustomAction):
                 consumed = before_stamina - new_stamina
                 if consumed <= 0:
                     logger.info(
-                        "main_storyline_challenge: stamina did not decrease; "
-                        "stopping without purchasing stamina"
+                        "主线快捷挑战：体力未减少，停止挑战，不购买体力"
                     )
                     return True
                 if consumed % stamina_cost != 0:
                     logger.error(
-                        "main_storyline_challenge: unexpected stamina delta, "
-                        f"before={before_stamina}, after={new_stamina}, cost={stamina_cost}"
+                        f"主线快捷挑战：体力扣除异常，挑战前={before_stamina}，挑战后={new_stamina}，每次消耗={stamina_cost}"
                     )
                     return True
 
                 actual = consumed // stamina_cost
                 if allowance is not None and actual > allowance:
                     logger.error(
-                        "main_storyline_challenge: game exceeded the requested hard limit, "
-                        f"actual={actual}, allowance={allowance}"
+                        f"主线快捷挑战：游戏实际执行次数超过设置上限，实际次数={actual}，本轮上限={allowance}"
                     )
                     return True
                 challenged += actual
 
             logger.error(
-                f"main_storyline_challenge: exceeded max_rounds={max_rounds}"
+                f"主线快捷挑战：已达到最大执行轮次={max_rounds}，停止挑战"
             )
         except Exception as exc:
-            logger.exception(f"main_storyline_challenge: {exc}")
+            logger.exception(f"主线快捷挑战异常：{exc}")
 
         return True

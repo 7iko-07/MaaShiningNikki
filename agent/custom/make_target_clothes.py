@@ -1,11 +1,12 @@
 import json
+import re
 import time
 
 import numpy as np
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
-from maa.pipeline import JActionType, JSwipe
+from maa.pipeline import JActionType, JClick, JOCR, JRecognitionType, JSwipe
 from utils import logger, read_ocr_number, read_ocr_text
 
 
@@ -23,6 +24,10 @@ class MakeTargetClothesMaterialsCompleteAction(CustomAction):
 
 @AgentServer.custom_action("make_target_clothes_challenge")
 class MakeTargetClothesChallengeAction(CustomAction):
+
+    _CHALLENGE_COUNT_PATTERN = re.compile(
+        r"今日\s*剩余\s*挑战\s*次数\s*[:：]?\s*(\d+)\s*[/／]\s*\d+"
+    )
 
     def run(
         self,
@@ -68,14 +73,7 @@ class MakeTargetClothesChallengeAction(CustomAction):
             controller.post_screencap().wait()
             img = controller.cached_image
 
-            challenge_count = read_ocr_number(
-                context,
-                img,
-                "_make_target_clothes_challenge_count_ocr",
-                challenge_count_roi,
-                [r"\d+"],
-                "make_target_clothes_challenge",
-            )
+            challenge_count = self._read_challenge_count(context, img, challenge_count_roi)
             stamina = read_ocr_number(
                 context,
                 img,
@@ -123,18 +121,32 @@ class MakeTargetClothesChallengeAction(CustomAction):
             return True
 
         for _ in range(multi_clicks):
-            self._click_roi(controller, multi_button)
+            if not self._click_challenge_button(context, controller, multi_button, retry, retry_delay):
+                return False
             time.sleep(5.0)
             self._click_roi(controller, popup_close_roi)
             time.sleep(popup_close_delay)
 
         for _ in range(once_clicks):
-            self._click_roi(controller, once_button)
+            if not self._click_challenge_button(context, controller, once_button, retry, retry_delay):
+                return False
             time.sleep(click_delay)
             self._click_roi(controller, popup_close_roi)
             time.sleep(popup_close_delay)
 
         return True
+
+    def _read_challenge_count(self, context, image, roi):
+        text = read_ocr_text(
+            context,
+            image,
+            "_make_target_clothes_challenge_count_ocr",
+            roi,
+            [self._CHALLENGE_COUNT_PATTERN.pattern],
+            "make_target_clothes_challenge",
+        )
+        match = self._CHALLENGE_COUNT_PATTERN.search(text)
+        return int(match.group(1)) if match else None
 
     def _calc_clicks(self, challenge_count, challenge_times, max_multi):
         if challenge_times <= 0:
@@ -149,6 +161,30 @@ class MakeTargetClothesChallengeAction(CustomAction):
             once_clicks = 0
 
         return multi_clicks, once_clicks
+
+    def _click_challenge_button(self, context, controller, roi, retry, retry_delay):
+        # once_button / multi_button 是 OCR 搜索区域；点击目标来自识别框。
+        for attempt in range(retry):
+            controller.post_screencap().wait()
+            result = context.run_recognition_direct(
+                JRecognitionType.OCR,
+                JOCR(roi=tuple(roi), expected=["挑战"]),
+                controller.cached_image,
+            )
+            if result is not None and result.hit:
+                box = result.box
+                if box is not None and box.w > 0 and box.h > 0:
+                    action = context.run_action_direct(
+                        JActionType.Click, JClick(target=True), box=box
+                    )
+                    if action is not None and action.success:
+                        return True
+                    logger.error("make_target_clothes_challenge: 点击挑战文字失败")
+                    return False
+            if attempt < retry - 1 and retry_delay > 0:
+                time.sleep(retry_delay)
+        logger.error(f"make_target_clothes_challenge: 未识别到有效挑战文字框，roi={roi}")
+        return False
 
     def _click_roi(self, controller, roi):
         x, y, w, h = roi

@@ -61,7 +61,7 @@ class StateStore:
         with closing(self._connect()) as connection:
             row = connection.execute("SELECT multi FROM account_modes WHERE device = ?",
                                      (device,)).fetchone()
-            # 没运行过 start 时不推断为单账号，先搭配一次但不记账。
+            # 保留历史模式供查询；无 start 会话的账号回退不依赖该值。
             return bool(row[0]) if row else None
 
     def completed(self, account, week):
@@ -110,7 +110,7 @@ def set_login_server(context, server):
 
 
 def take_account(context):
-    """登录身份仅供随后的一次竞技场任务使用，绝不从磁盘恢复旧身份。"""
+    """消费本次 start 身份；没有 start 会话时使用默认账号，不恢复旧身份。"""
     device = context.tasker.controller.uuid
     if not device:
         return None
@@ -124,9 +124,4 @@ def take_account(context):
         if session.suffix and session.server:
             return json.dumps([session.suffix, session.server], ensure_ascii=False)
         return None
-    try:
-        if StateStore().mode(device) is False:
-            return "default"
-    except (OSError, sqlite3.Error) as exc:
-        logger.warning(f"竞技场账号模式读取失败：{exc}")
-    return None
+    return "default"

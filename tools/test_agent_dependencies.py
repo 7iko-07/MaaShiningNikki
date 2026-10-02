@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "agent"))
@@ -15,6 +15,7 @@ spec = importlib.util.spec_from_file_location("agent_main", ROOT / "agent/main.p
 agent_main = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(agent_main)
 from bundle_python_dependencies import framework_version
+import bundle_python_dependencies
 
 
 class DependenciesTest(unittest.TestCase):
@@ -75,6 +76,45 @@ class DependenciesTest(unittest.TestCase):
         for invalid in ("latest", "v5.13.0-beta.1", "5.13.0 --upgrade"):
             with self.assertRaises(ValueError):
                 framework_version(invalid)
+
+    def run_bundle(self, actual):
+        package = Mock()
+        package.metadata = {"Name": "MaaFw"}
+        package.version = actual
+        argv = ["bundle_python_dependencies.py", "--framework-version", "v5.14.2",
+                "--install-dir", str(self.root)]
+        with patch.object(sys, "argv", argv), \
+             patch.object(sys, "executable", str(self.root / "python/python.exe")), \
+             patch.object(bundle_python_dependencies.subprocess, "run") as run, \
+             patch.object(bundle_python_dependencies.importlib.metadata, "distributions",
+                          return_value=[package]), \
+             patch.object(bundle_python_dependencies.importlib.metadata, "version",
+                          return_value=actual):
+            bundle_python_dependencies.main()
+            self.assertEqual(run.call_count, 2)
+            self.assertIn("maafw==5.14.2", run.call_args_list[0].args[0])
+
+    def test_bundle_accepts_matching_wheel_version_with_or_without_v(self):
+        for actual in ("5.14.2", "v5.14.2"):
+            with self.subTest(actual=actual):
+                self.run_bundle(actual)
+                manifest = json.loads((self.root / "python-dependencies.json").read_text(
+                    encoding="utf-8"
+                ))
+                self.assertEqual(manifest["maafw_version"], "5.14.2")
+                # Agent 的依赖检查仍使用发行包元数据中的原始版本。
+                self.assertEqual(manifest["packages"]["MaaFw"], actual)
+                with patch.object(agent_main.importlib.util, "find_spec",
+                                  return_value=object()), \
+                     patch.object(agent_main, "version", return_value=actual), \
+                     patch.object(agent_main, "agent") as run_agent:
+                    agent_main.main()
+                    run_agent.assert_called_once()
+
+    def test_bundle_rejects_different_wheel_version_before_writing_manifest(self):
+        with self.assertRaisesRegex(RuntimeError, "v5.13.0.*5.14.2"):
+            self.run_bundle("v5.13.0")
+        self.assertFalse((self.root / "python-dependencies.json").exists())
 
 
 if __name__ == "__main__":

@@ -139,27 +139,40 @@ class ArenaTests(unittest.TestCase):
 
     def test_multi_identity_not_reused_without_start(self):
         self.login("0012")
-        self.assertIsNotNone(state.take_account(self.context))
-        self.assertIsNone(state.take_account(self.context))
-        # 重启只能恢复多账号模式，不能恢复已过期的身份。
+        self.assertNotEqual(state.take_account(self.context), "default")
+        self.assertEqual(state.take_account(self.context), "default")
+        # 重启不恢复旧多账号身份，无 start 时统一使用默认账号。
         state._sessions.clear()
-        self.assertIsNone(state.take_account(self.context))
+        self.assertEqual(state.take_account(self.context), "default")
 
-    def test_failed_login_unknown_server_and_first_run_have_no_identity(self):
-        self.assertIsNone(state.take_account(self.context))
+    def test_failed_login_and_unknown_server_have_no_identity(self):
+        self.assertEqual(state.take_account(self.context), "default")
         self.login("0012", "")
         self.assertIsNone(state.take_account(self.context))
         self.login("0012")
         self.context.tasker.get_task_detail.return_value.status.succeeded = False
         self.assertIsNone(state.take_account(self.context))
-        self.assertIsNone(state.take_account(self.context))
+        self.assertEqual(state.take_account(self.context), "default")
 
     def test_device_sessions_are_isolated(self):
         self.login("0012")
         self.context.tasker.controller.uuid = "device-b"
-        self.assertIsNone(state.take_account(self.context))
+        self.assertEqual(state.take_account(self.context), "default")
         self.context.tasker.controller.uuid = "device-a"
         self.assertIsNotNone(state.take_account(self.context))
+
+    def test_no_start_default_record_persists_and_skips_with_historical_multi_mode(self):
+        state.StateStore().set_mode("device-a", True)
+        self.run_action("enter")
+        self.run_action("choose")
+        self.assertIn("我的搭配", self.next_nodes())
+        self.assertFalse(state.StateStore().completed("default", state.week_key()))
+        self.assertTrue(self.run_action("complete"))
+        self.assertTrue(state.StateStore().completed("default", state.week_key()))
+        self.action = weekly.ArenaWeekly()
+        self.run_action("enter")
+        self.run_action("choose")
+        self.assertNotIn("我的搭配", self.next_nodes())
 
     def test_unknown_identity_dresses_without_writing(self):
         self.login("0012", "")

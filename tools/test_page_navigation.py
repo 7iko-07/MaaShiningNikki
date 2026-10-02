@@ -67,6 +67,99 @@ class NavigationTests(unittest.TestCase):
         self.assertEqual(self.action._run_task.call_count, 1)
         self.action._run_fallback_step.assert_not_called()
 
+    def prepare_route(self, initial_page):
+        self.action._wait_while_intermediate = Mock(return_value=True)
+        self.action._detect_current_page = Mock(return_value=initial_page)
+        self.action._run_task = Mock(return_value=True)
+        self.action._wait_for_page = Mock(return_value=True)
+        self.action._run_fallback_step = Mock(return_value=True)
+
+    def test_final_arrival_finishes_within_one_step_without_redetection(self):
+        self.prepare_route("独自")
+        argv = SimpleNamespace(custom_action_param=json.dumps({
+            "target": "竞技场", "max_steps": 1,
+        }))
+        self.assertTrue(self.action.run(Mock(), argv))
+        self.action._detect_current_page.assert_called_once()
+        self.action._wait_while_intermediate.assert_called_once()
+        self.action._wait_for_page.assert_called_once()
+        self.action._run_fallback_step.assert_not_called()
+
+    def test_final_arrival_still_requires_two_consecutive_ready_screens(self):
+        argv = SimpleNamespace(custom_action_param=json.dumps({
+            "target": "竞技场", "max_steps": 1,
+        }))
+        for screens in (["loading", "target", "missing", "target", "target"],
+                        ["target", "loading", "target", "target"]):
+            with self.subTest(screens=screens):
+                self.prepare_route("独自")
+                # Exercise the actual confirmation loop after route completion.
+                self.action._wait_for_page = navigation.PageNavigateAction._wait_for_page.__get__(self.action)
+                self.action._screencap = Mock(side_effect=screens)
+                self.action._intermediate_reason = Mock(side_effect=lambda ctx, image, nodes: image == "loading")
+                self.action._recognize = Mock(side_effect=lambda ctx, image, node: image == "target")
+                with patch.object(navigation.time, "sleep"):
+                    self.assertTrue(self.action.run(Mock(), argv))
+                self.assertEqual(self.action._screencap.call_count, len(screens))
+                self.action._detect_current_page.assert_called_once()
+                self.action._run_task.assert_called_once()
+
+    def test_multileg_route_reuses_confirmation_and_keeps_between_task_waits(self):
+        self.prepare_route("主页面")
+        argv = SimpleNamespace(custom_action_param=json.dumps({
+            "target": "竞技场", "max_steps": 2,
+        }))
+        self.assertTrue(self.action.run(Mock(), argv))
+        self.assertEqual([call.args[1] for call in self.action._run_task.call_args_list], [
+            "导航确保底部菜单打开", "导航点击开始旅程入口", "导航确保独自页面",
+            "导航点击钻石竞技场",
+        ])
+        self.assertEqual([call.args[2] for call in self.action._wait_for_page.call_args_list], [
+            "独自", "竞技场",
+        ])
+        self.action._detect_current_page.assert_called_once()
+        # Initial loading check plus the two waits between homepage route tasks.
+        self.assertEqual(self.action._wait_while_intermediate.call_count, 3)
+
+    def test_between_task_loading_timeout_stops_before_next_click(self):
+        self.prepare_route("主页面")
+        self.action._wait_while_intermediate.side_effect = [True, False]
+        argv = SimpleNamespace(custom_action_param=json.dumps({"target": "竞技场"}))
+        self.assertFalse(self.action.run(Mock(), argv))
+        self.action._run_task.assert_called_once()
+        self.assertEqual(self.action._run_task.call_args.args[1], "导航确保底部菜单打开")
+        self.action._wait_for_page.assert_not_called()
+        self.action._run_fallback_step.assert_not_called()
+
+    def test_fallback_requires_fresh_page_detection(self):
+        self.prepare_route("竞技场")
+        self.action._detect_current_page.side_effect = ["竞技场", "主页面"]
+        argv = SimpleNamespace(custom_action_param=json.dumps({"target": "任务"}))
+        self.assertTrue(self.action.run(Mock(), argv))
+        self.action._run_fallback_step.assert_called_once()
+        self.assertEqual(self.action._detect_current_page.call_count, 2)
+        self.assertEqual([call.args[1] for call in self.action._run_task.call_args_list], [
+            "导航确保侧边菜单打开", "导航点击任务入口",
+        ])
+
+    def test_confirmed_page_is_not_shared_between_invocations(self):
+        self.prepare_route("独自")
+        self.action._detect_current_page.side_effect = ["独自", "竞技场"]
+        argv = SimpleNamespace(custom_action_param=json.dumps({"target": "竞技场"}))
+        self.assertTrue(self.action.run(Mock(), argv))
+        self.assertTrue(self.action.run(Mock(), argv))
+        self.assertEqual(self.action._detect_current_page.call_count, 2)
+        self.action._run_task.assert_called_once()
+        self.action._wait_for_page.assert_called_once()
+
+    def test_route_task_failure_never_confirms_arrival(self):
+        self.prepare_route("独自")
+        self.action._run_task.return_value = False
+        argv = SimpleNamespace(custom_action_param=json.dumps({"target": "竞技场"}))
+        self.assertFalse(self.action.run(Mock(), argv))
+        self.action._wait_for_page.assert_not_called()
+        self.action._run_fallback_step.assert_not_called()
+
     def test_missing_or_failed_task_result_is_failure(self):
         for result in (None, SimpleNamespace(status=SimpleNamespace(succeeded=False))):
             self.assertFalse(self.action._run_task(SimpleNamespace(run_task=lambda _: result), "node"))
@@ -159,7 +252,7 @@ class MainStoryReturnTests(unittest.TestCase):
 
 class NavigationClickTests(unittest.TestCase):
     def simulate(self, source=lambda t: True, target=lambda t: False,
-                 loading=lambda t: False, button=lambda t: True):
+                 loading=lambda t: False, button=lambda t: True, params=None):
         now = [0.0]
         clicks = []
         context = Mock()
@@ -171,8 +264,9 @@ class NavigationClickTests(unittest.TestCase):
         context.run_action_direct.side_effect = click
         def recognize(self, ctx, image, name):
             return target(now[0]) if name == "target" else source(now[0])
-        argv = SimpleNamespace(node_name="button", custom_action_param=json.dumps({
-            "source_nodes": ["source"], "target_nodes": ["target"]}))
+        options = {"source_nodes": ["source"], "target_nodes": ["target"]}
+        options.update(params or {})
+        argv = SimpleNamespace(node_name="button", custom_action_param=json.dumps(options))
         with patch.object(navigation.time, "monotonic", side_effect=lambda: now[0]), \
              patch.object(navigation.time, "sleep", side_effect=lambda dt: now.__setitem__(0, now[0] + dt)), \
              patch.object(navigation.PageNavigateAction, "_screencap", return_value=object()), \
@@ -196,6 +290,25 @@ class NavigationClickTests(unittest.TestCase):
         ok, clicks, _ = self.simulate(loading=lambda t: t < 2, target=lambda t: t >= 2.5)
         self.assertTrue(ok)
         self.assertEqual([t for t, _ in clicks], [2])
+
+    def test_friend_allows_slow_loading_without_extra_clicks(self):
+        nodes = json.loads((ROOT / "assets/resource/pipeline/navigation.json").read_text(encoding="utf-8"))
+        params = nodes["导航点击好友"]["action"]["param"]["custom_action_param"]
+        ok, clicks, _ = self.simulate(target=lambda t: t >= 22,
+                                     loading=lambda t: 0 < t < 22,
+                                     params={"timeout": params["timeout"]})
+        self.assertTrue(ok)
+        self.assertEqual([t for t, _ in clicks], [0])
+        ok, clicks, _ = self.simulate(target=lambda t: t >= 22,
+                                     loading=lambda t: 0 < t < 22)
+        self.assertFalse(ok)
+        self.assertEqual([t for t, _ in clicks], [0])
+
+    def test_friend_loading_stops_at_thirty_seconds(self):
+        ok, clicks, _ = self.simulate(loading=lambda t: t > 0,
+                                     target=lambda t: t >= 31, params={"timeout": 30000})
+        self.assertFalse(ok)
+        self.assertEqual([t for t, _ in clicks], [0])
 
     def test_wrong_page_or_missing_button_never_clicks(self):
         for kwargs in ({"source": lambda t: False}, {"button": lambda t: False}):

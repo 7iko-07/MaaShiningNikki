@@ -283,13 +283,10 @@
 			}
 		},
 		"action": {
-			"type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
-			}
+			"type": "Click",
+			"param": {}
 		},
-		"post_delay": 1000,
+		"post_delay": 0,
 		"next": ["确定竞技场影召1"],
 		"timeout": 30000
     },
@@ -318,13 +315,10 @@
 			}
 		},
 		"action": {
-			"type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
-			}
+			"type": "Click",
+			"param": {}
 		},
-		"post_delay": 1000,
+		"post_delay": 0,
 		"next": ["确定竞技场影召2"],
 		"timeout": 30000
     },
@@ -353,13 +347,10 @@
 			}
 		},
 		"action": {
-			"type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
-			}
+			"type": "Click",
+			"param": {}
 		},
-		"post_delay": 1000,
+		"post_delay": 0,
 		"next": ["确定竞技场影召3"],
 		"timeout": 30000
     },

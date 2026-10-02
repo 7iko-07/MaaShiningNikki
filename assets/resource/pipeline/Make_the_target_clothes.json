@@ -295,10 +295,10 @@
             "param": {
                 "custom_action": "make_target_clothes_challenge",
                 "custom_action_param": {
-                    "challenge_count_roi": [324, 752, 285, 57],
+                    "challenge_count_roi": [323, 749, 351, 226],
                     "stamina_roi": [0, 0, 218, 37],
-                    "once_button": [68, 818, 110, 42],
-                    "multi_button": [220, 814, 115, 45]
+                    "once_button": [60, 809, 130, 171],
+                    "multi_button": [218, 807, 121, 172]
                 }
             }
         },

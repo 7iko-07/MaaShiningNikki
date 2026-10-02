@@ -441,6 +441,41 @@ class ArenaPipelineTests(unittest.TestCase):
         self.assertFalse(self.execute("竞技场挑战结果处理").status.succeeded)
         self.assertNotIn("在加载页面", self.executed)
 
+    def test_outfit_next_waits_for_popup_while_next_remains_visible(self):
+        for index in (1, 2, 3):
+            with self.subTest(index=index):
+                self.executed.clear()
+                entry = f"确认推荐搭配下一步{index}"
+                popup = f"确定竞技场影召{index}"
+                self.controller.screen = entry
+                clicks, captures = [], [0]
+                self.controller.on_click = lambda: clicks.append(True)
+                def capture():
+                    if clicks:
+                        captures[0] += 1
+                        if captures[0] >= 3:
+                            self.controller.screen = popup
+                self.controller.on_capture = capture
+                overrides = {
+                    # 下一步始终可识别，弹窗出现后也不会消失。
+                    entry: {"recognition": "DirectHit", "action": ARENA[entry]["action"]},
+                    popup: {"next": []},
+                }
+                self.assertTrue(self.execute(entry, overrides).status.succeeded)
+                self.assertEqual(len(clicks), 1)
+                self.assertEqual(self.executed, [popup])
+                self.assertGreaterEqual(captures[0], 3)
+
+    def test_outfit_missing_popup_fails_without_reclicking_next(self):
+        entry = "确认推荐搭配下一步1"
+        self.controller.screen = entry
+        clicks = []
+        self.controller.on_click = lambda: clicks.append(True)
+        overrides = {entry: {"recognition": "DirectHit", "action": ARENA[entry]["action"]}}
+        self.assertFalse(self.execute(entry, overrides).status.succeeded)
+        self.assertEqual(len(clicks), 1)
+        self.assertNotIn("确定竞技场影召1", self.executed)
+
     def test_result_pages_finish_at_arena(self):
         self.controller.screen = "竞技场快速挑战结果页面"
         self.transitions = {"竞技场快速挑战结果页面": "竞技场挑战奖励页面",
