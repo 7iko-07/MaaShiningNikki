@@ -376,19 +376,19 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/download-artifact@v8
         with:
-          path: assets
+          path: release-assets
 
-      - name: Check assets directory
+      - name: Check release assets directory
         run: |
-          ls -la assets
-          if [ -z "$(ls -A assets)" ]; then
-            echo "assets directory is empty"
+          ls -la release-assets
+          if [ -z "$(ls -A release-assets)" ]; then
+            echo "release-assets directory is empty"
             exit 1
           fi
 
       - name: Compress and generate checksums
         run: |
-          cd assets
+          cd release-assets
           echo "Generating checksums for all zip files..."
           checksum_file="checksums.sha256"
           touch "$checksum_file"
@@ -421,15 +421,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
           python tools/ci/build_incremental_updates.py
-          --assets assets --repository "${{ github.repository }}"
+          --assets release-assets --repository "${{ github.repository }}"
           --version "${{ needs.meta.outputs.tag }}" --history 3
       - uses: softprops/action-gh-release@v2
         with:
           files: |
-            assets/*.zip
-            assets/checksums.sha256
-            assets/manifest-*.json
-            assets/update-index.json
+            release-assets/*.zip
+            release-assets/checksums.sha256
+            release-assets/manifest-*.json
+            release-assets/update-index.json
           tag_name: ${{ needs.meta.outputs.tag }}
           body: ${{ needs.changelog.outputs.release_body }}
           draft: false
