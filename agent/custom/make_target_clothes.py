@@ -6,8 +6,129 @@ import numpy as np
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
-from maa.pipeline import JActionType, JClick, JOCR, JRecognitionType, JSwipe
+from maa.pipeline import JActionType, JClick, JOCR, JRecognitionType, JSwipe, JWaitFreezes
 from utils import logger, read_ocr_number, read_ocr_text
+
+
+@AgentServer.custom_action("make_target_clothes_wait_ready")
+class MakeTargetClothesWaitReadyAction(CustomAction):
+    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        params = json.loads(argv.custom_action_param)
+        ready_node = params["ready_node"]
+        stable_roi = tuple(params["stable_roi"])
+        deadline = time.monotonic() + params.get("timeout", 10000) / 1000
+        controller = context.tasker.controller
+
+        # 加载、内容就绪、动画稳定和复查共用一个期限，不通过回跳重置超时。
+        while not context.tasker.stopping and time.monotonic() < deadline:
+            if self._is_ready(context, controller, ready_node):
+                remaining_ms = int((deadline - time.monotonic()) * 1000)
+                if remaining_ms < 200:
+                    break
+                stable = context.wait_freezes(wait_freezes_param=JWaitFreezes(
+                    time=200, target=stable_roi, rate_limit=100, timeout=remaining_ms,
+                ))
+                if context.tasker.stopping or time.monotonic() >= deadline:
+                    break
+                # 稳定区域不一定覆盖加载符号，必须重新截图确认加载未出现。
+                if stable and self._is_ready(context, controller, ready_node):
+                    if not context.tasker.stopping and time.monotonic() < deadline:
+                        return True
+            remaining = deadline - time.monotonic()
+            if remaining > 0 and not context.tasker.stopping:
+                time.sleep(min(0.1, remaining))
+
+        logger.error(f"make_target_clothes_wait_ready: 等待挑战弹窗就绪失败：{ready_node}")
+        return False
+
+    def _is_ready(self, context, controller, ready_node):
+        if context.tasker.stopping:
+            return False
+        if not controller.post_screencap().wait().status.succeeded:
+            return False
+        image = controller.cached_image
+        loading = context.run_recognition("在加载页面", image)
+        if loading is None or loading.hit or context.tasker.stopping:
+            return False
+        ready = context.run_recognition(ready_node, image)
+        return ready is not None and ready.hit
+
+
+@AgentServer.custom_action("make_target_clothes_return")
+class MakeTargetClothesReturnAction(CustomAction):
+    """Retry recognised return buttons until the clothes page is confirmed."""
+
+    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        params = json.loads(argv.custom_action_param)
+        ready_node = params["ready_node"]
+        back_node = params["back_node"]
+        deadline = time.monotonic() + params.get("timeout", 20000) / 1000
+        controller = context.tasker.controller
+        last_state = None
+        observations = 0
+        clicks = 0
+        next_click = 0.0
+
+        while not context.tasker.stopping and time.monotonic() < deadline:
+            if not controller.post_screencap().wait().status.succeeded:
+                return False
+            image = controller.cached_image
+            loading = context.run_recognition("在加载页面", image)
+            state = None
+            target = None
+            if loading is not None and not loading.hit:
+                # The clothes list remains visible behind its material popup.
+                # Close that popup before accepting the destination or swiping.
+                popup = context.run_recognition("制衣返回材料弹窗识别", image)
+                if popup is not None and popup.hit:
+                    state = "制衣返回材料弹窗识别"
+                    target = [304, 144, 71, 36]
+                elif popup is not None:
+                    ready = context.run_recognition(ready_node, image)
+                    if ready is not None and ready.hit:
+                        state = ready_node
+                    elif ready is not None:
+                        # Intermediate layers need not have a page-name match.
+                        # Require a valid return button on both fresh images.
+                        button = context.run_recognition(back_node, image)
+                        box = button.box if button is not None and button.hit else None
+                        if box is not None and box.w > 0 and box.h > 0:
+                            state = back_node
+                            target = [box.x, box.y, box.w, box.h]
+
+            observations = observations + 1 if state is not None and state == last_state else 1
+            last_state = state
+            if context.tasker.stopping or time.monotonic() >= deadline:
+                break
+            if state is not None and observations >= 2:
+                if state == ready_node:
+                    logger.debug(f"make_target_clothes_return: 已确认制衣页面，操作次数={clicks}")
+                    return True
+                if time.monotonic() >= next_click:
+                    if context.tasker.stopping or time.monotonic() >= deadline:
+                        break
+                    action = context.run_action_direct(JActionType.Click, JClick(target=target))
+                    if action is None or not action.success:
+                        logger.error(f"make_target_clothes_return: 页面操作失败：{state}")
+                        return False
+                    clicks += 1
+                    # Recognition continues during the 200 ms minimum interval;
+                    # neither retries nor page changes reset the total deadline.
+                    next_click = time.monotonic() + .2
+                    last_state = None
+                    observations = 0
+                    logger.debug(f"make_target_clothes_return: 已点击 {state}，操作次数={clicks}，继续确认目标页面")
+            self._pause(deadline)
+
+        if not context.tasker.stopping:
+            logger.error(f"make_target_clothes_return: 返回超时，当前识别={last_state}，操作次数={clicks}")
+        return False
+
+    @staticmethod
+    def _pause(deadline):
+        remaining = deadline - time.monotonic()
+        if remaining > 0:
+            time.sleep(min(.1, remaining))
 
 
 @AgentServer.custom_action("make_target_clothes_materials_complete")
@@ -55,7 +176,6 @@ class MakeTargetClothesChallengeAction(CustomAction):
         retry_delay = self._as_float(params.get("retry_delay"), 1.5)
         click_delay = self._as_float(params.get("click_delay"), 1.2)
         popup_close_roi = params.get("popup_close_roi", [221, 137, 137, 78])
-        popup_close_delay = self._as_float(params.get("popup_close_delay"), 2.0)
 
         if stamina_cost <= 0 or max_multi <= 1:
             logger.error("make_target_clothes_challenge: 单次体力消耗或最大批量次数参数无效")
@@ -66,7 +186,7 @@ class MakeTargetClothesChallengeAction(CustomAction):
         stamina = None
 
         if load_delay > 0:
-            logger.info(f"make_target_clothes_challenge: 等待页面加载 {load_delay:.1f} 秒")
+            logger.debug(f"make_target_clothes_challenge: 等待页面加载 {load_delay:.1f} 秒")
             time.sleep(load_delay)
 
         for attempt in range(retry):
@@ -125,14 +245,12 @@ class MakeTargetClothesChallengeAction(CustomAction):
                 return False
             time.sleep(5.0)
             self._click_roi(controller, popup_close_roi)
-            time.sleep(popup_close_delay)
 
         for _ in range(once_clicks):
             if not self._click_challenge_button(context, controller, once_button, retry, retry_delay):
                 return False
             time.sleep(click_delay)
             self._click_roi(controller, popup_close_roi)
-            time.sleep(popup_close_delay)
 
         return True
 
@@ -252,8 +370,8 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
         retry_delay = self._as_float(params.get("retry_delay"), 1.5)
         load_delay = self._as_float(params.get("load_delay"), 3.0)
         result_delay = self._as_float(params.get("result_delay"), 5.0)
+        result_ready_node = params.get("result_ready_node")
         popup_close_roi = params.get("popup_close_roi", [221, 137, 137, 78])
-        popup_close_delay = self._as_float(params.get("popup_close_delay"), 2.0)
         max_rounds = self._as_int(params.get("max_rounds"), 100)
         insufficient_stamina_next = params.get("insufficient_stamina_next")
         default_limit_next = (
@@ -282,7 +400,7 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             )
 
         if load_delay > 0:
-            logger.info(
+            logger.debug(
                 f"make_target_clothes_batch_challenge: 等待页面加载 {load_delay:.1f} 秒"
             )
             time.sleep(load_delay)
@@ -321,7 +439,7 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                 possible_batch = min(possible_batch, remaining_count)
 
             allowance = None if max_challenges == 0 else max_challenges - challenged
-            logger.info(
+            logger.debug(
                 "make_target_clothes_batch_challenge: "
                 f"轮次={round_index + 1}，模式={'心灵迷宫' if mode == 'heart_maze' else '主线'}，体力={stamina}，"
                 f"单次体力消耗={stamina_cost}，剩余挑战次数={remaining_count if remaining_count is not None else '不适用'}，"
@@ -370,12 +488,21 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                 )
 
             button = once_button if possible_batch == 1 else multi_button
-            logger.info(
+            logger.debug(
                 "make_target_clothes_batch_challenge: "
                 f"点击{'挑战一次' if possible_batch == 1 else '批量挑战'}按钮"
             )
             self._click_roi(controller, button)
-            time.sleep(result_delay)
+            if result_ready_node:
+                result = context.run_task(result_ready_node)
+                if result is None or not result.status.succeeded:
+                    logger.error(
+                        "make_target_clothes_batch_challenge: "
+                        "等待“过关完成”失败，停止挑战"
+                    )
+                    return False
+            else:
+                time.sleep(result_delay)
             quantity_sufficient = self._has_sufficient_quantity(
                 context=context,
                 controller=controller,
@@ -385,7 +512,6 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                 retry_delay=retry_delay,
             )
             self._click_roi(controller, popup_close_roi)
-            time.sleep(popup_close_delay)
 
             new_stamina = self._read_required_number(
                 context=context,
@@ -499,7 +625,7 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             if text:
                 return True
 
-            logger.info(
+            logger.debug(
                 "make_target_clothes_batch_challenge: 未识别到“数量已足够”，"
                 f"尝试次数 {attempt + 1}/{retry}"
             )
@@ -721,7 +847,7 @@ class MakeTargetClothesResetPageAction(CustomAction):
                 pixel_threshold=pixel_threshold,
                 change_threshold=change_threshold,
             )
-            logger.info(
+            logger.debug(
                 "make_target_clothes_reset_page: "
                 f"滑动次数={swipe_index + 1}，画面是否变化={'是' if changed else '否'}"
             )
@@ -765,7 +891,7 @@ class MakeTargetClothesResetPageAction(CustomAction):
         changed_pixels = np.any(diff > pixel_threshold, axis=2)
         changed_ratio = np.count_nonzero(changed_pixels) / changed_pixels.size
 
-        logger.info(
+        logger.debug(
             "make_target_clothes_reset_page: "
             f"画面变化比例={changed_ratio:.4f}，判定阈值={change_threshold}"
         )
@@ -829,7 +955,7 @@ class MakeTargetClothesSwipePageAction(CustomAction):
             change_threshold=change_threshold,
         )
 
-        logger.info(f"make_target_clothes_swipe_page: 画面是否变化={'是' if changed else '否'}")
+        logger.debug(f"make_target_clothes_swipe_page: 画面是否变化={'是' if changed else '否'}")
 
         if changed:
             context.override_next(argv.node_name, changed_next)
@@ -869,7 +995,7 @@ class MakeTargetClothesSwipePageAction(CustomAction):
         changed_pixels = np.any(diff > pixel_threshold, axis=2)
         changed_ratio = np.count_nonzero(changed_pixels) / changed_pixels.size
 
-        logger.info(
+        logger.debug(
             "make_target_clothes_swipe_page: "
             f"画面变化比例={changed_ratio:.4f}，判定阈值={change_threshold}"
         )

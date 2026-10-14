@@ -186,6 +186,86 @@
         "action": "DoNothing",
         "next": ["导航左划底部菜单"]
     },
+    "导航点击织梦空间入口": {
+        "next": ["导航识别并点击织梦空间", "导航左划底部菜单后点击织梦空间"]
+    },
+    "导航识别并点击织梦空间": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 1095, 587, 185],
+                "expected": ["织梦空间"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": ["是否是主页面"],
+                    "target_nodes": ["导航在织梦空间页面"],
+                    "wait_nodes": ["织梦空间专属加载中"],
+                    "wait_landscape": true
+                }
+            }
+        },
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在织梦空间页面"],
+        "rate_limit": 250
+    },
+    "导航查询屏幕方向": {
+        "action": {
+            "type": "Shell",
+            "param": {
+                "cmd": "dumpsys input",
+                "shell_timeout": 1500
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "导航左划底部菜单后点击织梦空间": {
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [500, 1150],
+                "end": [100, 1150]
+            }
+        },
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航识别并点击织梦空间"],
+        "rate_limit": 250
+    },
+    "导航在织梦空间页面": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [108, 541, 151, 64],
+                                "expected": ["织梦经营"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [1158, 590, 99, 107],
+                                "expected": ["七日", "妙想"]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "post_delay": 0
+    },
     "导航在回家页面": {
         "recognition": {
             "type": "OCR",

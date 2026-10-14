@@ -18,7 +18,7 @@ class UnionGoldDonationAction(CustomAction):
         if target is None:
             box = argv.box
             if box.w <= 0 or box.h <= 0:
-                logger.error("union_gold_donation: 缺少有效的金币按钮点击区域")
+                logger.error("联盟金币捐献: 缺少有效的金币按钮点击区域")
                 return False
             target = [box.x, box.y, box.w, box.h]
 
@@ -70,13 +70,13 @@ class UnionGoldDonationAction(CustomAction):
                 return self._finish_stop(context, stop_reason, insufficient_node)
 
             if changed:
-                logger.info(
-                    "union_gold_donation: "
+                logger.debug(
+                    "联盟金币捐献: "
                     f"第 {click_index + 1}/{max_clicks} 次点击检测到画面变化，变化比例: {ratio:.6f}"
                 )
             else:
                 logger.warning(
-                    "union_gold_donation: "
+                    "联盟金币捐献: "
                     f"第 {click_index + 1}/{max_clicks} 次点击等待画面变化超时，变化比例: {ratio:.6f}"
                 )
 
@@ -91,7 +91,7 @@ class UnionGoldDonationAction(CustomAction):
             return self._finish_stop(context, stop_reason, insufficient_node)
 
         logger.warning(
-            f"union_gold_donation: 已达到安全点击上限 {max_clicks}，"
+            f"联盟金币捐献: 已达到安全点击上限 {max_clicks}，"
             "仍未识别到捐献上限或体力/金币不足，停止捐献并继续联盟福利"
         )
         return True
@@ -132,13 +132,13 @@ class UnionGoldDonationAction(CustomAction):
 
     def _finish_stop(self, context, stop_reason, insufficient_node):
         if stop_reason == "insufficient":
-            logger.info("union_gold_donation: 检测到体力或金币不足，点击取消并停止捐献")
+            logger.info("联盟金币捐献: 检测到体力或金币不足，点击取消并停止捐献")
             result = context.run_task(insufficient_node)
             if not self._task_succeeded(result):
-                logger.warning("union_gold_donation: 体力或金币不足弹窗取消失败，仍停止捐献")
+                logger.warning("联盟金币捐献: 体力或金币不足弹窗取消失败，仍停止捐献")
             return True
 
-        logger.info("union_gold_donation: 检测到当前档位捐献已达上限，停止捐献")
+        logger.info("联盟金币捐献: 检测到当前档位捐献已达上限，停止捐献")
         return True
 
     def _recognize(self, context: Context, image, node_name):
@@ -146,7 +146,7 @@ class UnionGoldDonationAction(CustomAction):
             result = context.run_recognition(node_name, image)
             return bool(result and getattr(result, "hit", False))
         except Exception as e:
-            logger.warning(f"union_gold_donation: 识别 {node_name!r} 失败: {e}")
+            logger.warning(f"联盟金币捐献: 识别 {node_name!r} 失败: {e}")
             return False
 
     def _task_succeeded(self, result):
@@ -166,7 +166,7 @@ class UnionGoldDonationAction(CustomAction):
             return int(target[0]), int(target[1])
         if len(target) == 4:
             return int(target[0] + target[2] / 2), int(target[1] + target[3] / 2)
-        raise ValueError("union_gold_donation: target 必须是 [x, y] 或 [x, y, w, h]")
+        raise ValueError("联盟金币捐献: target 必须是 [x, y] 或 [x, y, w, h]")
 
     def _image_changed(self, before, after, compare_roi, pixel_threshold, change_threshold):
         if compare_roi:

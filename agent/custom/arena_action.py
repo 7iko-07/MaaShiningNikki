@@ -71,7 +71,7 @@ class ArenaCloseRankPopupAction(CustomAction):
                             return False
                         clicks[current_node] += 1
                         next_click = time.monotonic() + 1.0
-                        logger.info(f"arena_close_rank_popup: node={current_node}, click {clicks[current_node]}/{max_clicks}")
+                        logger.debug(f"arena_close_rank_popup: node={current_node}, click {clicks[current_node]}/{max_clicks}")
                 else:
                     absent_count += 1
                     if absent_count >= 3:
@@ -83,7 +83,7 @@ class ArenaCloseRankPopupAction(CustomAction):
                         if context.tasker.stopping or time.monotonic() >= deadline:
                             return False
                         if other.hit:
-                            logger.info(f"arena_close_rank_popup: {current_node} disappeared, switching to {other_node}")
+                            logger.debug(f"arena_close_rank_popup: {current_node} disappeared, switching to {other_node}")
                             current_node = other_node
                             absent_count = 0
                             # Keep per-type click counts and a shared deadline even if animations alternate.
@@ -99,7 +99,7 @@ class ArenaCloseRankPopupAction(CustomAction):
                             if context.tasker.stopping or time.monotonic() >= deadline:
                                 return False
                             if ready.hit:
-                                logger.info(f"arena_close_rank_popup: text disappeared, next={exit_node}, clicks={clicks}")
+                                logger.debug(f"arena_close_rank_popup: text disappeared, next={exit_node}, clicks={clicks}")
                                 return True
                 # Exhausting clicks does not end the wait: the animation can finish itself.
                 time.sleep(min(0.3, max(0, deadline - time.monotonic())))
@@ -200,7 +200,7 @@ class ArenaCompareAction(CustomAction):
                 remaining_count_roi, [r"\d+\s*/\s*\d+"], "arena_compare",
             )
             if remaining is not None:
-                logger.info(f"arena_compare: remaining challenge times = {remaining}")
+                logger.debug(f"arena_compare: remaining challenge times = {remaining}")
                 return remaining
             if attempt < 2:
                 time.sleep(1)
@@ -230,7 +230,7 @@ class ArenaCompareAction(CustomAction):
             if in_settlement():
                 logger.info("竞技场已进入结算期，停止挑战")
                 return ChallengeOutcome.STOPPED
-            logger.info(f"arena_compare: recognizing opponents, refreshes used {refresh_count}/{max_rounds}")
+            logger.debug(f"arena_compare: recognizing opponents, refreshes used {refresh_count}/{max_rounds}")
 
             player_power, img = self._read_player_power(
                 context,
@@ -243,7 +243,7 @@ class ArenaCompareAction(CustomAction):
                 logger.warning("arena_compare: failed to OCR player power after retries")
                 return ChallengeOutcome.FAILED
 
-            logger.info(f"arena_compare: player power = {player_power}")
+            logger.debug(f"arena_compare: player power = {player_power}")
 
             ok_handled = False
             for i, area_b in enumerate(area_b_list):
@@ -251,12 +251,12 @@ class ArenaCompareAction(CustomAction):
                 if opp_power is None:
                     logger.error(f"arena_compare: opponent {i} OCR failed after retries")
                     return ChallengeOutcome.FAILED
-                logger.info(f"arena_compare: opponent {i} power = {opp_power}")
+                logger.debug(f"arena_compare: opponent {i} power = {opp_power}")
                 if player_power > opp_power:
                     if in_settlement():
                         logger.info("竞技场已进入结算期，不再发起挑战")
                         return ChallengeOutcome.STOPPED
-                    logger.info(f"arena_compare: player > opponent {i}, clicking opponent {i}")
+                    logger.debug(f"arena_compare: player > opponent {i}, clicking opponent {i}")
                     if not self._click_opponent(controller, area_b):
                         logger.error("arena_compare: opponent click failed")
                         return ChallengeOutcome.FAILED
@@ -271,7 +271,7 @@ class ArenaCompareAction(CustomAction):
                                 f"arena_compare: OK popup appeared more than {ok_retry_limit} times"
                             )
                             return ChallengeOutcome.FAILED
-                        logger.info("arena_compare: OK popup handled, retrying power recognition")
+                        logger.debug("arena_compare: OK popup handled, retrying power recognition")
                         time.sleep(player_power_retry_delay)
                         break
                     return ChallengeOutcome.CHALLENGED
@@ -360,7 +360,7 @@ class ArenaCompareAction(CustomAction):
             if not (result and result.status.succeeded):
                 logger.error(f"arena_compare: popup task {ok_node!r} failed")
                 return PopupOutcome.FAILED
-            logger.info(f"arena_compare: handled popup by task {ok_node!r}")
+            logger.debug(f"arena_compare: handled popup by task {ok_node!r}")
             return PopupOutcome.HANDLED
         except Exception as e:
             logger.warning(f"arena_compare: optional OK popup task {ok_node!r} failed: {e}")

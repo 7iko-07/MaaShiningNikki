@@ -47,9 +47,9 @@ class ClickAndWaitChangeAction(CustomAction):
         compare_roi = params.get("compare_roi", [0, 0, 720, 1280])
         pixel_threshold = params.get("pixel_threshold", params.get("color_distance", 30))
         change_threshold = params.get("change_threshold", params.get("threshold", 0.3))
-        timeout = params.get("timeout", params.get("wait_timeout", 5000))
+        timeout = params.get("timeout", params.get("wait_timeout", 1000))
         interval = params.get("interval", params.get("wait_interval", 300))
-        max_retries = params.get("max_retries", params.get("max_clicks", 3))
+        max_retries = params.get("max_retries", params.get("max_clicks", 8))
         fail_on_timeout = params.get("fail_on_timeout", False)
 
         for retry_index in range(max_retries):
@@ -65,7 +65,7 @@ class ClickAndWaitChangeAction(CustomAction):
                     change_threshold,
                 )
                 if changed:
-                    logger.info(f"click_and_wait_change 检测到画面变化，变化比例: {last_ratio:.6f}")
+                    logger.debug(f"click_and_wait_change 检测到画面变化，变化比例: {last_ratio:.6f}")
                     return True
 
                 if time.monotonic() >= deadline:
@@ -81,8 +81,8 @@ class ClickAndWaitChangeAction(CustomAction):
 
             logger.warning(
                 f"click_and_wait_change 等待超时，画面未变化，准备第 {retry_index + 2} 次点击，"
-                f"变化比例: {last_ratio:.6f}"
             )
+            logger.debug(f"变化比例: {last_ratio:.6f}")
             before = after.copy()
             controller.post_click(click_x, click_y).wait()
             time.sleep(params.get("after_click_delay", 300) / 1000.0)

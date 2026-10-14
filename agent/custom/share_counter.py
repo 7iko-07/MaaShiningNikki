@@ -21,7 +21,7 @@ class ShareCounterAction(CustomAction):
 
         if operation == "reset":
             self._task_share_counts.pop(task_id, None)
-            logger.info("share_counter: reset share count")
+            logger.debug("share_counter: reset share count")
             return True
 
         if operation != "count":
@@ -34,7 +34,7 @@ class ShareCounterAction(CustomAction):
             return False
 
         if max_shares == 0:
-            logger.info("share_counter: unlimited mode, continuing with reward detection")
+            logger.debug("share_counter: unlimited mode, continuing with reward detection")
             return True
 
         share_count = self._task_share_counts.get(task_id, 0) + 1

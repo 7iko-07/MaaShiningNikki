@@ -144,9 +144,10 @@
             "type": "Click",
             "param": {}
         },
-        "post_delay": 2000,
-        "next": ["材料已收集完毕-时空回廊", "点击前往获取时空回廊制衣材料", "点击返回材料页-时空回廊"],
-        "timeout": 2000
+        "post_delay": 0,
+        "next": ["等待全部材料-时空回廊页面就绪"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "点击全部材料-心灵迷宫": {
         "recognition": {
@@ -160,9 +161,10 @@
             "type": "Click",
             "param": {}
         },
-        "post_delay": 2000,
-        "next": ["材料已收集完毕-心灵迷宫", "点击前往获取心灵迷宫制衣材料", "点击返回材料页-心灵迷宫"],
-        "timeout": 2000
+        "post_delay": 0,
+        "next": ["等待全部材料-心灵迷宫页面就绪"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "点击全部材料-主线": {
         "recognition": {
@@ -176,9 +178,10 @@
             "type": "Click",
             "param": {}
         },
-        "post_delay": 2000,
-        "next": ["材料已收集完毕-主线", "点击前往获取主线制衣材料", "点击返回材料页-主线"],
-        "timeout": 2000
+        "post_delay": 0,
+        "next": ["等待全部材料-主线页面就绪"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "点击末项全部材料-时空回廊": {
         "recognition": {
@@ -192,9 +195,10 @@
             "type": "Click",
             "param": {}
         },
-        "post_delay": 2000,
-        "next": ["材料已收集完毕-时空回廊末项", "点击前往获取时空回廊制衣材料", "点击返回材料页-时空回廊末项"],
-        "timeout": 2000
+        "post_delay": 0,
+        "next": ["等待末项全部材料-时空回廊页面就绪"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "点击末项全部材料-心灵迷宫": {
         "recognition": {
@@ -208,9 +212,10 @@
             "type": "Click",
             "param": {}
         },
-        "post_delay": 2000,
-        "next": ["材料已收集完毕-心灵迷宫末项", "点击前往获取心灵迷宫制衣材料", "点击返回材料页-心灵迷宫末项"],
-        "timeout": 2000
+        "post_delay": 0,
+        "next": ["等待末项全部材料-心灵迷宫页面就绪"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "点击末项全部材料-主线": {
         "recognition": {
@@ -224,9 +229,10 @@
             "type": "Click",
             "param": {}
         },
-        "post_delay": 2000,
-        "next": ["材料已收集完毕-主线末项", "点击前往获取主线制衣材料", "点击返回材料页-主线末项"],
-        "timeout": 2000
+        "post_delay": 0,
+        "next": ["等待末项全部材料-主线页面就绪"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "点击前往获取时空回廊制衣材料": {
         "recognition": {
@@ -237,16 +243,16 @@
             }
         },
         "action": {
-            "type": "Custom",
+            "type": "Click",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {},
+                "target": true,
                 "target_offset": [339, -16, -23, -6]
             }
         },
-        "post_delay": 2000,
-        "next": ["[JumpBack]在加载页面", "计算并挑战时空回廊制衣材料"],
-        "timeout": 2000
+        "post_delay": 0,
+        "next": ["等待制衣挑战页面就绪-时空回廊"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "点击前往获取心灵迷宫制衣材料": {
         "recognition": {
@@ -257,16 +263,16 @@
             }
         },
         "action": {
-            "type": "Custom",
+            "type": "Click",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {},
+                "target": true,
                 "target_offset": [339, -16, -23, -6]
             }
         },
-        "post_delay": 2000,
-        "next": ["[JumpBack]在加载页面", "批量挑战心灵迷宫制衣材料"],
-        "timeout": 2000
+        "post_delay": 0,
+        "next": ["等待制衣挑战页面就绪-心灵迷宫"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "点击前往获取主线制衣材料": {
         "recognition": {
@@ -277,16 +283,16 @@
             }
         },
         "action": {
-            "type": "Custom",
+            "type": "Click",
             "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {},
+                "target": true,
                 "target_offset": [339, -16, -23, -6]
             }
         },
-        "post_delay": 2000,
-        "next": ["[JumpBack]在加载页面", "批量挑战主线制衣材料"],
-        "timeout": 2000
+        "post_delay": 0,
+        "next": ["等待制衣挑战页面就绪-主线"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "计算并挑战时空回廊制衣材料": {
         "recognition": "DirectHit",
@@ -298,13 +304,15 @@
                     "challenge_count_roi": [323, 749, 351, 226],
                     "stamina_roi": [0, 0, 218, 37],
                     "once_button": [60, 809, 130, 171],
-                    "multi_button": [218, 807, 121, 172]
+                    "multi_button": [218, 807, 121, 172],
+                    "load_delay": 0
                 }
             }
         },
-        "post_delay": 2000,
+        "post_delay": 0,
         "next": ["返回制衣页面-时空回廊"],
-        "timeout": 2000
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "批量挑战心灵迷宫制衣材料": {
         "recognition": "DirectHit",
@@ -328,13 +336,15 @@
                     "max_multi": 10,
                     "retry": 3,
                     "retry_delay": 1.5,
-                    "max_rounds": 100
+                    "max_rounds": 100,
+                    "load_delay": 0
                 }
             }
         },
-        "post_delay": 2000,
+        "post_delay": 0,
         "next": ["返回制衣页面-心灵迷宫"],
-        "timeout": 2000
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "批量挑战主线制衣材料": {
         "recognition": "DirectHit",
@@ -344,6 +354,7 @@
                 "custom_action": "make_target_clothes_batch_challenge",
                 "custom_action_param": {
                     "mode": "main_story",
+                    "result_ready_node": "等待制衣挑战结果",
                     "sufficient_roi": [379, 355, 265, 63],
                     "sufficient_expected": ["数量已足够"],
                     "stamina_roi": [82, 0, 145, 40],
@@ -357,53 +368,188 @@
                     "max_multi": 10,
                     "retry": 3,
                     "retry_delay": 1.5,
-                    "max_rounds": 100
+                    "max_rounds": 100,
+                    "load_delay": 0
                 }
             }
         },
-        "post_delay": 2000,
+        "post_delay": 0,
         "next": ["返回制衣页面-主线"],
-        "timeout": 2000
+        "timeout": 10000,
+        "rate_limit": 100
+    },
+    "等待制衣挑战结果": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["制衣挑战过关完成"],
+        "timeout": 10000,
+        "rate_limit": 300
+    },
+    "制衣挑战过关完成": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [96, 568, 553, 597],
+                "expected": ["过\\s*关\\s*完\\s*成"]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0
     },
     "返回制衣页面-时空回廊": {
         "recognition": "DirectHit",
-        "action": "DoNothing",
-        "next": ["在制衣页面-时空回廊", "[JumpBack]点击返回制衣-时空回廊"]
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_return",
+                "custom_action_param": {
+                    "ready_node": "在制衣页面-时空回廊",
+                    "back_node": "点击返回制衣-时空回廊",
+                    "timeout": 20000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["在制衣页面-时空回廊"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "返回制衣页面-心灵迷宫": {
         "recognition": "DirectHit",
-        "action": "DoNothing",
-        "next": ["在制衣页面-心灵迷宫", "[JumpBack]点击返回制衣-心灵迷宫"]
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_return",
+                "custom_action_param": {
+                    "ready_node": "在制衣页面-心灵迷宫",
+                    "back_node": "点击返回制衣-心灵迷宫",
+                    "timeout": 20000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["在制衣页面-心灵迷宫"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "返回制衣页面-主线": {
         "recognition": "DirectHit",
-        "action": "DoNothing",
-        "next": ["在制衣页面-主线", "[JumpBack]点击返回制衣-主线"]
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_return",
+                "custom_action_param": {
+                    "ready_node": "在制衣页面-主线",
+                    "back_node": "点击返回制衣-主线",
+                    "timeout": 20000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["在制衣页面-主线"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "返回制衣页面-心灵迷宫末项": {
         "recognition": "DirectHit",
-        "action": "DoNothing",
-        "next": ["在制衣页面-心灵迷宫末项", "[JumpBack]点击返回制衣-心灵迷宫"]
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_return",
+                "custom_action_param": {
+                    "ready_node": "在制衣页面-心灵迷宫末项",
+                    "back_node": "点击返回制衣-心灵迷宫",
+                    "timeout": 20000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["在制衣页面-心灵迷宫末项"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "返回制衣页面-主线末项": {
         "recognition": "DirectHit",
-        "action": "DoNothing",
-        "next": ["在制衣页面-主线末项", "[JumpBack]点击返回制衣-主线"]
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_return",
+                "custom_action_param": {
+                    "ready_node": "在制衣页面-主线末项",
+                    "back_node": "点击返回制衣-主线",
+                    "timeout": 20000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["在制衣页面-主线末项"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "返回制衣页面-主线达到上限": {
         "recognition": "DirectHit",
-        "action": "DoNothing",
-        "next": ["在制衣页面-主线达到上限", "[JumpBack]点击返回制衣-主线"]
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_return",
+                "custom_action_param": {
+                    "ready_node": "在制衣页面-主线达到上限",
+                    "back_node": "点击返回制衣-主线",
+                    "timeout": 20000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["在制衣页面-主线达到上限"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "返回制衣页面-心灵迷宫达到上限": {
         "recognition": "DirectHit",
-        "action": "DoNothing",
-        "next": ["在制衣页面-心灵迷宫达到上限", "[JumpBack]点击返回制衣-心灵迷宫"]
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_return",
+                "custom_action_param": {
+                    "ready_node": "在制衣页面-心灵迷宫达到上限",
+                    "back_node": "点击返回制衣-心灵迷宫",
+                    "timeout": 20000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["在制衣页面-心灵迷宫达到上限"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "返回制衣页面-心灵迷宫体力不足": {
         "recognition": "DirectHit",
-        "action": "DoNothing",
-        "next": ["在制衣页面-心灵迷宫体力不足", "[JumpBack]点击返回制衣-心灵迷宫"]
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_return",
+                "custom_action_param": {
+                    "ready_node": "在制衣页面-心灵迷宫体力不足",
+                    "back_node": "点击返回制衣-心灵迷宫",
+                    "timeout": 20000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["在制衣页面-心灵迷宫体力不足"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "点击返回制衣-时空回廊": {
         "recognition": {
@@ -452,87 +598,93 @@
     },
     "在制衣页面-时空回廊": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [218, 524, 283, 92],
-                "expected": ["制衣", "目标", "添加"]
+                "all_of": ["制衣返回目标页识别"]
             }
         },
         "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
         "next": ["左划制衣页面-时空回廊"]
     },
     "在制衣页面-心灵迷宫": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [218, 524, 283, 92],
-                "expected": ["制衣", "目标", "添加"]
+                "all_of": ["制衣返回目标页识别"]
             }
         },
         "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
         "next": ["复查当前服装材料-心灵迷宫"]
     },
     "在制衣页面-主线": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [218, 524, 283, 92],
-                "expected": ["制衣", "目标", "添加"]
+                "all_of": ["制衣返回目标页识别"]
             }
         },
         "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
         "next": ["复查当前服装材料-主线"]
     },
     "在制衣页面-心灵迷宫末项": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [218, 524, 283, 92],
-                "expected": ["制衣", "目标", "添加"]
+                "all_of": ["制衣返回目标页识别"]
             }
         },
         "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
         "next": ["复查当前服装材料-心灵迷宫末项"]
     },
     "在制衣页面-主线末项": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [218, 524, 283, 92],
-                "expected": ["制衣", "目标", "添加"]
+                "all_of": ["制衣返回目标页识别"]
             }
         },
         "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
         "next": ["复查当前服装材料-主线末项"]
     },
     "在制衣页面-主线达到上限": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [218, 524, 283, 92],
-                "expected": ["制衣", "目标", "添加"]
+                "all_of": ["制衣返回目标页识别"]
             }
         },
         "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
         "next": ["制作目标服装主线阶段完成"]
     },
     "在制衣页面-心灵迷宫达到上限": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [218, 524, 283, 92],
-                "expected": ["制衣", "目标", "添加"]
+                "all_of": ["制衣返回目标页识别"]
             }
         },
         "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
         "next": ["制作目标服装心灵迷宫阶段完成"]
     },
     "在制衣页面-心灵迷宫体力不足": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [218, 524, 283, 92],
-                "expected": ["制衣", "目标", "添加"]
+                "all_of": ["制衣返回目标页识别"]
             }
         },
         "action": {
@@ -544,6 +696,8 @@
                 }
             }
         },
+        "pre_delay": 0,
+        "post_delay": 0,
         "next": ["stop"]
     },
     "复查当前服装材料-心灵迷宫": {
@@ -788,11 +942,22 @@
     },
     "返回制衣页面-时空回廊末项": {
         "recognition": "DirectHit",
-        "action": "DoNothing",
-        "next": [
-            "在制衣页面-时空回廊末项",
-            "[JumpBack]点击返回制衣-时空回廊末项"
-        ]
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_return",
+                "custom_action_param": {
+                    "ready_node": "在制衣页面-时空回廊末项",
+                    "back_node": "点击返回制衣-时空回廊末项",
+                    "timeout": 20000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["在制衣页面-时空回廊末项"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "点击返回制衣-时空回廊末项": {
         "recognition": {
@@ -811,13 +976,14 @@
     },
     "在制衣页面-时空回廊末项": {
         "recognition": {
-            "type": "OCR",
+            "type": "And",
             "param": {
-                "roi": [218, 524, 283, 92],
-                "expected": ["制衣", "目标", "添加"]
+                "all_of": ["制衣返回目标页识别"]
             }
         },
         "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
         "next": ["制作目标服装时空回廊阶段完成"]
     },
     "制作目标服装时空回廊阶段完成": {
@@ -879,9 +1045,10 @@
             "type": "Click",
             "param": {}
         },
-        "post_delay": 2000,
-        "next": ["材料已收集完毕", "点击前往获取时空回廊制衣材料", "点击返回-制衣2"],
-        "timeout": 2000
+        "post_delay": 0,
+        "next": ["等待全部材料页面就绪"],
+        "timeout": 10000,
+        "rate_limit": 100
     },
     "材料已收集完毕-时空回廊": {
         "recognition": {
@@ -1112,5 +1279,574 @@
         "timeout": 5000,
         "post_wait_freezes": 1000,
         "next": ["stop"]
+    },
+    "制衣材料页面就绪识别": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": ["材料已收集完毕-时空回廊", "点击前往获取时空回廊制衣材料", "点击前往获取心灵迷宫制衣材料", "点击前往获取主线制衣材料"]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "等待全部材料-时空回廊页面就绪": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": ["制衣材料页面就绪识别"]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "post_wait_freezes": {
+            "time": 200,
+            "target": [181, 471, 360, 511],
+            "rate_limit": 100,
+            "timeout": 10000
+        },
+        "next": ["材料已收集完毕-时空回廊", "点击前往获取时空回廊制衣材料", "点击返回材料页-时空回廊"],
+        "timeout": 2000
+    },
+    "等待全部材料-心灵迷宫页面就绪": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": ["制衣材料页面就绪识别"]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "post_wait_freezes": {
+            "time": 200,
+            "target": [181, 471, 360, 511],
+            "rate_limit": 100,
+            "timeout": 10000
+        },
+        "next": ["材料已收集完毕-心灵迷宫", "点击前往获取心灵迷宫制衣材料", "点击返回材料页-心灵迷宫"],
+        "timeout": 2000
+    },
+    "等待全部材料-主线页面就绪": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": ["制衣材料页面就绪识别"]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "post_wait_freezes": {
+            "time": 200,
+            "target": [181, 471, 360, 511],
+            "rate_limit": 100,
+            "timeout": 10000
+        },
+        "next": ["材料已收集完毕-主线", "点击前往获取主线制衣材料", "点击返回材料页-主线"],
+        "timeout": 2000
+    },
+    "等待末项全部材料-时空回廊页面就绪": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": ["制衣材料页面就绪识别"]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "post_wait_freezes": {
+            "time": 200,
+            "target": [181, 471, 360, 511],
+            "rate_limit": 100,
+            "timeout": 10000
+        },
+        "next": ["材料已收集完毕-时空回廊末项", "点击前往获取时空回廊制衣材料", "点击返回材料页-时空回廊末项"],
+        "timeout": 2000
+    },
+    "等待末项全部材料-心灵迷宫页面就绪": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": ["制衣材料页面就绪识别"]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "post_wait_freezes": {
+            "time": 200,
+            "target": [181, 471, 360, 511],
+            "rate_limit": 100,
+            "timeout": 10000
+        },
+        "next": ["材料已收集完毕-心灵迷宫末项", "点击前往获取心灵迷宫制衣材料", "点击返回材料页-心灵迷宫末项"],
+        "timeout": 2000
+    },
+    "等待末项全部材料-主线页面就绪": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": ["制衣材料页面就绪识别"]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "post_wait_freezes": {
+            "time": 200,
+            "target": [181, 471, 360, 511],
+            "rate_limit": 100,
+            "timeout": 10000
+        },
+        "next": ["材料已收集完毕-主线末项", "点击前往获取主线制衣材料", "点击返回材料页-主线末项"],
+        "timeout": 2000
+    },
+    "等待全部材料页面就绪": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": ["制衣材料页面就绪识别"]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0,
+        "post_wait_freezes": {
+            "time": 200,
+            "target": [181, 471, 360, 511],
+            "rate_limit": 100,
+            "timeout": 10000
+        },
+        "next": ["材料已收集完毕", "点击前往获取时空回廊制衣材料", "点击返回-制衣2"],
+        "timeout": 2000
+    },
+    "等待制衣挑战页面就绪-时空回廊": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_wait_ready",
+                "custom_action_param": {
+                    "ready_node": "制衣挑战页面内容-时空回廊",
+                    "stable_roi": [60, 749, 614, 231],
+                    "timeout": 10000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["计算并挑战时空回廊制衣材料"],
+        "timeout": 2000
+    },
+    "制衣挑战页面内容-时空回廊": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [323, 749, 351, 226],
+                                "expected": [
+                                    "今日\\s*剩余\\s*挑战\\s*次数\\s*[:：]?\\s*\\d+\\s*[/／]\\s*\\d+"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [0, 0, 218, 37],
+                                "expected": [
+                                    "\\d+\\s*[/／]\\s*\\d+"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "OCR",
+                                            "param": {
+                                                "roi": [60, 809, 130, 171],
+                                                "expected": ["挑战"]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "OCR",
+                                            "param": {
+                                                "roi": [218, 807, 121, 172],
+                                                "expected": ["挑战"]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "OCR",
+                                            "param": {
+                                                "roi": [0, 0, 218, 37],
+                                                "expected": [
+                                                    "^\\s*0\\s*[/／]\\s*\\d+\\s*$"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "OCR",
+                                            "param": {
+                                                "roi": [323, 749, 351, 226],
+                                                "expected": [
+                                                    "今日\\s*剩余\\s*挑战\\s*次数\\s*[:：]?\\s*0\\s*[/／]\\s*\\d+"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "等待制衣挑战页面就绪-心灵迷宫": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_wait_ready",
+                "custom_action_param": {
+                    "ready_node": "制衣挑战页面内容-心灵迷宫",
+                    "stable_roi": [55, 755, 573, 118],
+                    "timeout": 10000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["批量挑战心灵迷宫制衣材料"],
+        "timeout": 2000
+    },
+    "制衣挑战页面内容-心灵迷宫": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [379, 355, 265, 63],
+                                "expected": ["数量已足够"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "And",
+                            "param": {
+                                "all_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "OCR",
+                                            "param": {
+                                                "roi": [82, 0, 145, 40],
+                                                "expected": [
+                                                    "\\d+\\s*[/／]\\s*\\d+"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "OCR",
+                                            "param": {
+                                                "roi": [55, 755, 205, 52],
+                                                "expected": ["每次消耗.*\\d+"]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "OCR",
+                                            "param": {
+                                                "roi": [298, 755, 330, 52],
+                                                "expected": [
+                                                    "\\d+\\s*[/／]\\s*\\d+"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "Or",
+                                            "param": {
+                                                "any_of": [
+                                                    {
+                                                        "recognition": {
+                                                            "type": "OCR",
+                                                            "param": {
+                                                                "roi": [68, 817, 108, 40],
+                                                                "expected": ["挑战"]
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "recognition": {
+                                                            "type": "OCR",
+                                                            "param": {
+                                                                "roi": [210, 806, 135, 67],
+                                                                "expected": ["挑战"]
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "recognition": {
+                                                            "type": "OCR",
+                                                            "param": {
+                                                                "roi": [82, 0, 145, 40],
+                                                                "expected": [
+                                                                    "^\\s*0\\s*[/／]\\s*\\d+\\s*$"
+                                                                ]
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "recognition": {
+                                                            "type": "OCR",
+                                                            "param": {
+                                                                "roi": [298, 755, 330, 52],
+                                                                "expected": [
+                                                                    "剩余.*次数\\s*[:：]?\\s*0\\s*[/／]\\s*\\d+"
+                                                                ]
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "等待制衣挑战页面就绪-主线": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "make_target_clothes_wait_ready",
+                "custom_action_param": {
+                    "ready_node": "制衣挑战页面内容-主线",
+                    "stable_roi": [55, 755, 573, 118],
+                    "timeout": 10000
+                }
+            }
+        },
+        "pre_delay": 0,
+        "post_delay": 0,
+        "next": ["批量挑战主线制衣材料"],
+        "timeout": 2000
+    },
+    "制衣挑战页面内容-主线": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [379, 355, 265, 63],
+                                "expected": ["数量已足够"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "And",
+                            "param": {
+                                "all_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "OCR",
+                                            "param": {
+                                                "roi": [82, 0, 145, 40],
+                                                "expected": [
+                                                    "\\d+\\s*[/／]\\s*\\d+"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "OCR",
+                                            "param": {
+                                                "roi": [55, 755, 205, 52],
+                                                "expected": ["每次消耗.*\\d+"]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "Or",
+                                            "param": {
+                                                "any_of": [
+                                                    {
+                                                        "recognition": {
+                                                            "type": "OCR",
+                                                            "param": {
+                                                                "roi": [68, 817, 108, 40],
+                                                                "expected": ["挑战"]
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "recognition": {
+                                                            "type": "OCR",
+                                                            "param": {
+                                                                "roi": [210, 806, 135, 67],
+                                                                "expected": ["挑战"]
+                                                            }
+                                                        }
+                                                    },
+                                                    {
+                                                        "recognition": {
+                                                            "type": "OCR",
+                                                            "param": {
+                                                                "roi": [82, 0, 145, 40],
+                                                                "expected": [
+                                                                    "^\\s*0\\s*[/／]\\s*\\d+\\s*$"
+                                                                ]
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "制衣返回材料弹窗识别": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [80, 335, 220, 75],
+                                "expected": ["前往\\s*收集\\s*材料"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [234, 662, 256, 100],
+                                "expected": ["前往\\s*制作"]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "制衣返回目标页识别": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [218, 524, 283, 92],
+                                "expected": ["添加\\s*制衣\\s*目标", "^制衣$"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [121, 1052, 599, 130],
+                                "expected": ["全部\\s*材料"]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "制衣返回关卡列表-时空回廊": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [0, 145, 195, 65],
+                                "expected": ["套装\\s*制作榜"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [500, 1204, 220, 76],
+                                "expected": ["当前\\s*积分"]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "DoNothing",
+        "pre_delay": 0,
+        "post_delay": 0
     }
 }

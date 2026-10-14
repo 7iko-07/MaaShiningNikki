@@ -5,6 +5,21 @@ import numpy as np
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
+from maa.pipeline import JClick
+
+
+@AgentServer.custom_action("click_center")
+class ClickCenterAction(CustomAction):
+    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        box = argv.box
+        if not argv.reco_detail.hit or box.w <= 0 or box.h <= 0:
+            return False
+
+        result = context.run_action_direct(
+            "Click",
+            JClick(target=(int(box.x + box.w / 2), int(box.y + box.h / 2))),
+        )
+        return result is not None and result.success
 
 
 @AgentServer.custom_action("click_region")

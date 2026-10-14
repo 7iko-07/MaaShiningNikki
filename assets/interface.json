@@ -6,8 +6,8 @@
     "license": "MIT",
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "v0.0.12-nightly.20261003",
-    "title": "闪现吧暖暖v0.0.11#10.03 - 一叶灼春#9.22",
+    "version": "v0.0.13-nightly.20261015",
+    "title": "闪现吧暖暖v0.0.13#10.15 - 湘间君子女#10.09",
     "icon": "logo.ico",
     "mirrorchyan_multiplatform":false,
     "agent": {
@@ -44,8 +44,8 @@
         {
             "name": "启动闪耀暖暖",
             "entry": "启动账号记录初始化",
-            "option": ["切换账号"],
-            "description": "启动闪耀暖暖app，登录并进入游戏，游戏卡顿会导致持续时间较长。",
+            "option": ["切换服务器", "切换账号"],
+            "description": "启动闪耀暖暖app，登录并进入游戏，游戏卡顿会导致持续时间较长。默认启动官服，开启切换服务器后可选择其他服务器。游戏语言需要切换为简体中文。",
             "group": ["日常任务"]
         },
         {
@@ -145,10 +145,14 @@
             "name": "回家",
             "entry": "回家任务链入口",
             "option": [
+                "采购电影票次数",
+                "采购调色板次数",
+                "采购晴雨伞次数",
+                "采购番茄炒蛋次数",
                 "自习室是否离开",
                 "是否做自习室好感任务"
             ],
-            "description": "采购三次番茄炒蛋\n\n采购五次金币小物\n\n自习室好感度获取",
+            "description": "按设置次数采购金币小物和番茄炒蛋，0次跳过对应商品。先采购零食，再依次采购电影票、调色板、晴雨伞，最后按设置执行自习室好感任务。",
             "group": ["日常任务"]
         },
         {
@@ -166,6 +170,15 @@
             "name": "搭配评选赛",
             "entry": "搭配评选赛任务链入口",
             "description": "搭配评选赛点赞",
+            "group": ["日常任务"]
+        },
+        {
+            "name": "分享",
+            "entry": "分享任务链入口",
+            "description": "必须在模拟器下载QQ，可以不登录但必须要有。默认重复分享直到分享奖励领完，也可设置最多分享次数。",
+            "option": [
+                "分享次数"
+            ],
             "group": ["日常任务"]
         },
         {
@@ -188,21 +201,12 @@
             "group": ["日常任务"]
         },
         {
-            "name": "活动：一叶灼春",
+            "name": "活动：湘间君子女",
             "entry": "活动任务链入口",
             "default_check": false,
             "description": "###[color:red][b]活动剧情默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！复刻活动剧情可能有意想不到的点击，如果卡住了就自己点掉重新开一次该任务吧[/b][/color]",
             "option": [
                 "活动"
-            ],
-            "group": ["日常任务"]
-        },
-        {
-            "name": "分享",
-            "entry": "分享任务链入口",
-            "description": "必须在模拟器下载QQ，可以不登录但必须要有。默认重复分享直到分享奖励领完，也可设置最多分享次数。",
-            "option": [
-                "分享次数"
             ],
             "group": ["日常任务"]
         },
@@ -222,6 +226,13 @@
                 "回忆小铺钻石暂停价格",
                 "回忆小铺非免费继续刷新"
             ],
+            "group": ["日常任务"]
+        },
+        {
+            "name": "【实验】织梦空间",
+            "entry": "织梦空间任务链入口",
+            "option": ["织梦空间子任务"],
+            "description": "按勾选执行七日妙想、今日签到、织梦经营，执行顺序与选项从上往下一致。经营子任务也可以多选，依次执行每日能量晶矿、订单驿站、售卖橱窗。每批生产5件，订单与橱窗分别选择自然等待（每轮最多10分钟）或使用能量石。七日妙想支持当前画面中的1件连衣裙、上衣、下装制作、分享1次定制成衣、进行1次人台换衣及完成1次灵感拾趣，不滑动查找其他任务；第一张完整任务卡出现白色大对号时结束全部七日妙想任务。灵感拾趣主动收集小物并避碰，只玩一局，结算后返回七日妙想。分享需出现QQ的新用户及登录页面，识别后关闭QQ并返回游戏。",
             "group": ["日常任务"]
         },
         {
@@ -275,6 +286,68 @@
                 }
             ]
         },
+        "切换服务器": {
+            "type": "switch",
+            "description": "默认启动官服，开启后可选择各渠道服、台港澳服或国际服。请先安装对应版本，并将游戏语言切换为简体中文。",
+            "cases": [
+                {"name": "No"},
+                {"name": "Yes", "option": ["服务器"]}
+            ]
+        },
+        "服务器": {
+            "type": "select",
+            "description": "选择要启动的服务器，默认官服。游戏语言需要切换为简体中文。",
+            "cases": [
+                {
+                    "name": "官服",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动官服"]}}
+                },
+                {
+                    "name": "小米",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动小米"]}}
+                },
+                {
+                    "name": "九游",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动九游"]}}
+                },
+                {
+                    "name": "应用宝",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动应用宝"]}}
+                },
+                {
+                    "name": "华为",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动华为"]}}
+                },
+                {
+                    "name": "OPPO",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动OPPO"]}}
+                },
+                {
+                    "name": "vivo",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动vivo"]}}
+                },
+                {
+                    "name": "4399",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动4399"]}}
+                },
+                {
+                    "name": "bilibili",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动bilibili"]}}
+                },
+                {
+                    "name": "合服渠道",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动合服渠道"]}}
+                },
+                {
+                    "name": "台港澳服",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动台港澳服"]}}
+                },
+                {
+                    "name": "国际服",
+                    "pipeline_override": {"启动账号记录初始化": {"next": ["启动国际服"]}}
+                }
+            ]
+        },
         "切换账号": {
             "type": "switch",
             "label": "切换账号",
@@ -283,7 +356,7 @@
             "cases": [
                 {
                     "name": "Yes",
-                    "option": ["登录账号尾号", "登录服务器"],
+                    "option": ["登录账号尾号", "登录账号服务器"],
                     "pipeline_override": {
                         "启动账号记录初始化": {
                             "action": {"type": "Custom", "param": {"custom_action": "start_account_session", "custom_action_param": {"multi": true}}}
@@ -304,16 +377,16 @@
                 }
             ]
         },
-        "登录服务器": {
+        "登录账号服务器": {
             "type": "select",
-            "label": "登录服务器",
-            "description": "账号登录后切换服务器。只在全部服务器名称区域识别，目标名称任意一个字命中即点击。查找或返回开始页面超过15秒时，start失败结束。",
-            "default_case": "保持当前服务器",
+            "label": "登录账号服务器",
+            "description": "账号登录后切换账号服务器。只在全部账号服务器名称区域识别，目标名称任意一个字命中即点击。查找或返回开始页面超过15秒时，start失败结束。",
+            "default_case": "保持当前账号服务器",
             "cases": [
                 {
-                    "name": "保持当前服务器",
+                    "name": "保持当前账号服务器",
                     "pipeline_override": {
-                        "启动切换服务器": {
+                        "启动切换账号服务器": {
                             "action": {"type": "Custom", "param": {"custom_action": "switch_server", "custom_action_param": {"server": ""}}}
                         }
                     }
@@ -321,7 +394,7 @@
                 {
                     "name": "千羽森林",
                     "pipeline_override": {
-                        "启动切换服务器": {
+                        "启动切换账号服务器": {
                             "action": {"type": "Custom", "param": {"custom_action": "switch_server", "custom_action_param": {"server": "千羽森林"}}}
                         }
                     }
@@ -329,7 +402,7 @@
                 {
                     "name": "抖落繁星",
                     "pipeline_override": {
-                        "启动切换服务器": {
+                        "启动切换账号服务器": {
                             "action": {"type": "Custom", "param": {"custom_action": "switch_server", "custom_action_param": {"server": "抖落繁星"}}}
                         }
                     }
@@ -337,7 +410,7 @@
                 {
                     "name": "镜中圆舞",
                     "pipeline_override": {
-                        "启动切换服务器": {
+                        "启动切换账号服务器": {
                             "action": {"type": "Custom", "param": {"custom_action": "switch_server", "custom_action_param": {"server": "镜中圆舞"}}}
                         }
                     }
@@ -345,7 +418,7 @@
                 {
                     "name": "童话香氛",
                     "pipeline_override": {
-                        "启动切换服务器": {
+                        "启动切换账号服务器": {
                             "action": {"type": "Custom", "param": {"custom_action": "switch_server", "custom_action_param": {"server": "童话香氛"}}}
                         }
                     }
@@ -595,6 +668,182 @@
                 }
             }
         },
+        "织梦空间子任务": {
+            "type": "checkbox",
+            "label": "织梦空间子任务",
+            "cases": [
+                {
+                    "name": "七日妙想",
+                    "pipeline_override": {
+                        "织梦选择七日妙想": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "今日签到",
+                    "pipeline_override": {
+                        "织梦选择今日签到": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "织梦经营",
+                    "option": ["织梦经营子任务"],
+                    "pipeline_override": {
+                        "织梦选择经营": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "织梦经营子任务": {
+            "type": "checkbox",
+            "label": "织梦经营子任务",
+            "cases": [
+                {
+                    "name": "每日能量晶矿",
+                    "pipeline_override": {
+                        "织梦选择每日能量晶矿": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "订单驿站",
+                    "option": ["织梦订单生产完成方式"],
+                    "pipeline_override": {
+                        "织梦选择订单驿站": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "售卖橱窗",
+                    "option": ["织梦售卖方案", "织梦售卖工位循环次数", "织梦售卖生产完成方式"],
+                    "pipeline_override": {
+                        "织梦选择售卖橱窗": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "织梦订单生产完成方式": {
+            "type": "select",
+            "label": "订单生产完成方式",
+            "cases": [
+                {
+                    "name": "自然等待",
+                    "pipeline_override": {
+                        "织梦选择能量石加速": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "使用能量石",
+                    "pipeline_override": {
+                        "织梦选择能量石加速": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "织梦售卖方案": {
+            "type": "select",
+            "label": "售卖方案",
+            "description": "先完成全部生产并收获，再售卖。日期按北京时间每天05:00切换；1.5倍以黑板显示价格上涨50%为准。",
+            "cases": [
+                {
+                    "name": "攒1.5倍",
+                    "description": "每月1～2日、29日至月底做皮革，3～11日红色系，12～16日蓝色系，17～19日黄色系，20～25日棕色系，26～28日绿色系。只在今日潮流上涨50%时售卖潮流产品。",
+                    "pipeline_override": {
+                        "织梦售卖仅当期": {
+                            "enabled": false
+                        },
+                        "织梦售卖攒明日": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "仅售卖当期产品",
+                    "description": "生产今日潮流标签的产品，完成后售出所有潮流UP产品。",
+                    "pipeline_override": {
+                        "织梦售卖仅当期": {
+                            "enabled": true
+                        },
+                        "织梦售卖攒明日": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "非1.5倍攒明天",
+                    "description": "今日潮流上涨50%时生产今日潮流产品；否则生产明日预告产品。完成后仅在上涨50%时售卖潮流产品。",
+                    "pipeline_override": {
+                        "织梦售卖仅当期": {
+                            "enabled": false
+                        },
+                        "织梦售卖攒明日": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "织梦售卖工位循环次数": {
+            "type": "input",
+            "label": "工位循环次数",
+            "description": "每轮所有可用工位各生产5件，全部收获后计1次。0表示循环直到所有已解锁工位休息；正整数表示指定轮数，若工位提前全部休息则提前结束。进入时已有生产不计次数。",
+            "inputs": [
+                {
+                    "name": "sale_rounds",
+                    "label": "循环次数",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^[0-9]+$",
+                    "pattern_msg": "请输入非负整数，0表示循环直到工位全部休息"
+                }
+            ],
+            "pipeline_override": {
+                "织梦空间执行子任务": {
+                    "action": {
+                        "param": {
+                            "custom_action_param": {
+                                "sale_rounds": "{sale_rounds}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "织梦售卖生产完成方式": {
+            "type": "select",
+            "label": "橱窗生产完成方式",
+            "cases": [
+                {
+                    "name": "自然等待",
+                    "pipeline_override": {
+                        "织梦售卖选择能量石": {
+                            "enabled": false
+                        }
+                    }
+                },
+                {
+                    "name": "使用能量石",
+                    "pipeline_override": {
+                        "织梦售卖选择能量石": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
         "制作目标服装材料任务": {
             "type": "checkbox",
             "label": "制作目标服装材料任务",
@@ -655,6 +904,7 @@
                             "custom_action": "make_target_clothes_batch_challenge",
                             "custom_action_param": {
                                 "mode": "heart_maze",
+                                "load_delay": 0,
                                 "sufficient_roi": [379, 355, 265, 63],
                                 "sufficient_expected": ["数量已足够"],
                                 "stamina_roi": [82, 0, 145, 40],
@@ -698,6 +948,8 @@
                             "custom_action": "make_target_clothes_batch_challenge",
                             "custom_action_param": {
                                 "mode": "main_story",
+                                "result_ready_node": "等待制衣挑战结果",
+                                "load_delay": 0,
                                 "sufficient_roi": [379, 355, 265, 63],
                                 "sufficient_expected": ["数量已足够"],
                                 "stamina_roi": [82, 0, 145, 40],
@@ -1087,9 +1339,132 @@
                 }
             ]
         },
+        "采购电影票次数": {
+            "type": "select",
+            "label": "采购小物：电影票",
+            "description": "仅购买金币商品，0次跳过。",
+            "default_case": "2",
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "采购电影票分流": {"next": ["采购调色板分流"]}
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "采购电影票分流": {"next": ["点击电影票"]},
+                        "点击购买电影票": {"repeat": 1}
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "采购电影票分流": {"next": ["点击电影票"]},
+                        "点击购买电影票": {"repeat": 2}
+                    }
+                }
+            ]
+        },
+        "采购调色板次数": {
+            "type": "select",
+            "label": "采购小物：调色板",
+            "description": "仅购买金币商品，0次跳过。",
+            "default_case": "2",
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "采购调色板分流": {"next": ["采购晴雨伞分流"]}
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "采购调色板分流": {"next": ["点击缤纷调色板"]},
+                        "点击购买缤纷调色板": {"repeat": 1}
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "采购调色板分流": {"next": ["点击缤纷调色板"]},
+                        "点击购买缤纷调色板": {"repeat": 2}
+                    }
+                }
+            ]
+        },
+        "采购晴雨伞次数": {
+            "type": "select",
+            "label": "采购小物：晴雨伞",
+            "description": "仅购买金币商品，0次跳过。",
+            "default_case": "1",
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "采购晴雨伞分流": {"next": ["点击空白-日常采购"]}
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "采购晴雨伞分流": {
+                            "next": ["点击晴雨伞", "[JumpBack]点击确定活力不足", "[JumpBack]点击体力用尽确定", "[JumpBack]上划日常采购"]
+                        },
+                        "点击购买晴雨伞": {"repeat": 1}
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "采购晴雨伞分流": {
+                            "next": ["点击晴雨伞", "[JumpBack]点击确定活力不足", "[JumpBack]点击体力用尽确定", "[JumpBack]上划日常采购"]
+                        },
+                        "点击购买晴雨伞": {"repeat": 2}
+                    }
+                }
+            ]
+        },
+        "采购番茄炒蛋次数": {
+            "type": "select",
+            "label": "采购零食：番茄炒蛋",
+            "description": "仅购买金币商品，0次跳过。",
+            "default_case": "3",
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "采购番茄炒蛋分流": {"next": ["点击采购小物"]}
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "采购番茄炒蛋分流": {"next": ["点击采购零食"]},
+                        "点击购买番茄炒蛋": {"repeat": 1}
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "采购番茄炒蛋分流": {"next": ["点击采购零食"]},
+                        "点击购买番茄炒蛋": {"repeat": 2}
+                    }
+                },
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "采购番茄炒蛋分流": {"next": ["点击采购零食"]},
+                        "点击购买番茄炒蛋": {"repeat": 3}
+                    }
+                }
+            ]
+        },
         "是否做自习室好感任务":{
             "type": "switch",
-            "description": "不能单独做自习室，选择是会做完前面任务继续做这个，选择否只是不做自习室，前面的依旧会做",
+            "description": "选择是会在采购流程结束后继续自习室任务；选择否则在采购流程结束后停止。采购次数均为0时不购买商品。",
             "default_case": "Yes",
             "cases": [
                 {

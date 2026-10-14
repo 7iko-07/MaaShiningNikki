@@ -26,12 +26,12 @@ class TimeClockShopCounterAction(CustomAction):
         if operation == "reset":
             _task_run_counts.pop(task_id, None)
             _wait_started_at.pop(task_id, None)
-            logger.info("time_clock_shop_counter: reset solo run count")
+            logger.debug("time_clock_shop_counter: reset solo run count")
             return True
 
         if operation == "start_wait":
             _wait_started_at[task_id] = time.monotonic()
-            logger.info("time_clock_shop_counter: start solo result wait timer")
+            logger.debug("time_clock_shop_counter: start solo result wait timer")
             return True
 
         if operation != "count":

@@ -65,7 +65,7 @@ class ClaimVisibleRewardsAction(CustomAction):
                 max_clicks_per_page,
             )
             claimed += page_claimed
-            logger.info(
+            logger.debug(
                 "claim_visible_rewards: "
                 f"page={swipe_index + 1}, page_claimed={page_claimed}, total_claimed={claimed}"
             )
@@ -86,7 +86,7 @@ class ClaimVisibleRewardsAction(CustomAction):
                     pixel_threshold,
                     page_change_threshold,
                 )
-                logger.info(
+                logger.debug(
                     "claim_visible_rewards: after swipe page changed="
                     f"{changed}, ratio={ratio:.6f}"
                 )
@@ -128,7 +128,7 @@ class ClaimVisibleRewardsAction(CustomAction):
 
             box = boxes[0]
             clicked_boxes.append(box)
-            logger.info(f"claim_visible_rewards: clicking claim button box={box}")
+            logger.debug(f"claim_visible_rewards: clicking claim button box={box}")
             self._click_box(controller, box)
             claimed += 1
             time.sleep(click_delay)

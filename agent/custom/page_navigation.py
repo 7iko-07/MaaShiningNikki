@@ -1,4 +1,5 @@
 import json
+import re
 import time
 from collections import deque
 
@@ -19,6 +20,7 @@ DEFAULT_PAGES = {
     "结伴": ["导航在结伴页面"],
     "联盟": ["导航在联盟页面"],
     "回家": ["导航在回家页面"],
+    "织梦空间": ["导航在织梦空间页面"],
     "邮件": ["导航在邮件页面"],
     "好友": ["导航在好友页面"],
     "福利": ["导航在福利页面"],
@@ -38,6 +40,7 @@ DEFAULT_PAGES = {
 DEFAULT_ROUTES = [
     {"from": "主页面", "to": "设计中心", "tasks": ["导航确保底部菜单打开", "导航点击设计中心入口"]},
     {"from": "主页面", "to": "回家", "tasks": ["导航确保底部菜单打开", "导航点击回家入口"]},
+    {"from": "主页面", "to": "织梦空间", "tasks": ["导航确保底部菜单打开", "导航点击织梦空间入口"]},
     {"from": "设计中心", "to": "美甲", "tasks": ["导航点击美甲"]},
     {"from": "设计中心", "to": "制衣", "tasks": ["导航点击制衣引导"]},
     {"from": "设计中心", "to": "情报屋", "tasks": ["导航点击情报屋"]},
@@ -97,6 +100,7 @@ DEFAULT_ALIASES = {
 
 DEFAULT_WAIT_RECOGNITIONS = ["在加载页面", "在接受投稿页面", "导航在空白页面"]
 DEFAULT_FALLBACK_STEPS = ["点击返回", "点击体力用尽确定", "主页点击esc", "点击OK-竞技场", "点击esc"]
+DEFAULT_DETECTION_HUBS = ["主页面", "独自", "设计中心", "结伴"]
 
 
 @AgentServer.custom_action("page_navigate")
@@ -120,15 +124,15 @@ class PageNavigateAction(CustomAction):
         if target_page not in pages:
             logger.error(f"page_navigate: unknown target page {target_page!r}")
             return False
+        ordered_pages = self._build_detection_order(pages, routes, target_page)
 
-        retry_detect = self._as_int(params.get("retry_detect"), 3)
+        retry_detect = self._as_int(params.get("retry_detect"), 1)
         retry_delay = self._as_float(params.get("retry_delay"), 1)
         wait_nodes = self._build_wait_nodes(params)
         fallback_steps = self._build_fallback_steps(params)
         wait_timeout = self._as_float(params.get("wait_timeout"), 15.0)
         wait_interval = max(0.1, self._as_float(params.get("wait_interval"), 0.25))
         max_steps = self._as_int(params.get("max_steps"), 30)
-        preferred_page = target_page
         current_page = None
 
         for step_index in range(max(1, max_steps)):
@@ -147,19 +151,23 @@ class PageNavigateAction(CustomAction):
                     pages,
                     retry=retry_detect,
                     retry_delay=retry_delay,
-                    preferred=preferred_page,
+                    ordered_pages=ordered_pages,
+                    target_page=target_page,
                 )
 
-            logger.info(
+            logger.debug(
                 f"page_navigate: step={step_index + 1}/{max_steps}, "
                 f"current={current_page}, target={target_page}"
             )
             if current_page == target_page:
-                return True
+                return self._wait_for_page(
+                    context, pages[target_page], target_page, wait_nodes,
+                    wait_timeout, wait_interval,
+                )
 
             path = self._shortest_path(routes, current_page, target_page) if current_page else []
             if path:
-                logger.info(
+                logger.debug(
                     "page_navigate: path="
                     + " -> ".join([current_page] + [edge["to"] for edge in path])
                 )
@@ -197,7 +205,6 @@ class PageNavigateAction(CustomAction):
                 ):
                     return False
                 current_page = edge["to"]
-                preferred_page = edge["to"]
                 if current_page == target_page:
                     return True
                 continue
@@ -205,9 +212,12 @@ class PageNavigateAction(CustomAction):
             if current_page:
                 logger.warning(f"page_navigate: no route from {current_page} to {target_page}")
             else:
-                logger.warning("page_navigate: failed to identify current page")
+                logger.debug("page_navigate: no target-reachable page matched; trying fallback")
 
-            if not self._run_fallback_step(context, fallback_steps):
+            if not self._run_fallback_step(
+                context, fallback_steps, wait_nodes, wait_timeout, wait_interval,
+                target_nodes=pages[target_page],
+            ):
                 logger.error("page_navigate: no fallback step matched current screen")
                 return False
             current_page = None
@@ -226,19 +236,76 @@ class PageNavigateAction(CustomAction):
             ready = ready and any(self._recognize(context, image, node) for node in nodes)
             hits = hits + 1 if ready else 0
             if hits >= 2:
-                logger.info(f"page_navigate: ready page={page}, elapsed={time.monotonic() - started:.3f}s")
+                logger.debug(f"page_navigate: ready page={page}, elapsed={time.monotonic() - started:.3f}s")
                 return True
             if time.monotonic() >= deadline:
                 logger.error(f"page_navigate: destination timeout page={page}, nodes={nodes}, elapsed={time.monotonic() - started:.3f}s")
                 return False
             time.sleep(min(max(0.1, interval), max(0, deadline - time.monotonic())))
 
-    def _run_fallback_step(self, context, fallback_steps):
-        image = self._screencap(context)
+    def _run_fallback_step(self, context, fallback_steps, wait_nodes=None, timeout=15, interval=.25,
+                           target_nodes=None):
+        # Detection can take several seconds. Check loading again on the image
+        # used for the fallback, rather than trusting the pre-detection screen.
+        wait_nodes = DEFAULT_WAIT_RECOGNITIONS if wait_nodes is None else wait_nodes
+        deadline = time.monotonic() + max(0, timeout)
+        waited = False
+        while True:
+            if context.tasker.stopping:
+                return False
+            image = self._screencap(context)
+            if not self._intermediate_reason(context, image, wait_nodes):
+                if waited:
+                    # Loading may have reached the destination. Let the caller
+                    # identify the new page before selecting a fallback action.
+                    return True
+                break
+            if time.monotonic() >= deadline:
+                logger.warning("page_navigate: loading timeout before fallback")
+                return False
+            waited = True
+            time.sleep(min(interval, max(0, deadline - time.monotonic())))
+        # The screen may have reached the target while the page scan was running.
+        # Yield to the caller for fresh detection and confirmation, without a click.
+        if any(self._recognize(context, image, node) for node in target_nodes or []):
+            logger.debug("page_navigate: target seen before fallback; confirming on next scan")
+            return True
         for task_name in fallback_steps:
+            if context.tasker.stopping:
+                return False
+            if task_name == "点击返回":
+                result = context.run_recognition(task_name, image)
+                if result is None or not result.hit:
+                    continue
+                box = result.box
+                if box is None or box.w <= 0 or box.h <= 0:
+                    logger.warning("page_navigate: fallback return has invalid recognition box")
+                    continue
+                if context.tasker.stopping:
+                    return False
+                logger.debug(f"page_navigate: running fallback step {task_name!r}")
+                started = time.monotonic()
+                # A local DirectHit carries the box already recognised above;
+                # it is not a page-readiness shortcut. Keep the existing action
+                # and delays. run_action(Custom) has no valid reco_id in the
+                # installed Python SDK, so it cannot dispatch its callback.
+                task = context.clone().run_task(
+                    task_name, pipeline_override={task_name: {
+                        "recognition": "DirectHit",
+                        "action": {"param": {"target": [box.x, box.y, box.w, box.h]}},
+                        "pre_delay": 0,
+                    }},
+                )
+                success = task is not None and task.status.succeeded
+                logger.info(f"page_navigate: task={task_name}, success={success}")
+                if success:
+                    return True
+                # Once a matched action fails, do not try a different button on
+                # the stale pre-action image.
+                return False
             if not self._recognize(context, image, task_name):
                 continue
-            logger.info(f"page_navigate: running fallback step {task_name!r}")
+            logger.debug(f"page_navigate: running fallback step {task_name!r}")
             if self._run_task(context, task_name):
                 return True
             logger.warning(f"page_navigate: fallback step failed: {task_name!r}")
@@ -265,11 +332,11 @@ class PageNavigateAction(CustomAction):
             )
             if not reason:
                 if waited:
-                    logger.info("page_navigate: intermediate page finished")
+                    logger.debug("page_navigate: intermediate page finished")
                 return True
 
             waited = True
-            logger.info(f"page_navigate: waiting intermediate page: {reason}")
+            logger.debug(f"page_navigate: waiting intermediate page: {reason}")
             time.sleep(interval)
 
         logger.warning("page_navigate: intermediate page wait timeout")
@@ -282,19 +349,48 @@ class PageNavigateAction(CustomAction):
 
         return ""
 
-    def _detect_current_page(self, context: Context, pages, retry, retry_delay, preferred=None):
-        ordered_pages = list(pages.keys())
-        if preferred in pages:
-            ordered_pages.remove(preferred)
-            ordered_pages.insert(0, preferred)
+    def _build_detection_order(self, pages, routes, target_page):
+        """Keep only pages that can reach the target through the merged routes."""
+        incoming = {}
+        for route in routes:
+            incoming.setdefault(route["to"], []).append(route["from"])
+        reachable = {target_page}
+        queue = deque([target_page])
+        while queue:
+            for source in incoming.get(queue.popleft(), []):
+                if source not in reachable:
+                    reachable.add(source)
+                    queue.append(source)
 
+        candidates = [target_page]
+        candidates.extend(route["from"] for route in routes if route["to"] == target_page)
+        candidates.extend(DEFAULT_DETECTION_HUBS)
+        candidates.extend(pages)
+        return list(dict.fromkeys(page for page in candidates if page in pages and page in reachable))
+
+    def _detect_current_page(self, context: Context, pages, retry, retry_delay, ordered_pages, target_page):
         for attempt in range(max(1, retry)):
+            started = time.monotonic()
             image = self._screencap(context)
+            checked_nodes = set()
+            detected = None
             for page_name in ordered_pages:
                 for node_name in pages[page_name]:
+                    if node_name in checked_nodes:
+                        continue
+                    checked_nodes.add(node_name)
                     if self._recognize(context, image, node_name):
-                        logger.info(f"page_navigate: detected page {page_name} by {node_name}")
-                        return page_name
+                        detected = page_name
+                        break
+                if detected is not None:
+                    break
+            logger.debug(
+                f"page_navigate: target={target_page}, candidates={len(ordered_pages)}/{len(pages)}, "
+                f"checked_nodes={len(checked_nodes)}, detected={detected}, "
+                f"attempt={attempt + 1}, elapsed={time.monotonic() - started:.3f}s"
+            )
+            if detected is not None:
+                return detected
             if attempt < retry - 1:
                 time.sleep(retry_delay)
 
@@ -316,7 +412,7 @@ class PageNavigateAction(CustomAction):
             if success is None:
                 success = getattr(getattr(result, "status", None), "succeeded", False)
             succeeded = result is not None and bool(success)
-            logger.info(f"page_navigate: task={task_name}, success={succeeded}, elapsed={time.monotonic() - started:.3f}s")
+            logger.info(f"page_navigate: task={task_name}, success={succeeded}")
             return succeeded
         except Exception as e:
             logger.error(f"page_navigate: task {task_name!r} raised: {e}")
@@ -467,6 +563,74 @@ class MainStoryReturnToSoloAction(CustomAction):
 class NavigationClickAction(CustomAction):
     """Retry only a recognised button on the original, non-loading page."""
 
+    def _wait_landscape(self, context, deadline):
+        # A screencap during MuMu's rotation can enter its long failure backoff.
+        # Query only the display direction until one landscape direction is stable.
+        deadline = min(deadline, time.monotonic() + 12)
+        orientation, since = None, None
+        while time.monotonic() < deadline:
+            if context.tasker.stopping:
+                return False
+            remaining_ms = max(1, int((deadline - time.monotonic()) * 1000))
+            try:
+                action = context.run_action("导航查询屏幕方向", pipeline_override={
+                    "导航查询屏幕方向": {"action": {"param": {
+                        "shell_timeout": min(1500, remaining_ms),
+                    }}},
+                })
+                result = action.result if action and action.success else None
+                if not result or not result.success:
+                    logger.error("navigation_click: display direction query failed")
+                    return False
+                values = set(re.findall(r"SurfaceOrientation:\s*([0-3])\b", result.output))
+                if len(values) != 1:
+                    logger.error("navigation_click: display direction missing or ambiguous")
+                    return False
+                value = int(values.pop())
+            except Exception as exc:
+                logger.error(f"navigation_click: display direction query raised: {exc}")
+                return False
+            now = time.monotonic()
+            if context.tasker.stopping or now >= deadline:
+                return False
+            if value in (1, 3):
+                if value != orientation:
+                    orientation, since = value, now
+                if now - since >= 0.5:
+                    logger.debug("navigation_click: landscape stable; resuming screencap")
+                    return True
+            else:
+                orientation, since = None, None
+            time.sleep(min(0.1, max(0, deadline - now)))
+        logger.error("navigation_click: landscape stability timeout")
+        return False
+
+    def _refresh_landscape(self, context, deadline):
+        # MuMu retains the portrait capture dimensions after rotation. Reconnect
+        # before the first capture to avoid the native failure/retry backoff.
+        controller = context.tasker.controller
+        try:
+            if context.tasker.stopping or time.monotonic() >= deadline:
+                return False
+            connection = controller.post_connection().wait()
+            if not connection.succeeded:
+                logger.error("navigation_click: reconnect after rotation failed")
+                return False
+            if context.tasker.stopping or time.monotonic() >= deadline:
+                return False
+            capture = controller.post_screencap().wait()
+            if context.tasker.stopping or time.monotonic() >= deadline:
+                return False
+            image = controller.cached_image if capture.succeeded else None
+            if image is None or image.shape[1] <= image.shape[0]:
+                logger.error("navigation_click: no fresh landscape capture after reconnect")
+                return False
+            logger.debug("navigation_click: landscape capture refreshed after reconnect")
+            return True
+        except Exception as exc:
+            logger.error(f"navigation_click: landscape reconnect raised: {exc}")
+            return False
+
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
         sources = params.get("source_nodes", [])
@@ -475,22 +639,30 @@ class NavigationClickAction(CustomAction):
             logger.error(f"navigation_click: missing page guards node={argv.node_name}")
             return False
         navigation = PageNavigateAction()
+        wait_nodes = navigation._build_wait_nodes(params)
         started = time.monotonic()
         deadline = started + navigation._as_float(params.get("timeout"), 15000) / 1000.0
         next_click = started
         clicks = 0
         target_seen = False
+        landscape_refreshed = False
         while True:
+            if time.monotonic() >= deadline:
+                logger.error(f"navigation_click: timeout node={argv.node_name}, clicks={clicks}, target_seen={target_seen}")
+                return False
             image = navigation._screencap(context)
+            if time.monotonic() >= deadline:
+                logger.error(f"navigation_click: capture exceeded deadline node={argv.node_name}")
+                return False
             # Latch arrival: even a later transient miss must never click the old entry.
             target_seen = target_seen or any(navigation._recognize(context, image, node) for node in targets)
-            loading = navigation._intermediate_reason(context, image, DEFAULT_WAIT_RECOGNITIONS)
-            if target_seen and not loading:
-                logger.info(f"navigation_click: arrived node={argv.node_name}, clicks={clicks}, elapsed={time.monotonic() - started:.3f}s")
-                return True
+            loading = navigation._intermediate_reason(context, image, wait_nodes)
             if time.monotonic() >= deadline:
-                logger.error(f"navigation_click: timeout node={argv.node_name}, clicks={clicks}, loading={loading}, target_seen={target_seen}")
+                logger.error(f"navigation_click: recognition exceeded deadline node={argv.node_name}")
                 return False
+            if target_seen and not loading:
+                logger.debug(f"navigation_click: arrived node={argv.node_name}, clicks={clicks}, elapsed={time.monotonic() - started:.3f}s")
+                return True
             if not loading and not target_seen and clicks < 3 and time.monotonic() >= next_click:
                 on_source = any(navigation._recognize(context, image, node) for node in sources)
                 if on_source:
@@ -506,7 +678,13 @@ class NavigationClickAction(CustomAction):
                         action = context.run_action_direct("Click", JClick(target=target))
                         clicks += 1
                         next_click = time.monotonic() + 1.5
-                        logger.info(f"navigation_click: node={argv.node_name}, click={clicks}/3, target={target}, success={bool(action and action.success)}")
+                        logger.debug(f"navigation_click: node={argv.node_name}, click={clicks}/3, target={target}, success={bool(action and action.success)}")
                         if not action or not action.success:
                             return False
+                        if params.get("wait_landscape") and not landscape_refreshed:
+                            if not self._wait_landscape(context, deadline):
+                                return False
+                            if not self._refresh_landscape(context, deadline):
+                                return False
+                            landscape_refreshed = True
             time.sleep(min(0.25, max(0, deadline - time.monotonic())))

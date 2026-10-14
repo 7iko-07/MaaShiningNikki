@@ -124,7 +124,7 @@ class TimeCorridorChallengeTests(unittest.TestCase):
             (ROOT / "assets/resource/pipeline/Make_the_target_clothes.json").read_text(encoding="utf-8")
         )
         params = pipeline["计算并挑战时空回廊制衣材料"]["action"]["param"]["custom_action_param"]
-        params = dict(params, load_delay=0, click_delay=0, popup_close_delay=0)
+        params = dict(params, load_delay=0, click_delay=0)
         argv = SimpleNamespace(custom_action_param=json.dumps(params))
         for button_results, expected_success in (([True, True], True), ([False], False)):
             with self.subTest(button_results=button_results):
@@ -139,6 +139,59 @@ class TimeCorridorChallengeTests(unittest.TestCase):
                         self.assertEqual(click.call_args_list[1].args[2], self.roi)
                     else:
                         click.assert_called_once()
+
+
+class BatchChallengeResultTests(unittest.TestCase):
+    def test_completion_wait_precedes_result_read_and_close(self):
+        self._run_result_wait(True)
+
+    def test_failed_wait_stops_without_close_or_repeated_challenge(self):
+        self._run_result_wait(False)
+
+    def test_missing_wait_result_stops_without_close_or_repeated_challenge(self):
+        self._run_result_wait(None)
+
+    def _run_result_wait(self, succeeded):
+        pipeline = json.loads(
+            (ROOT / "assets/resource/pipeline/Make_the_target_clothes.json").read_text(encoding="utf-8")
+        )
+        params = dict(pipeline["批量挑战主线制衣材料"]["action"]["param"]["custom_action_param"])
+        action = module.MakeTargetClothesBatchChallengeAction()
+        context = MagicMock()
+        argv = SimpleNamespace(custom_action_param=json.dumps(params),
+                               node_name="批量挑战主线制衣材料", task_detail=SimpleNamespace(task_id=987654))
+        action.clear_task_state(987654, "main_story")
+        self.addCleanup(action.clear_task_state, 987654, "main_story")
+        events = []
+        def wait(node):
+            self.assertEqual(node, "等待制衣挑战结果")
+            events.append("wait")
+            return None if succeeded is None else SimpleNamespace(status=SimpleNamespace(succeeded=succeeded))
+        context.run_task.side_effect = wait
+        def quantity(**kwargs):
+            events.append("quantity")
+            return events.count("quantity") > 1
+        with patch.object(action, "_has_sufficient_quantity", side_effect=quantity), \
+             patch.object(action, "_read_round_values", return_value=(100, 5, None)), \
+             patch.object(action, "_read_required_number", return_value=50) as read_after, \
+             patch.object(action, "_click_roi", side_effect=lambda controller, roi: events.append(tuple(roi))), \
+             patch.object(module.time, "sleep") as sleep:
+            self.assertEqual(action.run(context, argv), succeeded is True)
+            expected = ["quantity", tuple(params["multi_button"]), "wait"]
+            if succeeded:
+                expected.extend(["quantity", tuple(params["popup_close_roi"])])
+                read_after.assert_called_once()
+            else:
+                read_after.assert_not_called()
+                self.assertNotIn((987654, "main_story"), action._task_challenge_counts)
+            self.assertEqual(events, expected)
+            sleep.assert_not_called()
+
+    def test_main_story_option_keeps_completion_wait(self):
+        interface = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-8"))
+        override = interface["option"]["制作目标服装主线挑战次数"]["pipeline_override"]
+        params = override["批量挑战主线制衣材料"]["action"]["param"]["custom_action_param"]
+        self.assertEqual(params["result_ready_node"], "等待制衣挑战结果")
 
 
 if __name__ == "__main__":

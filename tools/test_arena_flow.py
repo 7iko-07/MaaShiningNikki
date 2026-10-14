@@ -18,6 +18,7 @@ from maa.resource import Resource
 from maa.tasker import Tasker
 
 from tools.test_arena_weekly import ROOT, arena, load_action
+from tools.validate_schema import load_jsonc
 
 navigation = load_action("page_navigation")
 ARENA = json.loads((ROOT / "assets/resource/pipeline/arena.json").read_text(encoding="utf-8"))
@@ -394,7 +395,7 @@ class ArenaPipelineTests(unittest.TestCase):
         self.executed = []
         self.nodes = {}
         for path in (ROOT / "assets/resource/pipeline").rglob("*.json"):
-            self.nodes.update(json.loads(path.read_text(encoding="utf-8")))
+            self.nodes.update(load_jsonc(path))
         # Keep composite recognition and edges; replace image-dependent leaves.
         for name, node in self.nodes.items():
             recognition = node.get("recognition", "DirectHit")

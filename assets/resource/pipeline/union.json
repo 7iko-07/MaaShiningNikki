@@ -337,13 +337,21 @@
                     "purchase_popup_node": "机密任务购买次数弹窗",
                     "cancel_purchase_node": "取消购买机密任务次数",
                     "reward_node": "联盟执行多次奖励",
-                    "popup_timeout": 2500,
-                    "popup_interval": 250
+                    "weekly_popup_node": "关闭机密任务周奖励弹窗",
+                    "close_reward_node": "机密任务关闭奖励弹窗"
                 }
             }
         },
-        "next": ["联盟执行多次奖励"],
+        "next": ["点击返回联盟"],
         "timeout": 5000
+    },
+    "机密任务关闭奖励弹窗": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [117, 53, 35, 26]
+            }
+        }
     },
     "联盟执行多次奖励": {
         "recognition": {

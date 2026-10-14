@@ -1,0 +1,1009 @@
+{
+    "织梦空间任务链入口": {
+        "next": ["织梦空间任务链准备", "[JumpBack]返回主页面"],
+        "timeout": 2000
+    },
+    "织梦空间任务链准备": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "织梦空间",
+                    "wait_nodes": ["织梦空间专属加载中"]
+                }
+            }
+        },
+        "next": ["织梦空间执行子任务"],
+        "timeout": 30000
+    },
+    "织梦空间执行子任务": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "dreamweaver_space_run",
+                "custom_action_param": {
+                    "sale_rounds": 0
+                }
+            }
+        }
+    },
+    "织梦选择今日签到": {
+        "enabled": false
+    },
+    "织梦选择经营": {
+        "enabled": false
+    },
+    "织梦选择订单驿站": {
+        "enabled": false
+    },
+    "织梦选择能量石加速": {
+        "enabled": false
+    },
+    "织梦选择售卖橱窗": {
+        "enabled": false
+    },
+    "织梦选择每日能量晶矿": {
+        "enabled": false
+    },
+    "织梦选择七日妙想": {
+        "enabled": false
+    },
+    "织梦售卖选择能量石": {
+        "enabled": false
+    },
+    "织梦售卖仅当期": {
+        "enabled": false
+    },
+    "织梦售卖攒明日": {
+        "enabled": false
+    },
+    "织梦今日签到图标": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [1170, 125, 90, 90],
+                "template": ["织梦空间今日签到.png"]
+            }
+        }
+    },
+    "织梦每日奖励文字": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [319, 154, 676, 262],
+                "expected": ["新的一天开始啦"]
+            }
+        }
+    },
+    "织梦获得奖励文字": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [448, 86, 394, 120],
+                "expected": ["恭喜获得"]
+            }
+        }
+    },
+    "织梦经营入口": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [108, 541, 151, 64],
+                "expected": ["织梦经营"]
+            }
+        }
+    },
+    "织梦经营订单入口": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [113, 393, 1, 1]
+            }
+        }
+    },
+    "织梦经营销售额": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [815, 35, 142, 79],
+                "expected": ["总销售额"]
+            }
+        }
+    },
+    "织梦经营仓库": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1180, 120, 100, 100],
+                "expected": ["仓库"]
+            }
+        }
+    },
+    "织梦能量晶矿入口": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [540, 405, 1, 1]
+            }
+        }
+    },
+    "织梦能量晶矿页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [515, 115, 255, 65],
+                "expected": ["能量晶矿"]
+            }
+        }
+    },
+    "织梦能量晶矿库存": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [503, 438, 284, 36]
+            }
+        }
+    },
+    "织梦能量晶矿领取按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [465, 475, 350, 83],
+                "expected": ["领取"]
+            }
+        }
+    },
+    "织梦售卖橱窗入口": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [375, 221, 1, 1]
+            }
+        }
+    },
+    "织梦售卖橱窗页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [100, 25, 200, 65],
+                "expected": ["售卖[橱櫥]窗"]
+            }
+        }
+    },
+    "织梦售卖产品列表": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [900, 35, 245, 65],
+                "expected": ["产品列表"]
+            }
+        }
+    },
+    "织梦今日潮流": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [103, 463, 230, 48]
+            }
+        }
+    },
+    "织梦明日预告": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [125, 544, 205, 48]
+            }
+        }
+    },
+    "织梦潮流涨价": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [100, 504, 235, 35]
+            }
+        }
+    },
+    "织梦潮流产品": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [820, 95, 335, 580],
+                "expected": ["潮流UP"]
+            }
+        }
+    },
+    "织梦产品售卖页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [515, 115, 255, 65],
+                "expected": ["产品售卖"]
+            }
+        }
+    },
+    "织梦售卖MAX按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [705, 388, 95, 58],
+                "expected": ["MAX"]
+            }
+        }
+    },
+    "织梦确认售出按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [465, 475, 350, 83],
+                "expected": ["确认售出"]
+            }
+        }
+    },
+    "织梦橱窗返回按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [26, 20, 63, 85],
+                "template": ["售卖橱窗返回.png"]
+            }
+        }
+    },
+    "织梦休息工位": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [640, 142, 560, 496],
+                "expected": ["休息中"]
+            }
+        }
+    },
+    "织梦工位状态": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [640, 142, 560, 496],
+                "expected": ["可收获", "空闲中", "[生产]"],
+                "replace": [
+                    ["可收货", "可收获"]
+                ]
+            }
+        }
+    },
+    "织梦订单页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [98, 23, 195, 68],
+                "expected": ["订单驿站"]
+            }
+        }
+    },
+    "织梦订单今日进度": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [47, 622, 285, 51]
+            }
+        }
+    },
+    "织梦可交付订单": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [320, 60, 823, 541],
+                "expected": ["可交付"]
+            }
+        }
+    },
+    "织梦订单详情标题": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [817, 36, 399, 69],
+                "expected": ["来自.*的订单"]
+            }
+        }
+    },
+    "织梦订单数量": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [835, 300, 356, 47]
+            }
+        }
+    },
+    "织梦订单素材标签": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [835, 346, 373, 49]
+            }
+        }
+    },
+    "织梦详情交付按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [870, 590, 300, 77],
+                "expected": ["交付订单"]
+            }
+        }
+    },
+    "织梦选择产品页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [498, 41, 264, 68],
+                "expected": ["选择产品"]
+            }
+        }
+    },
+    "织梦产品已选数量": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [825, 582, 215, 52]
+            }
+        }
+    },
+    "织梦产品交付按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [456, 550, 365, 94],
+                "expected": ["交付订单"]
+            }
+        }
+    },
+    "织梦一星订单": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [315, 65, 820, 542],
+                "template": ["一星订单.png"]
+            }
+        }
+    },
+    "织梦二星订单": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [315, 65, 820, 542],
+                "template": ["二星订单.png"]
+            }
+        }
+    },
+    "织梦三星订单": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [315, 65, 820, 542],
+                "template": ["三星订单.png"]
+            }
+        }
+    },
+    "织梦订单完成对号": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": ["订单完成对号.png"]
+            }
+        }
+    },
+    "织梦订单返回按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [26, 20, 63, 85],
+                "template": ["订单驿站返回.png"]
+            }
+        }
+    },
+    "织梦设计页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [102, 20, 262, 69],
+                "expected": ["设计生产方案"]
+            }
+        }
+    },
+    "织梦版型选项": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [761, 76, 463, 136],
+                "expected": ["连衣裙", "上装", "下装"]
+            }
+        }
+    },
+    "织梦材质选项": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [761, 276, 463, 140],
+                "expected": ["布艺", "皮革", "丝绒", "绸缎", "特殊"]
+            }
+        }
+    },
+    "织梦颜色选项": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [761, 474, 463, 217],
+                "expected": ["蓝色系", "黄色系", "红色系", "绿色系", "棕色系", "灰色系"]
+            }
+        }
+    },
+    "织梦方案使用素材": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [149, 525, 477, 61],
+                "replace": [
+                    ["[()（）]", ""]
+                ]
+            }
+        }
+    },
+    "织梦生产五件按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [250, 598, 255, 88],
+                "expected": ["[生产]"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change"
+            }
+        }
+    },
+    "织梦加速页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [501, 107, 280, 77],
+                "expected": ["生产加速"]
+            }
+        }
+    },
+    "织梦立即完成按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [459, 473, 361, 87],
+                "expected": ["立即完成"]
+            }
+        }
+    },
+    "织梦经营返回按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [26, 20, 63, 85],
+                "template": ["订单驿站返回.png"]
+            }
+        }
+    },
+    "七日妙想入口": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1158, 590, 99, 107],
+                "expected": ["七日", "妙想"]
+            }
+        }
+    },
+    "七日妙想页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [90, 30, 365, 65],
+                "expected": ["七日妙想"]
+            }
+        }
+    },
+    "七日妙想任务标题": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [55, 230, 1195, 76]
+            }
+        }
+    },
+    "七日妙想前往完成": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [55, 631, 1160, 67],
+                "expected": ["前往完成"]
+            }
+        }
+    },
+    "七日制衣新建": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [20, 565, 170, 145],
+                "expected": ["新建"]
+            }
+        }
+    },
+    "七日制衣作品页": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1110, 0, 170, 85],
+                "expected": ["成衣", "草稿"]
+            }
+        }
+    },
+    "七日制衣我来定制": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [825, 300, 450, 290],
+                "expected": ["我来定制"]
+            }
+        }
+    },
+    "七日制衣连衣裙": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [1110, 0, 170, 720],
+                                "expected": ["连衣裙"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "roi": [1110, 0, 170, 720],
+                                "template": ["七日制衣连衣裙.png"]
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "七日制衣上衣": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [1110, 0, 170, 720],
+                                "expected": ["上\\s*衣"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "roi": [1110, 0, 170, 720],
+                                "template": ["七日制衣上衣.png"]
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "七日制衣下装": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [1110, 0, 170, 720],
+                                "expected": ["下\\s*装"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "roi": [1110, 0, 170, 720],
+                                "template": ["七日制衣下装.png"]
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "七日制衣切换部位": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1110, 0, 170, 720],
+                "expected": ["切换部位"]
+            }
+        }
+    },
+    "七日制衣右栏文字": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1110, 0, 170, 720]
+            }
+        }
+    },
+    "七日制衣选择首件": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [1145, 90, 106, 106]
+            }
+        }
+    },
+    "七日制衣面料选择": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [625, 80, 480, 470],
+                "expected": ["面料选择"]
+            }
+        }
+    },
+    "七日制衣选择首块面料": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [662, 200, 94, 94]
+            }
+        }
+    },
+    "七日制衣生成成衣": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [700, 615, 390, 100],
+                "expected": ["生成成衣"]
+            }
+        }
+    },
+    "七日制衣名称弹窗": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [375, 210, 540, 300],
+                "expected": ["更改作品名称"]
+            }
+        }
+    },
+    "七日制衣点击名称框": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [468, 324, 344, 46],
+                "expected": ["自定义(方案|文案)"]
+            }
+        }
+    },
+    "七日制衣输入临时": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "dreamweaver_input_text",
+                "custom_action_param": {
+                    "input_text": "临时"
+                }
+            }
+        }
+    },
+    "七日制衣名称确定": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [640, 405, 190, 80],
+                "expected": ["确定"]
+            }
+        }
+    },
+    "七日制衣名称已输入": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [468, 324, 344, 46],
+                "expected": ["^临时$"]
+            }
+        }
+    },
+    "七日制衣离开制衣": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [900, 610, 380, 110],
+                "expected": ["离开制衣"]
+            }
+        }
+    },
+    "七日分享成衣作品": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [685, 75, 420, 545],
+                "expected": ["成衣作品"]
+            }
+        }
+    },
+    "七日分享作品数量": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [685, 75, 420, 545],
+                "expected": ["^\\d+/\\d+$"]
+            }
+        }
+    },
+    "七日分享选择首个作品": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [722, 174, 94, 94]
+            }
+        }
+    },
+    "七日分享前往编辑": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [900, 0, 210, 90],
+                "expected": ["前往编辑"]
+            }
+        }
+    },
+    "七日分享作品图标": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [800, 570, 480, 150],
+                "template": ["七日作品分享.png"]
+            }
+        }
+    },
+    "七日分享成衣图标": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [800, 570, 480, 150],
+                "template": ["七日成衣分享.png"]
+            }
+        }
+    },
+    "七日分享按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [860, 600, 230, 110],
+                "expected": ["^分享$"]
+            }
+        }
+    },
+    "七日分享保存本地": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1090, 600, 190, 110],
+                "expected": ["保存本地"]
+            }
+        }
+    },
+    "七日分享QQ渠道": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [700, 540, 580, 180],
+                "template": ["qq.png"]
+            }
+        }
+    },
+    "七日分享QQ新用户": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 450, 1280, 200],
+                "expected": ["^新用户$"]
+            }
+        }
+    },
+    "七日分享QQ登录": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 450, 1280, 200],
+                "expected": ["^登录$"]
+            }
+        }
+    },
+    "七日分享关闭QQ": {
+        "action": {
+            "type": "StopApp",
+            "param": {
+                "package": "com.tencent.mobileqq"
+            }
+        }
+    },
+    "七日分享返回按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [0, 0, 150, 130],
+                "template": ["七日分享返回.png"]
+            }
+        }
+    },
+    "七日妙想完成对号": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [55, 540, 280, 160],
+                "template": ["七日任务完成对号.png"]
+            }
+        }
+    },
+    "七日人台换衣入口": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [840, 40, 160, 160],
+                "template": ["七日人台换衣入口.png"]
+            }
+        }
+    },
+    "七日人台展示换新": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [810, 75, 460, 545],
+                "expected": ["展示换新"]
+            }
+        }
+    },
+    "七日人台衣服列表文字": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [810, 140, 460, 475]
+            }
+        }
+    },
+    "七日人台选择首件": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [844, 201, 105, 106]
+            }
+        }
+    },
+    "七日人台选中对号": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [810, 140, 460, 200],
+                "template": ["七日人台选中对号.png"]
+            }
+        }
+    },
+    "七日人台保存": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [925, 620, 355, 100],
+                "expected": ["^保存$"]
+            }
+        }
+    },
+    "灵感拾趣入口": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [360, 250, 170, 100],
+                "expected": ["灵感拾趣"]
+            }
+        }
+    },
+    "灵感拾趣角色": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [158, 16, 1110, 685],
+                "template": ["灵感拾趣角色.png", "灵感拾趣角色镜像.png"]
+            }
+        }
+    },
+    "灵感拾趣小物": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [158, 16, 1110, 685],
+                "template": ["灵感拾趣冰棒.png", "灵感拾趣蛋糕.png", "灵感拾趣圆饼.png",
+                             "灵感拾趣甜甜圈.png", "灵感拾趣碗装小物.png", "灵感拾趣折纸.png"]
+            }
+        }
+    },
+    "灵感拾趣倒计时": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [515, 170, 235, 280],
+                "expected": ["^[123]$"]
+            }
+        }
+    },
+    "灵感拾趣游戏得分": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 245, 135, 75],
+                "expected": ["得分"]
+            }
+        }
+    },
+    "灵感拾趣结算得分": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [630, 370, 435, 170],
+                "expected": ["得分"]
+            }
+        }
+    },
+    "灵感拾趣结算数量": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [630, 370, 435, 170],
+                "expected": ["收集数量"]
+            }
+        }
+    },
+    "灵感拾趣结算分享": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1160, 580, 120, 130],
+                "expected": ["分享"]
+            }
+        }
+    },
+    "灵感拾趣返回按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [0, 0, 130, 110],
+                "template": ["灵感拾趣返回.png"]
+            }
+        }
+    },
+    "织梦空间专属加载中": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [305, 500, 610, 204],
+                "expected": ["梦想在此编织"]
+            }
+        }
+    }
+}

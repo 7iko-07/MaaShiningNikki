@@ -153,7 +153,7 @@ class MemoryShopCheckAction(CustomAction):
                 diamond_template,
             )
             products.append(product)
-            logger.info(
+            logger.debug(
                 "memory_shop_check: "
                 f"slot={index + 1}, name={product['name']!r}, discount={product['discount']}, "
                 f"currency={product['currency']}, price={product['price']}, "
@@ -362,7 +362,7 @@ class MemoryShopCheckAction(CustomAction):
         text = self._read_text(context, image, roi, threshold)
         normalized = self._normalize_name(text)
         is_free = "免费" in normalized
-        logger.info(
+        logger.debug(
             "memory_shop_check: refresh button text="
             f"{text!r}, normalized={normalized!r}, is_free={is_free}"
         )
@@ -378,7 +378,7 @@ class MemoryShopCheckAction(CustomAction):
         text = self._read_text(context, image, text_roi, ocr_threshold)
         normalized = self._normalize_name(text)
         hit = "刷新卡" in normalized and "获取途径" in normalized
-        logger.info(
+        logger.debug(
             "memory_shop_check: refresh exhausted popup text="
             f"{text!r}, normalized={normalized!r}, hit={hit}"
         )
@@ -387,7 +387,7 @@ class MemoryShopCheckAction(CustomAction):
     def _detect_currency(self, context, image, roi, threshold, gold_template, diamond_template):
         gold_hit = self._template_hit(context, image, roi, gold_template, threshold)
         diamond_hit = self._template_hit(context, image, roi, diamond_template, threshold)
-        logger.info(
+        logger.debug(
             "memory_shop_check: currency template hit "
             f"gold={gold_hit}, diamond={diamond_hit}, roi={roi}"
         )
@@ -427,7 +427,7 @@ class MemoryShopCheckAction(CustomAction):
             logger.info(f"memory_shop_check: confirming purchase popup, text={text!r}")
             self._click_roi(controller, confirm_roi)
             return True
-        logger.info(f"memory_shop_check: no purchase popup detected, text={text!r}")
+        logger.debug(f"memory_shop_check: no purchase popup detected, text={text!r}")
         return False
 
     def _recover_after_purchase(
@@ -443,7 +443,7 @@ class MemoryShopCheckAction(CustomAction):
         close_clicks,
     ):
         for click_index in range(1, close_clicks + 1):
-            logger.info(
+            logger.debug(
                 "memory_shop_check: clicking blank area after purchase, "
                 f"click={click_index}/{close_clicks}"
             )
@@ -453,10 +453,10 @@ class MemoryShopCheckAction(CustomAction):
         for attempt in range(1, attempts + 1):
             image = self._screencap(controller)
             if self._is_memory_shop_page(context, image, shop_page_roi, threshold):
-                logger.info(f"memory_shop_check: returned to memory shop, attempt={attempt}/{attempts}")
+                logger.debug(f"memory_shop_check: returned to memory shop, attempt={attempt}/{attempts}")
                 return True
 
-            logger.info(
+            logger.debug(
                 "memory_shop_check: not on memory shop after purchase, clicking back, "
                 f"attempt={attempt}/{attempts}"
             )
@@ -474,7 +474,7 @@ class MemoryShopCheckAction(CustomAction):
         hit = "回忆小铺" in normalized and (
             "换一批" in normalized or "刷新卡" in normalized or "剩余" in normalized
         )
-        logger.info(
+        logger.debug(
             "memory_shop_check: memory shop page text="
             f"{text!r}, normalized={normalized!r}, hit={hit}"
         )
@@ -492,7 +492,7 @@ class MemoryShopCheckAction(CustomAction):
         r = crop[:, :, 2]
         orange = np.count_nonzero((r > 190) & (g > 130) & (g < 210) & (b < 140))
         ratio = orange / (w * h)
-        logger.info(f"memory_shop_check: confirm button orange_ratio={ratio:.3f}")
+        logger.debug(f"memory_shop_check: confirm button orange_ratio={ratio:.3f}")
         return ratio > 0.12
 
     def _screencap(self, controller):

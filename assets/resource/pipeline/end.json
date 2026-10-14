@@ -8,7 +8,6 @@
 			"type": "StopApp",
 			"param": {"package": "com.papegames.nn4.cn"}
 		},
-		"post_delay": 10000,
 		"timeout": 2000,
 		"next": ["stop"]
 	}

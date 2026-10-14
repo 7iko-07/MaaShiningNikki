@@ -36,7 +36,7 @@ class InformationHouseAutoInvestigateAction(CustomAction):
 
         controller = context.tasker.controller
         if load_delay > 0:
-            logger.info(f"information_house_auto_investigate: waiting {load_delay:.1f}s for page load")
+            logger.debug(f"information_house_auto_investigate: waiting {load_delay:.1f}s for page load")
             time.sleep(load_delay)
 
         stamina = read_number_from_controller(
@@ -54,7 +54,7 @@ class InformationHouseAutoInvestigateAction(CustomAction):
             logger.error("information_house_auto_investigate: failed to read stamina")
             return False
 
-        logger.info(f"information_house_auto_investigate: stamina={stamina}")
+        logger.debug(f"information_house_auto_investigate: stamina={stamina}")
         cost = self._read_cost(
             context,
             controller,
@@ -132,13 +132,13 @@ class InformationHouseAutoInvestigateAction(CustomAction):
         target_count = max(initial_count, challenge_times)
         add_count = min(max(0, target_count - initial_count), max(0, max_adjust))
 
-        logger.info(
+        logger.debug(
             "information_house_auto_investigate: "
             f"initial_count={initial_count}, challenge_times={challenge_times}, add_count={add_count}"
         )
 
         for attempt in range(add_count):
-            logger.info(
+            logger.debug(
                 "information_house_auto_investigate: "
                 f"target_increase_attempt={attempt + 1}/{add_count}, current_cost={current_cost}, stamina={stamina}"
             )
@@ -157,7 +157,7 @@ class InformationHouseAutoInvestigateAction(CustomAction):
                 logger.error("information_house_auto_investigate: failed to read cost after target add")
                 return None
 
-            logger.info(
+            logger.debug(
                 "information_house_auto_investigate: "
                 f"target_cost_after_add={next_cost}, previous_cost={current_cost}, stamina={stamina}"
             )
@@ -214,7 +214,7 @@ class InformationHouseAutoInvestigateAction(CustomAction):
         max_adjust,
     ):
         for attempt in range(max(0, max_adjust)):
-            logger.info(
+            logger.debug(
                 "information_house_auto_investigate: "
                 f"increase_attempt={attempt + 1}, current_cost={current_cost}, stamina={stamina}"
             )
@@ -233,7 +233,7 @@ class InformationHouseAutoInvestigateAction(CustomAction):
                 logger.error("information_house_auto_investigate: failed to read cost after add")
                 return None
 
-            logger.info(
+            logger.debug(
                 "information_house_auto_investigate: "
                 f"cost_after_add={next_cost}, previous_cost={current_cost}, stamina={stamina}"
             )

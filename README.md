@@ -111,3 +111,11 @@ UI 由 [MFAAvalonia](https://github.com/SweetSmellFox/MFAAvalonia) 大力支持�
 感谢以下开发者对本项目作出的贡献：
 
 [![Contributors](https://contrib.rocks/image?repo=7iko-07/MaaShiningNikki&max=1000)](https://github.com/7iko-07/MaaShiningNikki/graphs/contributors)
+
+### Python 依赖打包
+
+GitHub Actions 在构建开始时统一确定 MaaFramework 发行版本，下载该版本原生库，并使用各平台包内的 Python 安装同版本 `maafw` 和 `requirements.txt` 中的其他依赖。安装结果记录在 `python-dependencies.json`；若对应平台的 wheel 尚未发布，构建会失败，不会回退到其他版本。
+
+Windows、Linux、macOS 均使用包内 Python。构建会检查依赖完整性、主程序原生框架版本以及 Agent 握手和自定义动作注册。Unix 的 CI 中间产物为 `payload.tar`，用于保留执行权限和符号链接，正式发布时仍生成 ZIP。
+
+源码开发继续使用仓库现有 `.venv`，需要开发者手动准备依赖。仅更新资源或 `agent/` 的旧包不会自动补装依赖；请先安装新版完整发行包。修改打包流程后，需要在 GitHub Actions 手动运行 `install`，验证全部平台构建。

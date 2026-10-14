@@ -50,7 +50,7 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["点击采购零食"],
+		"next": ["采购番茄炒蛋分流"],
 		"timeout": 2000
     },
 	"点击日常采购": {
@@ -65,8 +65,12 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["点击采购零食"],
+		"next": ["采购番茄炒蛋分流"],
 		"timeout": 2000
+    },
+    "采购番茄炒蛋分流": {
+        "next": ["点击采购零食"],
+        "timeout": 2000
     },
     "点击采购零食": {
         "recognition": {
@@ -93,8 +97,10 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+                "custom_action": "click_center"
+            }
 		},
 		"next": ["点击购买番茄炒蛋"],
 		"timeout": 2000
@@ -130,7 +136,7 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["[JumpBack]点击确定活力不足","点击购买电影票"],
+		"next": ["[JumpBack]点击确定活力不足","采购电影票分流"],
 		"timeout": 2000
     },
     "点击确定活力不足": {
@@ -149,6 +155,27 @@
 		},
 		"timeout": 2000
     },
+    "采购电影票分流": {
+        "next": ["点击电影票"],
+        "timeout": 2000
+    },
+    "点击电影票": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 555, 720, 360],
+                "expected": ["电影票"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_center"
+            }
+        },
+        "next": ["点击购买电影票"],
+        "timeout": 2000
+    },
     "点击购买电影票": {
 		"recognition": {
 			"type": "TemplateMatch",
@@ -164,8 +191,12 @@
         "repeat": 2,
         "repeat_delay": 500,
 		"post_delay": 1000,
-		"next": ["[JumpBack]点击确定活力不足","[JumpBack]点击体力用尽确定","点击缤纷调色板"],
+		"next": ["[JumpBack]点击确定活力不足","[JumpBack]点击体力用尽确定","采购调色板分流"],
 		"timeout": 2000
+    },
+    "采购调色板分流": {
+        "next": ["点击缤纷调色板"],
+        "timeout": 2000
     },
 	"点击缤纷调色板": {
         "recognition": {
@@ -176,8 +207,10 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+                "custom_action": "click_center"
+            }
 		},
 		"next": ["点击购买缤纷调色板"],
 		"timeout": 2000
@@ -197,8 +230,12 @@
         "repeat": 2,
         "repeat_delay": 500,
 		"post_delay": 1000,
-		"next": ["点击晴雨伞","[JumpBack]点击确定活力不足","[JumpBack]点击体力用尽确定","[JumpBack]上划日常采购"],
+		"next": ["采购晴雨伞分流"],
 		"timeout": 2000
+    },
+    "采购晴雨伞分流": {
+        "next": ["点击晴雨伞","[JumpBack]点击确定活力不足","[JumpBack]点击体力用尽确定","[JumpBack]上划日常采购"],
+        "timeout": 2000
     },
     "上划日常采购": {
         "recognition": {
@@ -223,8 +260,10 @@
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {
+                "custom_action": "click_center"
+            }
 		},
 		"next": ["点击购买晴雨伞"],
 		"timeout": 2000

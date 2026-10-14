@@ -52,7 +52,7 @@ class SelectSameTextAfterThumbAction(CustomAction):
             logger.error("select_same_text_after_thumb: failed to OCR source text")
             return False
 
-        logger.info(f"select_same_text_after_thumb: target_text={target_text!r}")
+        logger.debug(f"select_same_text_after_thumb: target_text={target_text!r}")
 
         self._click_roi(controller, thumb_roi)
         time.sleep(click_delay)
@@ -63,7 +63,7 @@ class SelectSameTextAfterThumbAction(CustomAction):
             match = self._find_matching_text(context, controller, search_roi, target_text, ocr_threshold)
             if match:
                 text, box = match
-                logger.info(f"select_same_text_after_thumb: matched text={text!r}, box={box}")
+                logger.debug(f"select_same_text_after_thumb: matched text={text!r}, box={box}")
                 self._click_box(controller, box)
                 time.sleep(click_delay)
                 self._click_roi(controller, confirm_roi)
@@ -72,7 +72,7 @@ class SelectSameTextAfterThumbAction(CustomAction):
             if attempt >= max_swipes:
                 break
 
-            logger.info(
+            logger.debug(
                 "select_same_text_after_thumb: no match, swiping up "
                 f"{attempt + 1}/{max_swipes}"
             )

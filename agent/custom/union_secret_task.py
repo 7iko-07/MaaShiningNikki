@@ -60,6 +60,13 @@ def _collect_ocr_text(result):
 @AgentServer.custom_action("union_secret_task_execute")
 class UnionSecretTaskExecuteAction(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        try:
+            return self._execute(context, argv)
+        except Exception as e:
+            logger.error(f"union_secret_task_execute: 执行失败: {e}")
+            return False
+
+    def _execute(self, context, argv):
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
         progress_node = params.get("progress_node", PROGRESS_OCR_NODE)
         completed_next = params.get("completed_next", "点击返回联盟")
@@ -80,104 +87,109 @@ class UnionSecretTaskExecuteAction(CustomAction):
             "取消购买机密任务次数",
         )
         reward_node = params.get("reward_node", "联盟执行多次奖励")
-        popup_timeout = max(0, int(params.get("popup_timeout", 2500)))
-        popup_interval = max(50, int(params.get("popup_interval", 250)))
-
+        weekly_node = params.get("weekly_popup_node", "关闭机密任务周奖励弹窗")
+        close_reward_node = params.get("close_reward_node", "机密任务关闭奖励弹窗")
+        deadline = time.monotonic() + max(0, int(params.get("timeout", 30000))) / 1000
         controller = context.tasker.controller
-        image = self._screencap(controller)
-        try:
-            result = context.run_recognition(progress_node, image)
-        except Exception as e:
-            logger.error(f"union_secret_task_execute: 今日执行次数 OCR 异常: {e}")
-            return False
+        stable_progress, stable_frames = None, 0
+        clicked_remaining = None
+        reward_seen = False
+        next_click = 0.0
+        first_poll = True
 
-        text = _collect_ocr_text(result)
-        progress = parse_execution_progress(text)
-        if not progress:
-            logger.error(
-                "union_secret_task_execute: 无法读取今日剩余执行次数，"
-                f"OCR={text!r}"
-            )
-            return False
+        def active():
+            return not context.tasker.stopping and time.monotonic() < deadline
 
-        remaining, total = progress
-        if remaining < 1:
-            logger.info(
-                "union_secret_task_execute: "
-                f"today remaining progress={remaining}/{total}, completed"
-            )
-            context.override_next(argv.node_name, [completed_next])
-            return True
-
-        button_node = execution_button_node_for_remaining(
-            remaining,
-            single_button_node=single_button_node,
-            multiple_button_node=multiple_button_node,
-        )
-        button_result = self._run_recognition(context, image, button_node)
-        target = self._execution_text_box(button_result)
-        if not self._valid_target(target):
-            logger.error(
-                "union_secret_task_execute: 未在对应区域识别到“执行”按钮，"
-                f"remaining={remaining}, node={button_node!r}"
-            )
-            return False
-
-        logger.info(
-            "union_secret_task_execute: "
-            f"today remaining progress={remaining}/{total}, "
-            f"button_node={button_node!r}, recognized_box={target}"
-        )
-        self._click_roi(controller, target)
-
-        popup_found = self._wait_for_result(
-            context,
-            controller,
-            purchase_popup_node=purchase_popup_node,
-            reward_node=reward_node,
-            timeout=popup_timeout,
-            interval=popup_interval,
-        )
-        if not popup_found:
-            return True
-
-        logger.error(
-            "union_secret_task_execute: 点击执行按钮后出现购买联盟委托次数弹窗，"
-            "将取消购买并使当前任务失败"
-        )
-        try:
-            cancel_result = context.run_task(cancel_purchase_node)
-        except Exception as e:
-            logger.error(f"union_secret_task_execute: 取消购买次数失败: {e}")
-            return False
-
-        if not self._task_succeeded(cancel_result):
-            logger.error("union_secret_task_execute: 取消购买次数节点执行失败")
-        return False
-
-    def _wait_for_result(
-        self,
-        context,
-        controller,
-        purchase_popup_node,
-        reward_node,
-        timeout,
-        interval,
-    ):
-        deadline = time.monotonic() + timeout / 1000.0
-        while True:
+        while active():
+            if not first_poll:
+                time.sleep(min(0.25, max(0, deadline - time.monotonic())))
+            first_poll = False
+            if not active():
+                break
             image = self._screencap(controller)
+            if image is None or not active():
+                return False
+            # 弹窗优先于背景中的次数和按钮；仅执行关闭动作，不进入其 next 子链。
             if self._recognize(context, image, purchase_popup_node):
+                if not active():
+                    break
+                logger.error("union_secret_task_execute: 出现购买次数弹窗，取消购买并终止任务")
+                result = context.run_action(cancel_purchase_node)
+                if not result or not result.success:
+                    logger.error("union_secret_task_execute: 取消购买次数失败")
+                return False
+            weekly = self._recognize(context, image, weekly_node)
+            reward = not weekly and self._recognize(context, image, reward_node)
+            if weekly or reward:
+                stable_progress, stable_frames = None, 0
+                if reward:
+                    reward_seen = True
+                if active() and time.monotonic() >= next_click:
+                    result = context.run_action(close_reward_node)
+                    if not result or not result.success:
+                        logger.error("union_secret_task_execute: 关闭奖励弹窗失败")
+                        return False
+                    next_click = time.monotonic() + 1
+                continue
+
+            result = self._run_recognition(context, image, progress_node)
+            progress = (parse_execution_progress(_collect_ocr_text(result))
+                        if result and result.hit else None)
+            if not progress:
+                stable_progress, stable_frames = None, 0
+                continue
+            remaining, total = progress
+            target = None
+            if remaining > 0:
+                button_node = execution_button_node_for_remaining(
+                    remaining, single_button_node, multiple_button_node,
+                )
+                button = self._run_recognition(context, image, button_node)
+                target = self._execution_text_box(button)
+                if not self._valid_target(target):
+                    stable_progress, stable_frames = None, 0
+                    continue
+            if progress == stable_progress:
+                stable_frames += 1
+            else:
+                stable_progress, stable_frames = progress, 1
+            if stable_frames < 2 or not active():
+                continue
+            if remaining == 0:
+                if not context.override_next(argv.node_name, [completed_next]):
+                    logger.error("union_secret_task_execute: 完成后继设置失败")
+                    return False
+                logger.info(f"联盟机密任务: 今日剩余次数={remaining}/{total}，执行完成")
                 return True
-            if self._recognize(context, image, reward_node):
-                return False
-            if time.monotonic() >= deadline:
-                return False
-            time.sleep(interval / 1000.0)
+            if clicked_remaining is not None:
+                if remaining > clicked_remaining:
+                    logger.error("union_secret_task_execute: 剩余次数异常增加，停止执行")
+                    return False
+                if remaining < clicked_remaining:
+                    logger.debug(f"union_secret_task_execute: 剩余次数 {clicked_remaining} -> {remaining}")
+                    clicked_remaining = None
+                    reward_seen = False
+                elif reward_seen:
+                    # 已确认执行奖励，次数尚未刷新时不能重复执行。
+                    continue
+            if active() and time.monotonic() >= next_click:
+                logger.debug(f"union_secret_task_execute: remaining={remaining}/{total}, "
+                             f"button_node={button_node!r}, recognized_box={target}")
+                if not self._click_roi(controller, target):
+                    logger.error("union_secret_task_execute: 点击执行失败")
+                    return False
+                clicked_remaining = remaining
+                stable_progress, stable_frames = None, 0
+                next_click = time.monotonic() + 1
+
+        logger.error("union_secret_task_execute: 任务取消或等待执行结果超时，未确认完成")
+        return False
 
     def _recognize(self, context, image, node_name):
         result = self._run_recognition(context, image, node_name)
-        return bool(result and getattr(result, "hit", False))
+        if result is None:
+            raise RuntimeError(f"无法检查弹窗：{node_name}")
+        return bool(result.hit)
 
     def _run_recognition(self, context, image, node_name):
         try:
@@ -210,12 +222,15 @@ class UnionSecretTaskExecuteAction(CustomAction):
         return None
 
     def _screencap(self, controller):
-        controller.post_screencap().wait()
+        capture = controller.post_screencap().wait()
+        if not capture.succeeded or controller.cached_image is None:
+            logger.error("union_secret_task_execute: 截图失败")
+            return None
         return controller.cached_image.copy()
 
     def _click_roi(self, controller, roi):
         x, y, w, h = roi
-        controller.post_click(x + w // 2, y + h // 2).wait()
+        return controller.post_click(x + w // 2, y + h // 2).wait().succeeded
 
     def _valid_target(self, target):
         return (
@@ -225,14 +240,6 @@ class UnionSecretTaskExecuteAction(CustomAction):
             and target[2] > 0
             and target[3] > 0
         )
-
-    def _task_succeeded(self, result):
-        if result is None:
-            return False
-        success = getattr(result, "success", None)
-        if success is not None:
-            return bool(success)
-        return bool(getattr(getattr(result, "status", None), "succeeded", False))
 
 
 @AgentServer.custom_recognition("union_secret_task_ready")
@@ -290,8 +297,8 @@ class UnionSecretTaskCompleteRecognition(CustomRecognition):
             return None
 
         logger.info(
-            "union_secret_task_complete: "
-            f"today remaining progress={remaining}/{total}, completed"
+            "联盟机密任务: "
+            f"今日剩余次数={remaining}/{total}"
         )
         return CustomRecognition.AnalyzeResult(
             box=(0, 1210, 235, 70),

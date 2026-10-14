@@ -373,6 +373,7 @@ jobs:
     needs: [meta, windows, unix, changelog]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
       - uses: actions/download-artifact@v8
         with:
           path: assets
@@ -415,11 +416,20 @@ jobs:
             fi
           done
 
+      - name: Generate incremental updates from final packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >-
+          python tools/ci/build_incremental_updates.py
+          --assets assets --repository "${{ github.repository }}"
+          --version "${{ needs.meta.outputs.tag }}" --history 3
       - uses: softprops/action-gh-release@v2
         with:
           files: |
             assets/*.zip
             assets/checksums.sha256
+            assets/manifest-*.json
+            assets/update-index.json
           tag_name: ${{ needs.meta.outputs.tag }}
           body: ${{ needs.changelog.outputs.release_body }}
           draft: false

@@ -90,7 +90,7 @@ class _MainStorylineBase:
                 )
                 if changed:
                     if log_success:
-                        logger.info(
+                        logger.debug(
                             f"主线：点击后画面已变化，变化比例={ratio:.4f}"
                         )
                     return True
@@ -187,7 +187,7 @@ class MainStorylineSelectChapterAction(_MainStorylineBase, CustomAction):
                     if not any(keyword in text for keyword in expected):
                         continue
 
-                    logger.info(
+                    logger.debug(
                         f"主线章节选择：命中章节={chapter_name!r}，OCR 原文={text!r}，坐标={box}"
                     )
                     if self._click_box_and_wait_change(

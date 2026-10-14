@@ -26,14 +26,14 @@
 						"type": "OCR",
 						"param": {
 							"roi": [3, 122, 112, 695],
-							"expected": ["叶灼春","一叶灼春","灼"]
+							"expected": ["湘间君子女","湘间","君"]
 						}
 					}},
                     {"recognition": {
                         "type": "TemplateMatch",
                         "param": {
                             "roi": [3, 122, 112, 695],
-                            "template": "一叶灼春.png"
+                            "template": "湘间君子女.png"
                         }
                     }}
                 ]
@@ -298,15 +298,15 @@
                     {"recognition": {
 						"type": "OCR",
 						"param": {
-							"expected": ["[进入剧情]"],
-							"roi": [568, 453, 152, 359]
+							"expected": ["[行至江永]"],
+							"roi": [420, 594, 300, 209]
 						}
 					}},
                     {"recognition": {
                         "type": "TemplateMatch",
                         "param": {
-                            "roi": [568, 453, 152, 359],
-                            "template": "进入剧情.png"
+                            "roi": [420, 594, 300, 209],
+                            "template": "行至江永.png"
                         }
                     }}
                 ]

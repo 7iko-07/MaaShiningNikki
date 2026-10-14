@@ -137,7 +137,7 @@ class CardMatchingAction(CustomAction):
                     )
             if remembered_pair is not None:
                 first, second, distance = remembered_pair
-                logger.info(
+                logger.debug(
                     f"card_matching: 使用记忆配对 {self._label(first, columns)} + "
                     f"{self._label(second, columns)}, distance={distance:.4f}"
                 )
@@ -183,7 +183,7 @@ class CardMatchingAction(CustomAction):
             match = self._best_match(first_signature, known, unresolved, match_threshold)
             if match is not None:
                 second, distance = match
-                logger.info(
+                logger.debug(
                     f"card_matching: 新牌 {self._label(first, columns)} 命中记忆牌 "
                     f"{self._label(second, columns)}, distance={distance:.4f}"
                 )
@@ -222,7 +222,7 @@ class CardMatchingAction(CustomAction):
             )
 
             if second_match is not None and second_match[0] == first:
-                logger.info(
+                logger.debug(
                     f"card_matching: 当轮配对 {self._label(first, columns)} + "
                     f"{self._label(second, columns)}, distance={second_match[1]:.4f}"
                 )
@@ -232,12 +232,12 @@ class CardMatchingAction(CustomAction):
 
             known[second] = second_signature
             if second_match is None:
-                logger.info(
+                logger.debug(
                     f"card_matching: 记录未配对牌 {self._label(first, columns)}、"
                     f"{self._label(second, columns)}"
                 )
             else:
-                logger.info(
+                logger.debug(
                     f"card_matching: {self._label(second, columns)} 与记忆牌 "
                     f"{self._label(second_match[0], columns)} 相同，等待本轮翻回后再配对"
                 )
@@ -271,7 +271,7 @@ class CardMatchingAction(CustomAction):
             distance = self._image_distance(before, after)
             if distance >= change_threshold:
                 if attempt > 0:
-                    logger.info(
+                    logger.debug(
                         f"card_matching: 补点成功，card={card}, "
                         f"change={distance:.4f}"
                     )

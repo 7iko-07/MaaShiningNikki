@@ -187,7 +187,7 @@ class SwitchServer(SwitchAccount):
                     # 必须等窗口标题出现才进入下一步，否则间隔重试。
                     self._click(context, [477, 996, 2, 2])
                     attempts += 1
-                    logger.info(f"点击换区：第 {attempts} 次，等待窗口打开")
+                    logger.debug(f"点击换区：第 {attempts} 次，等待窗口打开")
                     next_click = time.monotonic() + 1.5
                 time.sleep(0.3)
             else:

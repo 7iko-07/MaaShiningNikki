@@ -8,6 +8,90 @@
                 "custom_action_param": {"multi": false}
             }
         },
+        "next": ["启动官服"]
+    },
+    "启动官服": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "com.papegames.nn4.cn"}
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动小米": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "com.papegames.nn4.mi"}
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动九游": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "com.papegames.nn4.aligames"}
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动应用宝": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "com.tencent.tmgp.nn4"}
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动华为": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "com.papegames.nn4.huawei"}
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动OPPO": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "nn4.nearme.gamecenter"}
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动vivo": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "com.papegames.nn4.vivo"}
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动4399": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "com.papegames.nn4.m4399"}
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动bilibili": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "com.papegames.nn4.bilibili"}
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动合服渠道": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "com.papegames.nn4.hb"}
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动台港澳服": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "com.papegames.nn4.tw"}
+        },
+        "next": ["启动闪暖"]
+    },
+    "启动国际服": {
+        "action": {
+            "type": "StartApp",
+            "param": {"package": "com.papegames.nn4.en"}
+        },
         "next": ["启动闪暖"]
     },
     "启动切换账号": {
@@ -25,10 +109,10 @@
                 "custom_action_param": {"suffix": ""}
             }
         },
-        "next": ["启动切换服务器"],
+        "next": ["启动切换账号服务器"],
         "timeout": 15000
     },
-    "启动切换服务器": {
+    "启动切换账号服务器": {
         "recognition": "DirectHit",
         "action": {
             "type": "Custom",
@@ -40,14 +124,6 @@
         "next": ["点击开始"]
     },
     "启动闪暖":{
-		"recognition": {
-			"type": "DirectHit",
-			"param": {}
-		},
-		"action": {
-			"type": "StartApp",
-			"param": {"package": "com.papegames.nn4.cn"}
-		},
 		"post_delay": 10000,
 		"timeout": 2000,
 		"next": ["资源更新","点击开始", "[JumpBack]嗯等"]

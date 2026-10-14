@@ -132,40 +132,127 @@ class UnionSecretTaskTests(unittest.TestCase):
             "union_secret_task_execute",
         )
 
-    def test_action_clicks_count_specific_target(self):
+    def simulate_execution(self, frames, *, timeout=6000, override=True, click_success=True,
+                           action_success=True, capture_success=True, cancel_at=None, popup_error=False):
+        context, controller, argv = self._action_fixture(5)
+        context.tasker.stopping = False
+        context.override_next.return_value = override
+        context.run_action.return_value = SimpleNamespace(success=action_success)
+        controller.post_click.return_value.wait.return_value = SimpleNamespace(succeeded=click_success)
+        now = [0.0]
+        current = [None]
+        sequence = iter(frames)
+        last = [frames[-1]]
+        def screenshot():
+            last[0] = next(sequence, last[0])
+            current[0] = last[0]
+            if cancel_at is not None and now[0] >= cancel_at:
+                context.tasker.stopping = True
+            return SimpleNamespace(succeeded=capture_success)
+        controller.post_screencap.return_value.wait.side_effect = screenshot
+        def recognize(node, image):
+            if popup_error and node == '机密任务购买次数弹窗':
+                raise RuntimeError('recognition failed')
+            frame = current[0]
+            hit = frame == {'关闭机密任务周奖励弹窗': 'weekly',
+                            '联盟执行多次奖励': 'reward',
+                            '机密任务购买次数弹窗': 'purchase'}.get(node)
+            if node == '机密任务今日执行次数OCR' and isinstance(frame, int):
+                return SimpleNamespace(hit=True, best_result=SimpleNamespace(text=f'{frame}/5'),
+                                       filtered_results=[], all_results=[], raw_detail=None)
+            if node in ('机密任务执行一次按钮OCR', '机密任务执行多次按钮OCR'):
+                hit = isinstance(frame, int) and frame > 0
+                box = [121, 1160, 88, 42] if frame == 1 else [251, 1162, 90, 40]
+                return SimpleNamespace(hit=hit, best_result=SimpleNamespace(text='执行', box=box),
+                                       filtered_results=[], all_results=[])
+            return SimpleNamespace(hit=hit)
+        context.run_recognition.side_effect = recognize
+        argv.custom_action_param = json.dumps({'timeout': timeout})
+        with patch.object(union_secret_task.time, 'monotonic', side_effect=lambda: now[0]), \
+             patch.object(union_secret_task.time, 'sleep', side_effect=lambda dt: now.__setitem__(0, now[0] + dt)):
+            ok = union_secret_task.UnionSecretTaskExecuteAction().run(context, argv)
+        context.run_task.assert_not_called()
+        return ok, context, controller, now[0]
+
+    def test_action_clicks_count_specific_target_and_confirms_zero(self):
         for remaining, expected_click in ((1, (165, 1181)), (2, (296, 1182))):
-            with self.subTest(remaining=remaining):
-                context, controller, argv = self._action_fixture(remaining)
-                action = union_secret_task.UnionSecretTaskExecuteAction()
+            ok, context, controller, _ = self.simulate_execution([remaining, remaining, 'reward', 0, 0])
+            self.assertTrue(ok)
+            controller.post_click.assert_called_once_with(*expected_click)
+            context.override_next.assert_called_once_with('点击执行多次', ['点击返回联盟'])
 
-                self.assertTrue(action.run(context, argv))
-                controller.post_click.assert_called_once_with(*expected_click)
-                context.override_next.assert_not_called()
+    def test_late_weekly_reward_is_closed_then_execution_retried(self):
+        ok, context, controller, _ = self.simulate_execution(
+            [5, 5] + ['weekly'] * 5 + [5] * 3 + ['reward'] * 4 + [0, 0])
+        self.assertTrue(ok)
+        self.assertEqual(controller.post_click.call_count, 2)
+        self.assertEqual(context.run_action.call_count, 2)
+        self.assertTrue(all(c.args[0] == '机密任务关闭奖励弹窗' for c in context.run_action.call_args_list))
 
-    def test_action_routes_zero_remaining_without_click(self):
-        context, controller, argv = self._action_fixture(0)
-        action = union_secret_task.UnionSecretTaskExecuteAction()
-
-        self.assertTrue(action.run(context, argv))
+    def test_zero_requires_two_frames_without_click(self):
+        ok, context, controller, _ = self.simulate_execution([0, 'transition', 0, 0])
+        self.assertTrue(ok)
         controller.post_click.assert_not_called()
-        context.override_next.assert_called_once_with(
-            "点击执行多次",
-            ["点击返回联盟"],
-        )
+        self.assertEqual(controller.post_screencap.call_count, 4)
 
-    def test_action_does_not_click_without_execution_text(self):
-        context, controller, argv = self._action_fixture(2, button_found=False)
-        action = union_secret_task.UnionSecretTaskExecuteAction()
+    def test_unknown_page_never_clicks_and_times_out(self):
+        ok, context, controller, elapsed = self.simulate_execution(['transition'])
+        self.assertFalse(ok)
+        controller.post_click.assert_not_called()
+        context.override_next.assert_not_called()
+        self.assertEqual(elapsed, 6)
 
-        self.assertFalse(action.run(context, argv))
+    def test_unchanged_count_retries_but_never_reports_success(self):
+        ok, context, controller, elapsed = self.simulate_execution([5])
+        self.assertFalse(ok)
+        self.assertGreater(controller.post_click.call_count, 1)
+        context.override_next.assert_not_called()
+        self.assertEqual(elapsed, 6)
+
+    def test_execution_reward_blocks_retry_until_count_refreshes(self):
+        ok, context, controller, _ = self.simulate_execution([5, 5, 'reward', 'reward', 'reward', 5])
+        self.assertFalse(ok)
+        controller.post_click.assert_called_once()
+        context.override_next.assert_not_called()
+
+    def test_count_decrease_continues_with_single_button_until_zero(self):
+        ok, context, controller, _ = self.simulate_execution([5, 5, 1, 1, 1, 1, 0, 0])
+        self.assertTrue(ok)
+        self.assertEqual([c.args for c in controller.post_click.call_args_list], [(296, 1182), (165, 1181)])
+
+    def test_purchase_popup_cancels_and_fails_without_executing(self):
+        ok, context, controller, _ = self.simulate_execution(['purchase'])
+        self.assertFalse(ok)
+        context.run_action.assert_called_once_with('取消购买机密任务次数')
         controller.post_click.assert_not_called()
 
-    def test_action_cancels_purchase_popup_and_fails(self):
-        context, controller, argv = self._action_fixture(1, purchase_popup=True)
-        action = union_secret_task.UnionSecretTaskExecuteAction()
+    def test_failed_capture_click_close_or_override_cannot_succeed(self):
+        for frames, options in (([5], {'capture_success': False}),
+                                ([5], {'click_success': False}),
+                                (['weekly'], {'action_success': False}),
+                                ([0], {'override': False})):
+            with self.subTest(options=options):
+                ok, _, _, _ = self.simulate_execution(frames, **options)
+                self.assertFalse(ok)
 
-        self.assertFalse(action.run(context, argv))
-        context.run_task.assert_called_once_with("取消购买机密任务次数")
+    def test_cancellation_stops_without_new_click(self):
+        ok, context, controller, _ = self.simulate_execution([5], cancel_at=0.25)
+        self.assertFalse(ok)
+        controller.post_click.assert_not_called()
+        context.override_next.assert_not_called()
+
+    def test_popup_recognition_error_cannot_be_treated_as_no_popup(self):
+        ok, context, controller, _ = self.simulate_execution([5], popup_error=True)
+        self.assertFalse(ok)
+        controller.post_click.assert_not_called()
+        context.override_next.assert_not_called()
+
+    def test_reward_closer_is_a_single_action_without_successors(self):
+        pipeline = json.loads((ROOT / 'assets/resource/pipeline/union.json').read_text(encoding='utf-8'))
+        closer = pipeline['机密任务关闭奖励弹窗']
+        self.assertEqual(closer['action']['type'], 'Click')
+        self.assertNotIn('next', closer)
+        self.assertEqual(pipeline['点击执行多次']['next'], ['点击返回联盟'])
 
     def test_ready_recognition_retries_transitions_without_acting(self):
         context, controller, _ = self._action_fixture(2)
