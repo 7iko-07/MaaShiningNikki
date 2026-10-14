@@ -20,6 +20,10 @@ MANIFEST = "update-manifest.json"
 PROTECTED = {"config", "logs", "debug", "temp", "backup", "__pycache__"}
 
 
+class PackageCaseCollision(ValueError):
+    """Distinct ZIP paths cannot be represented by the current update client."""
+
+
 def managed(path: str) -> bool:
     parts = path.split("/")
     return (bool(path) and not path.startswith("/") and "\\" not in path and ":" not in path
@@ -33,15 +37,20 @@ def managed(path: str) -> bool:
 
 def archive_manifest(archive: Path, version: str, platform: str) -> dict:
     files = []
-    seen = set()
+    seen = {}
+    exact_paths = set()
+    case_collision = None
     with zipfile.ZipFile(archive) as package:
         for entry in package.infolist():
             if entry.is_dir() or not managed(entry.filename):
                 continue
             key = entry.filename.lower()
-            if key in seen:
+            if entry.filename in exact_paths:
                 raise ValueError(f"Duplicate package path: {entry.filename}")
-            seen.add(key)
+            exact_paths.add(entry.filename)
+            if key in seen and case_collision is None:
+                case_collision = f"Package paths differ only by case: {seen[key]} and {entry.filename}"
+            seen[key] = entry.filename
             mode = entry.external_attr >> 16
             if stat.S_ISLNK(mode):
                 # Symlink support needs an explicit contract, rather than silently
@@ -61,6 +70,10 @@ def archive_manifest(archive: Path, version: str, platform: str) -> dict:
             if stat.S_ISLNK(mode):
                 record["linkTarget"] = link
             files.append(record)
+    # Validate every entry before allowing a full-package fallback; exact
+    # duplicates and unsafe symlinks must still fail the release.
+    if case_collision is not None:
+        raise PackageCaseCollision(case_collision)
     files.sort(key=lambda f: f["path"])
     return {"schema": 1, "version": version, "platform": platform, "kind": "full",
             "files": files, "baseFiles": [], "payload": [f["path"] for f in files], "deleted": []}
@@ -135,7 +148,14 @@ def generate(assets: Path, repository: str, version: str, history: int, token: s
         if archive.name.startswith("delta-"):
             continue
         product, platform = package_identity(archive.name)
-        new = archive_manifest(archive, version, platform)
+        try:
+            new = archive_manifest(archive, version, platform)
+        except PackageCaseCollision as error:
+            if not platform.startswith(("linux-", "macos-", "osx-")):
+                raise
+            print(f"::warning::Publishing full package only for {archive.name}; "
+                  f"incremental updates skipped: {error}")
+            continue
         with zipfile.ZipFile(archive, "a", zipfile.ZIP_DEFLATED) as package:
             if MANIFEST in package.namelist():
                 raise ValueError(f"Manifest already present: {archive.name}")

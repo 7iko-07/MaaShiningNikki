@@ -1,9 +1,11 @@
+import io
 import json
 import urllib.error
 from pathlib import Path
 import stat
 import tempfile
 import unittest
+import warnings
 from unittest.mock import patch
 import zipfile
 
@@ -74,6 +76,56 @@ class IncrementalUpdateTests(unittest.TestCase):
         package = self.archive("package.zip", {"a.txt": "a", "A.txt": "b"})
         with self.assertRaises(ValueError):
             updates.archive_manifest(package, "v1", "win-x86_64")
+
+    def test_unix_case_collisions_preserve_full_packages_and_other_platforms(self):
+        names = [f"MaaShiningNikki-{platform}-v2.zip"
+                 for platform in ("linux-x86_64", "macos-aarch64", "osx-x64")]
+        archives = [self.archive(name, {"python/share/terminfo/2/2621A": "upper",
+                                        "python/share/terminfo/2/2621a": "lower"})
+                    for name in names]
+        original = [archive.read_bytes() for archive in archives]
+        windows = self.archive("MaaShiningNikki-win-x86_64-v2.zip", {"agent/main.py": "script"})
+        with patch.object(updates, "request", return_value=io.BytesIO(b"[]")), \
+                patch("sys.stdout", new_callable=io.StringIO) as output:
+            index = updates.generate(self.root, "owner/repo", "v2", 3, "")
+        self.assertEqual(index["deltas"], [])
+        self.assertEqual(json.loads((self.root / "update-index.json").read_text()), index)
+        checksums = (self.root / "checksums.sha256").read_text()
+        for archive, content in zip(archives, original):
+            self.assertEqual(archive.read_bytes(), content)
+            self.assertFalse((self.root / updates.manifest_asset_name(archive.name)).exists())
+            self.assertIn(f"{updates.file_hash(archive)}  {archive.name}\n", checksums)
+            self.assertIn(f"::warning::Publishing full package only for {archive.name}", output.getvalue())
+        with zipfile.ZipFile(windows) as package:
+            self.assertIn(updates.MANIFEST, package.namelist())
+        self.assertTrue((self.root / updates.manifest_asset_name(windows.name)).exists())
+        self.assertIn(f"{updates.file_hash(windows)}  {windows.name}\n", checksums)
+
+    def test_windows_case_collisions_still_fail_release(self):
+        self.archive("MaaShiningNikki-win-x86_64-v2.zip", {"a.txt": "a", "A.txt": "b"})
+        with patch.object(updates, "request", return_value=io.BytesIO(b"[]")):
+            with self.assertRaises(updates.PackageCaseCollision):
+                updates.generate(self.root, "owner/repo", "v2", 3, "")
+
+    def test_exact_duplicates_after_case_collision_still_fail_release(self):
+        archive = self.archive("MaaShiningNikki-linux-x86_64-v2.zip", {"a.txt": "a", "A.txt": "b"})
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            with zipfile.ZipFile(archive, "a") as package:
+                package.writestr("a.txt", "duplicate")
+        with patch.object(updates, "request", return_value=io.BytesIO(b"[]")):
+            with self.assertRaisesRegex(ValueError, "Duplicate package path"):
+                updates.generate(self.root, "owner/repo", "v2", 3, "")
+
+    def test_unsafe_symlink_after_case_collision_still_fails_release(self):
+        archive = self.archive("MaaShiningNikki-linux-x86_64-v2.zip", {"a.txt": "a", "A.txt": "b"})
+        with zipfile.ZipFile(archive, "a") as package:
+            info = zipfile.ZipInfo("python/bin/python3")
+            info.external_attr = (stat.S_IFLNK | 0o777) << 16
+            package.writestr(info, "../../../outside")
+        with patch.object(updates, "request", return_value=io.BytesIO(b"[]")):
+            with self.assertRaisesRegex(ValueError, "Symlink escapes package"):
+                updates.generate(self.root, "owner/repo", "v2", 3, "")
 
     def test_symlink_contract_and_escape(self):
         package = self.root / "links.zip"
