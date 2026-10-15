@@ -99,6 +99,11 @@ def install_deps():
             install_path / "libs" / "MaaAgentBinary",
             dirs_exist_ok=True,
         )
+        # 桌面 UI 使用 libs 下的工具，移除 UI 包附带的根目录副本。
+        duplicate = install_path / "MaaAgentBinary"
+        if duplicate.exists():
+            duplicate.resolve().relative_to(install_path.resolve())
+            shutil.rmtree(duplicate)
         shutil.copytree(
             working_dir / "deps" / "bin" / "plugins",
             install_path / "plugins" / get_dotnet_platform_tag(),
