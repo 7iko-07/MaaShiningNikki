@@ -32,11 +32,12 @@ def main():
     if not client.bind(resource) or not client.set_timeout(15000):
         raise RuntimeError("Failed to initialize AgentClient")
     env = os.environ.copy()
-    # Agent 必须使用 wheel 自带的原生库，避免掩盖混装问题。
+    # 验证 Agent 能自行定位包内共享原生库，不依赖客户端传入的路径。
     env.pop("MAAFW_BINARY_PATH", None)
     interface = json.loads((root / "interface.json").read_text(encoding="utf-8"))
     config = interface["agent"]
-    command = [str(root / config["child_exec"]), *config["child_args"], client.identifier]
+    # 打包验证不生成缓存，确保上传的是清理后的目录。
+    command = [str(root / config["child_exec"]), "-B", *config["child_args"], client.identifier]
     process = subprocess.Popen(command, cwd=root, env=env)
     try:
         if not client.connect():
