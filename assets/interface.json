@@ -161,9 +161,10 @@
             "option": [
                 "竞技场挑战策略",
                 "竞技场刷新次数",
+                "竞技场刷新上限后仍挑战",
                 "竞技场是否搭配服装"
             ],
-            "description": "按挑战策略寻找战力低于自己的对手：常规挑战从左到右比较，稳守段位只比较最右侧对手。每次挑战最多点击设定次数的换一批，达到上限仍无弱对手则停止。",
+            "description": "按挑战策略寻找战力低于自己的对手：常规挑战从左到右比较，稳守段位只比较最右侧对手。每次挑战最多点击设定次数的换一批，达到上限仍无弱对手时默认停止；开启“刷新上限后仍挑战”后则挑战最后一批最右选手。",
             "group": ["日常任务"]
         },
         {
@@ -696,8 +697,40 @@
                             "enabled": true
                         }
                     }
+                },
+                {
+                    "name": "清理成衣作品",
+                    "description": "仅处理当前可见类别、服装及作品，不上下滑动；删除名称完全相等且不在审核中的成衣作品，审核状态不明时跳过。建议每周执行一次，频繁执行容易遇到审核中作品。",
+                    "option": ["清理成衣作品名称"],
+                    "pipeline_override": {
+                        "织梦选择清理成衣": {
+                            "enabled": true
+                        }
+                    }
                 }
             ]
+        },
+        "清理成衣作品名称": {
+            "type": "input",
+            "label": "要删除的成衣作品名称",
+            "description": "多个完整名称用中文或英文逗号分隔，例如：临时，分享成衣。匹配其中任意一个完整名称，不按包含关系或正则匹配。建议每周执行一次。",
+            "inputs": [
+                {
+                    "name": "cleanup_name",
+                    "label": "完整作品名称（多个用逗号分隔）",
+                    "default": "临时",
+                    "pipeline_type": "string",
+                    "verify": "^[^\\S\\r\\n]*[^,，\\s\\r\\n][^,，\\r\\n]*(?:[,，][^\\S\\r\\n]*[^,，\\s\\r\\n][^,，\\r\\n]*)*$",
+                    "pattern_msg": "请输入完整作品名称，多个名称用逗号分隔且名称不能为空"
+                }
+            ],
+            "pipeline_override": {
+                "清理成衣设置": {
+                    "attach": {
+                        "name": "{cleanup_name}"
+                    }
+                }
+            }
         },
         "织梦经营子任务": {
             "type": "checkbox",
@@ -1284,6 +1317,36 @@
                     }
                 }
             }
+        },
+        "竞技场刷新上限后仍挑战": {
+            "type": "switch",
+            "label": "刷新上限后仍挑战",
+            "description": "默认关闭。开启后，两种策略均在达到最大刷新次数仍无较弱对手时，挑战最后一批最右选手，战力相等或高于自己也挑战。每次挑战重新计算刷新次数。",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "竞技场战力对比": {
+                            "attach": {"challenge_after_refresh_limit": true}
+                        },
+                        "竞技场稳守段位": {
+                            "attach": {"challenge_after_refresh_limit": true}
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "竞技场战力对比": {
+                            "attach": {"challenge_after_refresh_limit": false}
+                        },
+                        "竞技场稳守段位": {
+                            "attach": {"challenge_after_refresh_limit": false}
+                        }
+                    }
+                }
+            ]
         },
         "竞技场是否搭配服装":{
             "type": "select",

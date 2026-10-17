@@ -82,6 +82,150 @@ class SevenTests(unittest.TestCase):
         runner.seven_titles.assert_not_called()
         runner.box.assert_not_called()
 
+    def test_discussion_candidate_requires_its_own_button_and_is_not_repeated(self):
+        runner = self.runner()
+        runner.seven_card_complete = Mock(return_value=False)
+        runner.seven_titles = Mock(return_value=[(1, "进行1次灵感讨论")])
+        runner.box = Mock(return_value=(508, 642, 96, 32))
+        frame = object()
+        self.assertEqual(runner.seven_candidate(frame, set()), ("讨论", 1, (508, 642, 96, 32)))
+        runner.box.assert_called_once_with("七日妙想前往完成", frame, [355, 631, 260, 67])
+        self.assertIsNone(runner.seven_candidate(frame, {"讨论"}))
+        runner.box.return_value = None
+        self.assertIsNone(runner.seven_candidate(frame, set()))
+
+    def test_discussion_uses_lamp_after_custom_then_back_and_completion_check(self):
+        runner = self.runner()
+        trace = Mock()
+        for method in ("seven_button_center", "seven_choose_custom", "seven_back_until_ready", "wait"):
+            setattr(runner, method, Mock())
+            trace.attach_mock(getattr(runner, method), method)
+        runner.seven_discussion()
+        self.assertEqual([call[0] for call in trace.method_calls],
+                         ["seven_button_center", "seven_choose_custom", "seven_button_center",
+                          "seven_button_center", "seven_back_until_ready", "wait"])
+        self.assertEqual([call.args[0] for call in runner.seven_button_center.call_args_list],
+                         ["七日制衣新建", "七日灵感讨论灯泡", "七日灵感讨论我再想想"])
+        runner.seven_choose_custom.assert_called_once_with("讨论")
+        complete = runner.wait.call_args.args[0]
+        runner.seven_ready = Mock(return_value=True)
+        runner.seven_titles = Mock(return_value=[(3, "进行1次灵感讨论")])
+        runner.seven_card_complete = Mock(return_value=False)
+        self.assertFalse(complete(object()))
+        runner.seven_card_complete.return_value = True
+        self.assertTrue(complete(object()))
+        self.assertEqual(runner.seven_card_complete.call_args.args[1], 3)
+
+    def test_discussion_waits_for_lamp_after_actual_custom_click(self):
+        runner = self.runner()
+        page = ["dialog"]
+        runner.image = Mock(side_effect=lambda: page[0])
+        runner.hit = Mock(side_effect=lambda node, image: node == "七日灵感讨论灯泡" and image == "lamp")
+        runner.box = Mock(side_effect=lambda node, image: (1085, 350, 98, 24) if image == "dialog" else None)
+        runner.click = Mock(side_effect=lambda box: page.__setitem__(0, "lamp"))
+        now = [0.0]
+        time_patch, sleep_patch = self.clock(now)
+        with time_patch, sleep_patch:
+            runner.seven_choose_custom("讨论")
+        runner.click.assert_called_once_with((1134, 362, 1, 1))
+        self.assertGreaterEqual(runner.image.call_count, 3)
+
+    def test_discussion_back_uses_fresh_arrows_and_stops_on_seven_page(self):
+        runner = self.runner()
+        page = [0]
+        boxes = [(30, 31, 50, 58), (32, 33, 52, 60)]
+        runner.image = Mock(side_effect=lambda: page[0])
+        runner.seven_ready = Mock(side_effect=lambda image: image == 2)
+        runner.hit = Mock(return_value=False)
+        runner.box = Mock(side_effect=lambda node, image: boxes[image])
+        runner.click = Mock(side_effect=lambda box: page.__setitem__(0, page[0] + 1))
+        now = [0.0]
+        time_patch, sleep_patch = self.clock(now)
+        with time_patch, sleep_patch:
+            runner.seven_back_until_ready()
+        self.assertEqual([call.args[0] for call in runner.click.call_args_list], [(55, 60, 1, 1), (58, 63, 1, 1)])
+        self.assertNotIn(2, [call.args[1] for call in runner.box.call_args_list])
+
+    def test_discussion_back_missing_arrow_has_one_deadline_and_does_not_blind_click(self):
+        runner = self.runner()
+        runner.image = Mock(return_value=object())
+        runner.seven_ready = Mock(return_value=False)
+        runner.hit = Mock(return_value=False)
+        runner.box = Mock(return_value=None)
+        runner.click = Mock()
+        now = [0.0]
+        time_patch, sleep_patch = self.clock(now)
+        with time_patch, sleep_patch, self.assertRaises(dream.DreamError):
+            runner.seven_back_until_ready()
+        self.assertLess(now[0], 30.3)
+        runner.click.assert_not_called()
+
+    def test_finished_seven_checks_rewards_with_or_without_discussion(self):
+        for candidate in (None, ("全部完成", None, None)):
+            runner = self.runner()
+            runner.enter_seven = Mock()
+            runner.seven_current = Mock(return_value=candidate)
+            runner.seven_claim_rewards = Mock()
+            runner.seven()
+            runner.seven_claim_rewards.assert_called_once_with()
+
+    def test_discussion_is_recorded_only_after_return_and_completion_check(self):
+        runner = self.runner()
+        runner.enter_seven = Mock()
+        runner.seven_open_task = Mock()
+        runner.seven_discussion = Mock()
+        runner.seven_make = Mock()
+        runner.seven_claim_rewards = Mock()
+        observed = []
+        candidates = iter([("讨论", 0, (208, 642, 96, 32)), ("全部完成", None, None)])
+        runner.seven_current = Mock(side_effect=lambda done: observed.append(set(done)) or next(candidates))
+        runner.seven()
+        self.assertEqual(observed, [set(), {"讨论"}])
+        runner.seven_discussion.assert_called_once_with()
+        runner.seven_make.assert_not_called()
+        runner.seven_claim_rewards.assert_called_once_with()
+
+    def test_grey_or_claimed_yellow_gift_is_not_clicked(self):
+        runner = self.runner()
+        runner.image = Mock(return_value=object())
+        runner.seven_ready = Mock(return_value=True)
+        runner.hit = Mock(return_value=False)
+        runner.seven_action = Mock()
+        now = [0.0]
+        time_patch, sleep_patch = self.clock(now)
+        with time_patch, sleep_patch:
+            runner.seven_claim_rewards()
+        runner.seven_action.assert_not_called()
+
+    def test_yellow_gift_click_once_then_dismiss_and_confirm_seven(self):
+        runner = self.runner()
+        page = ["ready"]
+        runner.image = Mock(side_effect=lambda: page[0])
+        runner.seven_ready = Mock(side_effect=lambda image: image in ("ready", "claimed"))
+        runner.hit = Mock(side_effect=lambda node, image: (node == "织梦获得奖励文字" and image == "reward")
+                         or (node == "七日黄色礼盒可领取" and image == "ready"))
+        runner.seven_action = Mock(side_effect=lambda node: page.__setitem__(0, "reward" if node == "七日黄色礼盒点击" else "claimed"))
+        now = [0.0]
+        time_patch, sleep_patch = self.clock(now)
+        with time_patch, sleep_patch:
+            runner.seven_claim_rewards()
+        self.assertEqual([call.args[0] for call in runner.seven_action.call_args_list],
+                         ["七日黄色礼盒点击", "七日奖励点击空白"])
+        self.assertEqual(page[0], "claimed")
+
+    def test_no_reward_popup_does_not_repeat_gift_click_or_dismiss_blindly(self):
+        runner = self.runner()
+        runner.image = Mock(return_value=object())
+        runner.seven_ready = Mock(return_value=True)
+        runner.hit = Mock(side_effect=lambda node, image: node == "七日黄色礼盒可领取")
+        runner.seven_action = Mock()
+        now = [0.0]
+        time_patch, sleep_patch = self.clock(now)
+        with time_patch, sleep_patch, self.assertRaises(dream.DreamError):
+            runner.seven_claim_rewards()
+        runner.seven_action.assert_called_once_with("七日黄色礼盒点击")
+        self.assertLess(now[0], 30.3)
+
     def test_first_complete_card_needs_page_and_stable_confirmation_not_titles(self):
         runner = self.runner()
         runner.image = Mock(return_value=object())
@@ -192,6 +336,7 @@ class SevenTests(unittest.TestCase):
     def test_mannequin_dispatch_refreshes_cards_and_all_done_does_not_click(self):
         runner = self.runner()
         runner.enter_seven = Mock()
+        runner.seven_claim_rewards = Mock()
         runner.seven_current = Mock(side_effect=[("换衣", 3, None), ("全部完成", None, None)])
         runner.seven_change_mannequin = Mock()
         runner.seven_open_task = Mock()
@@ -440,7 +585,7 @@ class SevenTests(unittest.TestCase):
         self.assertEqual([call[0] for call in trace.method_calls],
                          ["wait", "button", "seven_input_name", "wait", "click", "wait", "button"])
         runner.button.assert_any_call("七日制衣点击名称框")
-        runner.seven_input_name.assert_called_once_with()
+        runner.seven_input_name.assert_called_once_with("七日制衣输入临时")
         runner.click.assert_called_once_with(confirm_box)
         self.assertEqual(runner.button.call_args_list[-1].args, ("七日制衣名称确定",))
         ready = runner.wait.call_args_list[-1].args[0]
@@ -467,6 +612,26 @@ class SevenTests(unittest.TestCase):
             runner.button.assert_called_once_with("七日制衣点击名称框")
             if wait_failure == 1:
                 runner.click.assert_not_called()
+
+    def test_share_rename_requires_share_name_before_and_after_closing_input(self):
+        runner = self.runner()
+        runner.button = Mock()
+        runner.click = Mock()
+        runner.seven_input_name = Mock()
+        runner.wait = Mock(return_value=(704, 429, 54, 31))
+        runner.seven_rename(for_share=True)
+        runner.seven_input_name.assert_called_once_with("七日分享输入名称")
+        before = runner.wait.call_args_list[1].args[0]
+        after = runner.wait.call_args_list[2].args[0]
+        for hits, expected in ((set(), False), ({"七日制衣名称已输入"}, False),
+                               ({"七日分享名称已输入"}, True)):
+            runner.hit = Mock(side_effect=lambda node, image: node in hits)
+            self.assertEqual(before(object()), expected)
+            self.assertFalse(after(object()))
+            hits.add("七日制衣名称弹窗")
+            self.assertEqual(after(object()), expected)
+        runner.click.assert_called_once_with((704, 429, 54, 31))
+        self.assertEqual(runner.button.call_args_list[-1].args, ("七日制衣名称确定",))
 
     def test_input_failure_or_cancellation_does_not_press_confirm(self):
         for stopping, result in ((False, None), (False, SimpleNamespace(status=SimpleNamespace(succeeded=False))), (True, None)):
@@ -551,6 +716,7 @@ class SevenTests(unittest.TestCase):
     def test_each_return_refreshes_card_positions_and_none_ends_without_swipe(self):
         runner = self.runner()
         runner.enter_seven = Mock()
+        runner.seven_claim_rewards = Mock()
         runner.seven_current = Mock(side_effect=[
             ("连衣裙", 0, (205, 642, 102, 34)),
             ("上衣", 0, (205, 642, 102, 34)),
@@ -569,6 +735,7 @@ class SevenTests(unittest.TestCase):
     def test_creation_failure_stops_before_next_task(self):
         runner = self.runner()
         runner.enter_seven = Mock()
+        runner.seven_claim_rewards = Mock()
         runner.seven_current = Mock(return_value=("连衣裙", 0, (205, 642, 102, 34)))
         runner.seven_open_task = Mock()
         runner.seven_make = Mock(side_effect=dream.DreamError("未生成成衣"))
@@ -579,7 +746,7 @@ class SevenTests(unittest.TestCase):
     def test_work_count_distinguishes_empty_from_unready_and_rejects_bad_counts(self):
         runner = self.runner()
         runner.hit = Mock(return_value=True)
-        for text, expected in (("0/5", (0,)), ("1/5", (1,)), ("6/5", None), ("1/0", None), ("临时", None)):
+        for text, expected in (("0/5", ("成衣", 0)), ("1/5", ("成衣", 1)), ("6/5", None), ("1/0", None), ("临时", None)):
             runner.reco = Mock(return_value=self.result(SimpleNamespace(text=text)))
             self.assertEqual(runner.seven_works(object()), expected)
         runner.hit.return_value = False
@@ -587,16 +754,84 @@ class SevenTests(unittest.TestCase):
         self.assertIsNone(runner.seven_works(object()))
         runner.reco.assert_not_called()
 
+    def test_draft_count_requires_draft_title_and_one_valid_count(self):
+        runner = self.runner()
+        runner.hit = Mock(side_effect=lambda node, image: node == "七日分享作品草稿")
+        for texts, expected in ((("1/10",), ("草稿", 1)), (("0/10",), ("草稿", 0)),
+                                (("11/10",), None), (("1/10", "2/10"), None), ((), None)):
+            runner.reco = Mock(return_value=self.result(*(SimpleNamespace(text=t) for t in texts)))
+            self.assertEqual(runner.seven_works(object()), expected)
+
     def test_share_empty_work_does_not_click_a_work_or_share(self):
         runner = self.runner()
         runner.button = Mock()
-        runner.wait = Mock(side_effect=[True, (0,)])
+        runner.wait = Mock(side_effect=[True, ("成衣", 0)])
         runner.seven_action = Mock()
         runner.click = Mock()
         with self.assertRaises(dream.DreamError):
             runner.seven_share()
         runner.seven_action.assert_called_once_with("七日制衣选择首件")
         runner.click.assert_not_called()
+
+    def test_share_empty_draft_does_not_select_or_generate(self):
+        runner = self.runner()
+        runner.button = Mock()
+        runner.wait = Mock(side_effect=[True, ("草稿", 0)])
+        runner.seven_action = Mock()
+        runner.click = Mock()
+        runner.seven_rename = Mock()
+        with self.assertRaises(dream.DreamError):
+            runner.seven_share()
+        runner.seven_action.assert_called_once_with("七日制衣选择首件")
+        runner.button.assert_called_once_with("七日制衣连衣裙")
+        runner.click.assert_not_called()
+        runner.seven_rename.assert_not_called()
+
+    def test_share_draft_generates_once_names_then_uses_result_share(self):
+        runner = self.runner()
+        trace = Mock()
+        for method in ("button", "seven_action", "click", "seven_rename", "wait"):
+            setattr(runner, method, Mock())
+            trace.attach_mock(getattr(runner, method), method)
+        runner.wait.side_effect = [True, ("草稿", 1), (917, 655, 80, 24),
+                                   (850, 637, 45, 49), True, True, True, True]
+        runner.seven_share()
+        self.assertEqual([call.args[0] for call in runner.seven_action.call_args_list],
+                         ["七日制衣选择首件", "七日分享选择首个草稿", "七日分享关闭QQ"])
+        self.assertEqual([call.args[0] for call in runner.click.call_args_list],
+                         [(957, 667, 1, 1), (850, 637, 45, 49)])
+        runner.seven_rename.assert_called_once_with(for_share=True)
+        methods = [call[0] for call in trace.method_calls]
+        self.assertLess(methods.index("seven_rename"), methods.index("click", methods.index("seven_rename")))
+        generate = runner.wait.call_args_list[2].args[0]
+        runner.box = Mock(return_value=None)
+        self.assertIsNone(generate(object()))
+        runner.box.assert_called_once_with("七日制衣生成成衣", unittest.mock.ANY)
+        nodes = load_jsonc(ROOT / "assets/resource/pipeline/dreamweaver_space.json")
+        self.assertEqual(nodes["七日分享选择首个草稿"]["action"]["param"]["target"], [761, 221, 13, 10])
+        self.assertEqual(nodes["七日分享输入名称"]["action"]["param"]["custom_action_param"]["input_text"], "分享成衣")
+        self.assertEqual(nodes["七日制衣输入临时"]["action"]["param"]["custom_action_param"]["input_text"], "临时")
+        self.assertFalse(nodes["七日分享输入名称"].get("next"))
+        self.assertFalse(nodes["七日分享输入名称"].get("on_error"))
+
+    def test_draft_generate_timeout_or_rename_failure_stops_before_sharing(self):
+        for stage in ("generate", "rename"):
+            runner = self.runner()
+            runner.button = Mock()
+            runner.seven_action = Mock()
+            runner.click = Mock()
+            runner.seven_rename = Mock()
+            failure = dream.DreamError("等待超时或名称未通过核验")
+            runner.wait = Mock(side_effect=[True, ("草稿", 1),
+                                           failure if stage == "generate" else (917, 655, 80, 24)])
+            if stage == "rename":
+                runner.seven_rename.side_effect = failure
+            with self.assertRaises(dream.DreamError):
+                runner.seven_share()
+            runner.button.assert_called_once_with("七日制衣连衣裙")
+            self.assertEqual(runner.click.call_count, int(stage == "rename"))
+            self.assertEqual(runner.wait.call_count, 3)
+            self.assertNotIn("七日分享关闭QQ", [call.args[0] for call in runner.seven_action.call_args_list])
 
     def test_qq_requires_both_labels_and_game_return_requires_both_buttons(self):
         runner = self.runner()
@@ -610,7 +845,7 @@ class SevenTests(unittest.TestCase):
         runner.button = Mock()
         runner.seven_action = Mock()
         runner.click = Mock()
-        runner.wait = Mock(side_effect=[True, (1,), (980, 643, 49, 48), (850, 637, 45, 49),
+        runner.wait = Mock(side_effect=[True, ("成衣", 1), (980, 643, 49, 48), (850, 637, 45, 49),
                                         True, True, True, True])
         runner.seven_share()
         selected = runner.wait.call_args_list[2].args[0]
@@ -641,7 +876,7 @@ class SevenTests(unittest.TestCase):
         def wait(predicate, label, **kwargs):
             if predicate == runner.seven_qq_ready:
                 return original_wait(predicate, label, **kwargs)
-            return (1,) if predicate == runner.seven_works else (850, 637, 45, 49)
+            return ("成衣", 1) if predicate == runner.seven_works else (850, 637, 45, 49)
         runner.wait = Mock(side_effect=wait)
         now = [0.0]
         time_patch, sleep_patch = self.clock(now)
@@ -656,7 +891,7 @@ class SevenTests(unittest.TestCase):
         runner.button = Mock()
         runner.seven_action = Mock()
         runner.click = Mock()
-        runner.wait = Mock(side_effect=[True, (1,), (980, 643, 49, 48), (850, 637, 45, 49),
+        runner.wait = Mock(side_effect=[True, ("成衣", 1), (980, 643, 49, 48), (850, 637, 45, 49),
                                         True, True, dream.DreamError("QQ未返回游戏")])
         with self.assertRaises(dream.DreamError):
             runner.seven_share()
@@ -666,6 +901,7 @@ class SevenTests(unittest.TestCase):
     def test_share_success_returns_before_recording_and_refreshes_cards(self):
         runner = self.runner()
         runner.enter_seven = Mock()
+        runner.seven_claim_rewards = Mock()
         runner.seven_current = Mock(side_effect=[("分享", 0, (205, 642, 102, 34)),
                                                 ("下装", 0, (205, 642, 102, 34)), None])
         runner.seven_open_task = Mock()
@@ -702,12 +938,13 @@ class SevenTests(unittest.TestCase):
                 self.assertEqual(len(deadlines), 1)
 
     def test_all_selection_combinations_keep_seven_first_and_independent(self):
-        names = ("织梦选择七日妙想", "织梦选择今日签到", "织梦选择每日能量晶矿", "织梦选择订单驿站", "织梦选择售卖橱窗")
-        methods = ("seven", "sign_in", "mine", "orders", "shop")
-        for selected in itertools.product((False, True), repeat=5):
+        names = ("织梦选择七日妙想", "织梦选择清理成衣", "织梦选择今日签到", "织梦选择每日能量晶矿", "织梦选择订单驿站", "织梦选择售卖橱窗")
+        methods = ("seven", "cleanup", "sign_in", "mine", "orders", "shop")
+        for selected in itertools.product((False, True), repeat=6):
             flags = {name for name, yes in zip(names, selected) if yes} | {"织梦选择经营"}
             context = Mock()
-            context.get_node_data.side_effect = lambda node: {"enabled": node in flags}
+            context.get_node_data.side_effect = lambda node: ({"attach": {"name": "临时"}}
+                                                            if node == "清理成衣设置" else {"enabled": node in flags})
             with patch.object(dream, "DreamRunner") as factory:
                 self.assertTrue(dream.DreamweaverSpaceAction().run(context, SimpleNamespace()))
                 expected = [method for method, yes in zip(methods, selected) if yes]
@@ -715,6 +952,8 @@ class SevenTests(unittest.TestCase):
                     expected.insert(1, "return_from_seven")
                 self.assertEqual([call[0] for call in factory.return_value.method_calls],
                                  expected)
+                if selected[1]:
+                    factory.return_value.cleanup.assert_called_once_with("临时")
         context.get_node_data.side_effect = lambda node: {"enabled": node == "织梦选择七日妙想"}
         with patch.object(dream, "DreamRunner") as factory:
             self.assertTrue(dream.DreamweaverSpaceAction().run(context, SimpleNamespace()))
@@ -726,7 +965,7 @@ class SevenTests(unittest.TestCase):
         pipeline = load_jsonc(ROOT / "assets/resource/pipeline/dreamweaver_space.json")
         option = interface["option"]["织梦空间子任务"]
         self.assertEqual(option["type"], "checkbox")
-        self.assertEqual([case["name"] for case in option["cases"]], ["七日妙想", "今日签到", "织梦经营"])
+        self.assertEqual([case["name"] for case in option["cases"]], ["七日妙想", "今日签到", "织梦经营", "清理成衣作品"])
         self.assertEqual(option["cases"][2]["option"], ["织梦经营子任务"])
         self.assertEqual([case["name"] for case in interface["option"]["织梦经营子任务"]["cases"]],
                          ["每日能量晶矿", "订单驿站", "售卖橱窗"])

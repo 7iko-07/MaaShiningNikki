@@ -49,6 +49,140 @@
     "织梦选择七日妙想": {
         "enabled": false
     },
+    "织梦选择清理成衣": {
+        "enabled": false
+    },
+    "清理成衣设置": {
+        "attach": {
+            "name": "临时"
+        }
+    },
+    "清理成衣至臻定制": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [60, 260, 175, 110],
+                "template": ["清理成衣致臻定制.png"]
+            }
+        }
+    },
+    "清理成衣成衣标签": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1120, 20, 80, 50],
+                "expected": ["成衣"]
+            }
+        }
+    },
+    "清理成衣外套": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [1115, 85, 160, 535],
+                "template": ["清理成衣外套.png"]
+            }
+        }
+    },
+    "清理成衣侧栏文字": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1115, 85, 160, 535]
+            }
+        }
+    },
+    "清理成衣作品文字": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [700, 165, 395, 395]
+            }
+        }
+    },
+    "清理成衣管理": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1000, 80, 95, 65],
+                "expected": ["^管理$"]
+            }
+        }
+    },
+    "清理成衣取消管理": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1000, 80, 95, 65],
+                "expected": ["^取消$"]
+            }
+        }
+    },
+    "清理成衣删除可用": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "roi": [1010, 555, 55, 55],
+                                "template": ["清理成衣删除.png"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "ColorMatch",
+                            "param": {
+                                "roi": [1025, 568, 25, 26],
+                                "lower": [[230, 230, 230]],
+                                "upper": [[255, 255, 255]],
+                                "count": 40
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "清理成衣删除弹窗": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [375, 220, 540, 285],
+                                "expected": ["确定删除所选数据"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [375, 220, 540, 285],
+                                "expected": ["删除后将无法恢复"]
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "清理成衣确认删除": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [650, 405, 170, 80],
+                "expected": ["^确认$"]
+            }
+        }
+    },
     "织梦售卖选择能量石": {
         "enabled": false
     },
@@ -291,7 +425,6 @@
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [320, 60, 823, 541],
                 "expected": ["可交付"]
             }
         }
@@ -360,8 +493,8 @@
         "recognition": {
             "type": "TemplateMatch",
             "param": {
-                "roi": [315, 65, 820, 542],
-                "template": ["一星订单.png"]
+                "template": ["一星订单.png"],
+                "green_mask": true
             }
         }
     },
@@ -369,8 +502,8 @@
         "recognition": {
             "type": "TemplateMatch",
             "param": {
-                "roi": [315, 65, 820, 542],
-                "template": ["二星订单.png"]
+                "template": ["二星订单.png"],
+                "green_mask": true
             }
         }
     },
@@ -378,8 +511,8 @@
         "recognition": {
             "type": "TemplateMatch",
             "param": {
-                "roi": [315, 65, 820, 542],
-                "template": ["三星订单.png"]
+                "template": ["三星订单.png"],
+                "green_mask": true
             }
         }
     },
@@ -748,6 +881,43 @@
             }
         }
     },
+    "七日分享作品草稿": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [685, 75, 420, 545],
+                "expected": ["作品草稿"]
+            }
+        }
+    },
+    "七日分享选择首个草稿": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [761, 221, 13, 10]
+            }
+        }
+    },
+    "七日分享输入名称": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "dreamweaver_input_text",
+                "custom_action_param": {
+                    "input_text": "分享成衣"
+                }
+            }
+        }
+    },
+    "七日分享名称已输入": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [468, 324, 344, 46],
+                "expected": ["^分享成衣$"]
+            }
+        }
+    },
     "七日分享作品数量": {
         "recognition": {
             "type": "OCR",
@@ -860,6 +1030,71 @@
             "param": {
                 "roi": [55, 540, 280, 160],
                 "template": ["七日任务完成对号.png"]
+            }
+        }
+    },
+    "七日灵感讨论灯泡": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [0, 95, 100, 120],
+                "template": ["七日灵感讨论灯泡.png"]
+            }
+        }
+    },
+    "七日灵感讨论我再想想": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [1020, 470, 250, 100],
+                "expected": ["我再想想"]
+            }
+        }
+    },
+    "七日黄色礼盒可领取": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "ColorMatch",
+                            "param": {
+                                "roi": [1120, 100, 66, 65],
+                                "lower": [[230, 130, 0]],
+                                "upper": [[255, 235, 155]],
+                                "count": 100
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "ColorMatch",
+                            "param": {
+                                "roi": [1167, 84, 30, 30],
+                                "lower": [[225, 40, 40]],
+                                "upper": [[255, 150, 180]],
+                                "count": 50
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "七日黄色礼盒点击": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [1154, 130, 1, 1]
+            }
+        }
+    },
+    "七日奖励点击空白": {
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [640, 650, 1, 1]
             }
         }
     },

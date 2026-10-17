@@ -84,6 +84,20 @@
         },
         "next": ["点击esc"]
     },
+    "关闭退出游戏确认弹窗": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["确定退出游戏吗[？?]?"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "dismiss_exit_confirm"
+            }
+        }
+    },
     "点击esc":{
         "action": {
             "type": "ClickKey",
@@ -138,6 +152,7 @@
         "recognition": "DirectHit",
         "action": "DoNothing",
         "next": [
+			"[JumpBack]关闭退出游戏确认弹窗",
 			"[JumpBack]玩家名片页面点击esc",
 			"是否是主页面",
 			"[JumpBack]点击返回",

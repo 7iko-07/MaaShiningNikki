@@ -4,12 +4,13 @@ import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from tools.test_page_navigation import navigation, ROOT
+from tools.test_page_navigation import navigation, ROOT, WithoutExitPopupTests
 from tools.validate_schema import load_jsonc
 
 
-class RotationGuardTests(unittest.TestCase):
+class RotationGuardTests(WithoutExitPopupTests):
     def setUp(self):
+        super().setUp()
         self.action = navigation.NavigationClickAction()
         self.context = Mock()
         self.context.tasker.stopping = False

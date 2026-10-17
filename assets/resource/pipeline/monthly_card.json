@@ -30,8 +30,25 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["点击月卡"],
+		"next": ["月卡弹窗检查"],
 		"timeout": 2000
+    },
+    "月卡弹窗检查": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "monthly_card_popup"
+            }
+        },
+        "next": ["点击月卡"]
+    },
+    "月卡特惠弹窗": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["钻石卡特惠"]
+            }
+        }
     },
     "点击月卡": {
         "recognition": {

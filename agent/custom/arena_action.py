@@ -117,6 +117,22 @@ class ArenaCompareAction(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> bool:
+        # Invocation-local counts: never share progress across tasks or accounts.
+        counts = {">": 0, "<": 0, "=": 0}
+        try:
+            return self._run(context, argv, counts)
+        except Exception as exc:
+            logger.error(f"arena_compare: failed: {exc}")
+            return False
+        finally:
+            logger.info(
+                f"竞技场挑战统计：自身战力大于对手 {counts['>']} 次，"
+                f"小于 {counts['<']} 次，相等 {counts['=']} 次"
+            )
+
+    def _run(self, context, argv, counts):
+        if context.tasker.stopping:
+            return False
         if in_settlement():
             logger.info("竞技场结算中，停止挑战")
             return context.override_next(argv.node_name, [])
@@ -137,6 +153,10 @@ class ArenaCompareAction(CustomAction):
         post_challenge_delay = self._as_float(params.get("post_challenge_delay"), 1.0)
         player_power_retry = self._as_int(params.get("player_power_retry"), 5)
         player_power_retry_delay = self._as_float(params.get("player_power_retry_delay"), 1.5)
+        node_data = context.get_node_data(argv.node_name) or {}
+        challenge_after_refresh_limit = (
+            node_data.get("attach", {}).get("challenge_after_refresh_limit") is True
+        )
 
         if not area_a or not area_b_list or not refresh_roi:
             logger.error("arena_compare: missing required params (area_a, area_b, refresh)")
@@ -161,8 +181,9 @@ class ArenaCompareAction(CustomAction):
             logger.info(f"arena_compare: no remaining challenge times, challenge_times={challenge_times}")
             return context.override_next(argv.node_name, [])
 
-        for challenge_index in range(challenge_times):
-            logger.info(f"arena_compare: challenge {challenge_index + 1}/{challenge_times}")
+        for _ in range(challenge_times):
+            if context.tasker.stopping:
+                return False
             outcome = self._challenge_once(
                 context,
                 controller,
@@ -175,6 +196,8 @@ class ArenaCompareAction(CustomAction):
                 post_challenge_delay,
                 player_power_retry,
                 player_power_retry_delay,
+                challenge_after_refresh_limit,
+                counts,
             )
             if outcome is ChallengeOutcome.STOPPED:
                 return context.override_next(argv.node_name, [])
@@ -192,6 +215,8 @@ class ArenaCompareAction(CustomAction):
             return None
 
         for attempt in range(3):
+            if context.tasker.stopping:
+                return None
             if not controller.post_screencap().wait().succeeded:
                 logger.error("arena_compare: remaining count screenshot failed")
                 return None
@@ -220,6 +245,8 @@ class ArenaCompareAction(CustomAction):
         post_challenge_delay,
         player_power_retry,
         player_power_retry_delay,
+        challenge_after_refresh_limit=False,
+        counts=None,
     ):
         # Keep the max_rounds parameter name for existing interface configurations.
         # The limit counts refresh clicks, excluding the initial recognition.
@@ -227,10 +254,11 @@ class ArenaCompareAction(CustomAction):
         ok_retry_count = 0
 
         while refresh_count <= max_rounds:
+            if context.tasker.stopping:
+                return ChallengeOutcome.FAILED
             if in_settlement():
                 logger.info("竞技场已进入结算期，停止挑战")
                 return ChallengeOutcome.STOPPED
-            logger.debug(f"arena_compare: recognizing opponents, refreshes used {refresh_count}/{max_rounds}")
 
             player_power, img = self._read_player_power(
                 context,
@@ -243,20 +271,23 @@ class ArenaCompareAction(CustomAction):
                 logger.warning("arena_compare: failed to OCR player power after retries")
                 return ChallengeOutcome.FAILED
 
-            logger.debug(f"arena_compare: player power = {player_power}")
-
             ok_handled = False
             for i, area_b in enumerate(area_b_list):
                 opp_power = self._read_opponent_power(context, controller, img, area_b)
                 if opp_power is None:
                     logger.error(f"arena_compare: opponent {i} OCR failed after retries")
                     return ChallengeOutcome.FAILED
-                logger.debug(f"arena_compare: opponent {i} power = {opp_power}")
-                if player_power > opp_power:
+                force_rightmost = (
+                    challenge_after_refresh_limit
+                    and refresh_count == max_rounds
+                    and i == len(area_b_list) - 1
+                )
+                if player_power > opp_power or force_rightmost:
+                    if context.tasker.stopping:
+                        return ChallengeOutcome.FAILED
                     if in_settlement():
                         logger.info("竞技场已进入结算期，不再发起挑战")
                         return ChallengeOutcome.STOPPED
-                    logger.debug(f"arena_compare: player > opponent {i}, clicking opponent {i}")
                     if not self._click_opponent(controller, area_b):
                         logger.error("arena_compare: opponent click failed")
                         return ChallengeOutcome.FAILED
@@ -271,19 +302,24 @@ class ArenaCompareAction(CustomAction):
                                 f"arena_compare: OK popup appeared more than {ok_retry_limit} times"
                             )
                             return ChallengeOutcome.FAILED
-                        logger.debug("arena_compare: OK popup handled, retrying power recognition")
                         time.sleep(player_power_retry_delay)
                         break
+                    relation = ">" if player_power > opp_power else "<" if player_power < opp_power else "="
+                    if counts is not None:
+                        counts[relation] += 1
+                    position = "最右" if i == len(area_b_list) - 1 else "最左" if i == 0 else "中间"
+                    logger.info(f"自身战力 {player_power} {relation} {position}选手战力 {opp_power}")
                     return ChallengeOutcome.CHALLENGED
 
             if ok_handled:
                 continue
 
             if refresh_count < max_rounds:
+                if context.tasker.stopping:
+                    return ChallengeOutcome.FAILED
                 if in_settlement():
                     logger.info("竞技场已进入结算期，不再刷新对手")
                     return ChallengeOutcome.STOPPED
-                logger.info(f"arena_compare: no weaker opponent, clicking refresh {refresh_count + 1}/{max_rounds}")
                 if not self._click_roi(controller, refresh_roi):
                     logger.error("arena_compare: refresh click failed")
                     return ChallengeOutcome.FAILED
@@ -297,6 +333,8 @@ class ArenaCompareAction(CustomAction):
 
     def _read_opponent_power(self, context, controller, image, roi):
         for attempt in range(3):
+            if context.tasker.stopping:
+                return None
             power = read_ocr_number(context, image, "_arena_ocr", roi,
                                     [r"\d[\d,]*"], "arena_compare")
             if power is not None:
@@ -320,6 +358,8 @@ class ArenaCompareAction(CustomAction):
         last_img = None
 
         for attempt in range(retry):
+            if context.tasker.stopping:
+                return None, last_img
             if not controller.post_screencap().wait().succeeded:
                 logger.error("arena_compare: player power screenshot failed")
                 return None, last_img

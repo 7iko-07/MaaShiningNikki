@@ -87,14 +87,21 @@ class Driver(CustomAction):
             runner.click.assert_called_once_with((704, 429, 54, 31))
             runner.button.reset_mock()
             runner.click.reset_mock()
+            runner.seven_rename(for_share=True)
+            assert len(action.reco_ids) == 2 and command.call_count == 2
+            assert command.call_args.args[0][-2:] == ["--text", "分享成衣"]
+            runner.button.assert_any_call("七日制衣名称确定")
+            runner.click.assert_called_once_with((704, 429, 54, 31))
+            runner.button.reset_mock()
+            runner.click.reset_mock()
             command.return_value = SimpleNamespace(returncode=0, stdout='{"errcode":1}')
             try:
-                runner.seven_rename()
+                runner.seven_rename(for_share=True)
             except dream.DreamError:
                 pass
             else:
                 raise AssertionError("输入失败没有向上传播")
-            assert len(action.reco_ids) == 2 and command.call_count == 2
+            assert len(action.reco_ids) == 3 and command.call_count == 3
             runner.button.assert_called_once_with("七日制衣点击名称框")
             runner.click.assert_not_called()
         return True

@@ -33,6 +33,8 @@ class ArenaActionTests(unittest.TestCase):
     def setUp(self):
         self.action = arena.ArenaCompareAction()
         self.context = Mock()
+        self.context.tasker.stopping = False
+        self.context.get_node_data.return_value = {}
         self.context.override_next.return_value = True
         self.controller = self.context.tasker.controller
         self.controller.post_screencap.return_value.wait.return_value.succeeded = True
@@ -139,6 +141,156 @@ class ArenaActionTests(unittest.TestCase):
         with patch.object(arena, "read_ocr_number", return_value=10):
             self.assertFalse(self.run_action())
         self.context.run_task.assert_not_called()
+
+    def configure_comparison(self, node="竞技场战力对比", force=False, rounds=1):
+        self.params = copy.deepcopy(ARENA[node]["action"]["param"]["custom_action_param"])
+        self.params["max_rounds"] = rounds
+        self.context.get_node_data.return_value = {
+            "attach": {"challenge_after_refresh_limit": force}}
+        self.action._read_challenge_times = Mock(return_value=1)
+        self.action._read_player_power = Mock(return_value=(100, object()))
+        self.action._read_opponent_power = Mock(return_value=200)
+        self.action._click_opponent = Mock(return_value=True)
+        self.action._click_roi = Mock(return_value=True)
+        self.action._handle_optional_ok_popup = Mock(return_value=arena.PopupOutcome.ABSENT)
+
+    def test_switch_off_keeps_both_strategies_refresh_limit_and_never_counts_search(self):
+        for node in ("竞技场战力对比", "竞技场稳守段位"):
+            for power in (100, 200):
+                with self.subTest(node=node, power=power):
+                    self.configure_comparison(node, rounds=2)
+                    self.action._read_opponent_power.return_value = power
+                    with patch.object(arena, "logger") as log:
+                        self.assertTrue(self.run_action(node))
+                    self.assertEqual(self.action._click_roi.call_count, 2)
+                    self.assertEqual(self.action._read_opponent_power.call_count,
+                                     3 * len(self.params["area_b"]))
+                    self.action._click_opponent.assert_not_called()
+                    log.info.assert_called_once_with(
+                        "竞技场挑战统计：自身战力大于对手 0 次，小于 0 次，相等 0 次")
+
+    def test_enabled_switch_forces_last_rightmost_only_after_exact_refresh_limit(self):
+        for node in ("竞技场战力对比", "竞技场稳守段位"):
+            for power, symbol, summary in ((200, "<", "小于 1 次，相等 0 次"),
+                                           (100, "=", "小于 0 次，相等 1 次")):
+                with self.subTest(node=node, power=power):
+                    self.configure_comparison(node, force=True, rounds=2)
+                    self.action._read_opponent_power.return_value = power
+                    with patch.object(arena, "logger") as log:
+                        self.assertTrue(self.run_action(node))
+                    self.assertEqual(self.action._click_roi.call_count, 2)
+                    self.assertEqual(self.action._read_opponent_power.call_count,
+                                     3 * len(self.params["area_b"]))
+                    self.action._click_opponent.assert_called_once_with(
+                        self.controller, self.params["area_b"][-1])
+                    self.assertEqual([call.args[0] for call in log.info.call_args_list], [
+                        f"自身战力 100 {symbol} 最右选手战力 {power}",
+                        f"竞技场挑战统计：自身战力大于对手 0 次，{summary}"])
+
+    def test_weaker_opponent_preserves_original_order_with_switch_on_or_off(self):
+        for force in (False, True):
+            for index, position in enumerate(("最左", "中间", "最右")):
+                with self.subTest(force=force, position=position):
+                    self.configure_comparison(force=force)
+                    self.action._read_opponent_power.side_effect = [200] * index + [50]
+                    with patch.object(arena, "logger") as log:
+                        self.assertTrue(self.run_action())
+                    self.action._click_roi.assert_not_called()
+                    self.action._click_opponent.assert_called_once_with(
+                        self.controller, self.params["area_b"][index])
+                    log.info.assert_any_call(f"自身战力 100 > {position}选手战力 50")
+                    log.info.assert_called_with(
+                        "竞技场挑战统计：自身战力大于对手 1 次，小于 0 次，相等 0 次")
+
+    def test_final_batch_still_prefers_weaker_leftmost_over_forced_rightmost(self):
+        self.configure_comparison(force=True)
+        self.action._read_opponent_power.side_effect = [200, 200, 200, 50]
+        self.assertTrue(self.run_action())
+        self.action._click_roi.assert_called_once()
+        self.action._click_opponent.assert_called_once_with(self.controller, self.params["area_b"][0])
+
+    def test_each_challenge_resets_refresh_budget_and_counts_only_launched_opponents(self):
+        self.configure_comparison("竞技场稳守段位", force=True)
+        self.action._read_challenge_times.return_value = 3
+        self.action._read_opponent_power.side_effect = [200, 200, 200, 100, 200, 50]
+        with patch.object(arena, "logger") as log:
+            self.assertTrue(self.run_action("竞技场稳守段位"))
+        self.assertEqual(self.action._click_roi.call_count, 3)
+        self.assertEqual(self.action._click_opponent.call_count, 3)
+        self.assertEqual(self.context.run_task.call_count, 3)
+        log.info.assert_called_with(
+            "竞技场挑战统计：自身战力大于对手 1 次，小于 1 次，相等 1 次")
+
+    def test_ok_popup_retries_do_not_count_or_reset_refresh_budget(self):
+        self.configure_comparison("竞技场稳守段位", force=True)
+        self.action._handle_optional_ok_popup.side_effect = [
+            arena.PopupOutcome.HANDLED, arena.PopupOutcome.ABSENT]
+        with patch.object(arena, "logger") as log:
+            self.assertTrue(self.run_action("竞技场稳守段位"))
+        self.action._click_roi.assert_called_once()
+        self.assertEqual(self.action._click_opponent.call_count, 2)
+        self.assertEqual(len(log.info.call_args_list), 2)
+        log.info.assert_called_with(
+            "竞技场挑战统计：自身战力大于对手 0 次，小于 1 次，相等 0 次")
+
+    def test_forced_challenge_never_bypasses_unreadable_power_or_failed_actions(self):
+        for failure in ("own", "opponent", "refresh", "click", "popup"):
+            with self.subTest(failure=failure):
+                self.configure_comparison(force=True)
+                if failure == "own":
+                    self.action._read_player_power.return_value = (None, None)
+                elif failure == "opponent":
+                    self.action._read_opponent_power.return_value = None
+                elif failure == "refresh":
+                    self.action._click_roi.return_value = False
+                elif failure == "click":
+                    self.action._click_opponent.return_value = False
+                else:
+                    self.action._handle_optional_ok_popup.return_value = arena.PopupOutcome.FAILED
+                with patch.object(arena, "logger") as log:
+                    self.assertFalse(self.run_action())
+                log.info.assert_called_once_with(
+                    "竞技场挑战统计：自身战力大于对手 0 次，小于 0 次，相等 0 次")
+
+    def test_cancel_or_settlement_during_last_power_read_prevents_forced_click(self):
+        for cancel in (False, True):
+            with self.subTest(cancel=cancel):
+                self.context.tasker.stopping = False
+                self.configure_comparison(force=True, rounds=0)
+                def read(*args):
+                    self.context.tasker.stopping = cancel
+                    return 200
+                self.action._read_opponent_power.side_effect = read
+                with patch.object(arena, "in_settlement", side_effect=[False, False, True]):
+                    self.assertEqual(self.run_action(), not cancel)
+                self.action._click_opponent.assert_not_called()
+
+    def test_failure_cancellation_and_exception_after_launch_preserve_counts(self):
+        for ending in ("failure", "cancel", "exception"):
+            with self.subTest(ending=ending):
+                self.context.tasker.stopping = False
+                self.configure_comparison(force=True, rounds=0)
+                self.action._read_challenge_times.return_value = 3
+                def finish(*args):
+                    if ending == "exception":
+                        raise RuntimeError("test result failure")
+                    self.context.tasker.stopping = ending == "cancel"
+                    return task_detail(ending == "cancel")
+                self.context.run_task.side_effect = finish
+                with patch.object(arena, "logger") as log:
+                    self.assertFalse(self.run_action())
+                self.action._click_opponent.assert_called_once()
+                log.info.assert_called_with(
+                    "竞技场挑战统计：自身战力大于对手 0 次，小于 1 次，相等 0 次")
+
+    def test_reentry_does_not_reuse_counts_from_previous_run(self):
+        self.configure_comparison(force=True, rounds=0)
+        self.assertTrue(self.run_action())
+        self.action._read_challenge_times.return_value = 0
+        with patch.object(arena, "logger") as log:
+            self.assertTrue(self.run_action())
+        log.info.assert_called_with(
+            "竞技场挑战统计：自身战力大于对手 0 次，小于 0 次，相等 0 次")
 
 
 class RankPopupActionTests(unittest.TestCase):
@@ -428,6 +580,65 @@ class ArenaPipelineTests(unittest.TestCase):
         for node in ("竞技场战力对比", "竞技场稳守段位"):
             self.controller.screen = node
             self.assertTrue(self.execute(node).status.succeeded)
+
+    def test_native_strategy_refresh_and_switch_overrides_remain_independent(self):
+        interface = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-8"))
+        option_name = "竞技场刷新上限后仍挑战"
+        option = interface["option"][option_name]
+        self.assertEqual(option["type"], "switch")
+        self.assertEqual(option["default_case"], "No")
+        task = next(task for task in interface["task"] if task["name"] == "竞技场")
+        self.assertIn(option_name, task["option"])
+        for strategy in interface["option"]["竞技场挑战策略"]["cases"]:
+            for case in option["cases"]:
+                for maximum in (1, 5, 99):
+                    refresh = json.loads(json.dumps(
+                        interface["option"]["竞技场刷新次数"]["pipeline_override"]
+                    ).replace('"{max_rounds}"', str(maximum)))
+                    for reverse in (False, True):
+                        with self.subTest(strategy=strategy["name"], case=case["name"],
+                                          maximum=maximum, reverse=reverse):
+                            self.assertTrue(self.resource.override_pipeline(ARENA))
+                            overrides = [strategy["pipeline_override"], refresh, case["pipeline_override"]]
+                            for override in reversed(overrides) if reverse else overrides:
+                                self.assertTrue(self.resource.override_pipeline(override))
+                            for node in ("竞技场战力对比", "竞技场稳守段位"):
+                                data = self.resource.get_node_data(node)
+                                self.assertEqual(data["attach"]["challenge_after_refresh_limit"],
+                                                 case["name"] == "Yes")
+                                expected = copy.deepcopy(ARENA[node]["action"]["param"]["custom_action_param"])
+                                expected["max_rounds"] = maximum
+                                self.assertEqual(data["action"]["param"]["custom_action_param"], expected)
+                            routed = self.resource.get_node_data("竞技场挑战策略分流")["next"][0]
+                            target = routed["name"] if isinstance(routed, dict) else routed
+                            self.assertEqual(target, strategy["pipeline_override"]["竞技场挑战策略分流"]["next"][0])
+
+    def test_native_action_reads_switch_from_context_and_logs_summary(self):
+        interface = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-8"))
+        action = arena.ArenaCompareAction()
+        self.assertTrue(self.resource.register_custom_action("arena_compare", action))
+        for node in ("竞技场战力对比", "竞技场稳守段位"):
+            for enabled in (False, True):
+                with self.subTest(node=node, enabled=enabled):
+                    self.assertTrue(self.resource.override_pipeline(ARENA))
+                    self.assertTrue(self.resource.override_pipeline({node: {
+                        "recognition": "DirectHit", "pre_delay": 0, "post_delay": 0,
+                        "attach": {"challenge_after_refresh_limit": enabled}}}))
+                    with patch.object(arena, "in_settlement", return_value=False), \
+                         patch.object(arena.time, "sleep"), \
+                         patch.object(arena, "logger") as log, \
+                         patch.object(action, "_read_challenge_times", return_value=1), \
+                         patch.object(action, "_read_player_power", return_value=(100, None)), \
+                         patch.object(action, "_read_opponent_power", return_value=200), \
+                         patch.object(action, "_click_roi", return_value=True) as refresh, \
+                         patch.object(action, "_click_opponent", return_value=True) as click, \
+                         patch.object(action, "_handle_optional_ok_popup", return_value=arena.PopupOutcome.ABSENT), \
+                         patch.object(action, "_run_result_flow", return_value=True):
+                        self.assertTrue(self.execute(node).status.succeeded)
+                    self.assertEqual(refresh.call_count, 5)
+                    self.assertEqual(click.call_count, int(enabled))
+                    log.info.assert_called_with(
+                        f"竞技场挑战统计：自身战力大于对手 0 次，小于 {int(enabled)} 次，相等 0 次")
 
     def test_ok_leaf_returns_to_parent_and_does_not_wait_for_loading(self):
         self.controller.screen = "点击OK-竞技场"

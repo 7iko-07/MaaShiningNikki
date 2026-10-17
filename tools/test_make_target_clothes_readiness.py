@@ -222,12 +222,20 @@ class ClothingReadinessTests(unittest.TestCase):
                 evidence["original_node"] = context.get_node_data("点击返回")
                 return succeeded
 
+        class NoExitPopup(CustomRecognition):
+            def analyze(self, context, argv):
+                return None
+
         controller = ScreenController()
         resource = Resource()
         resource.register_custom_recognition("button", Button())
+        resource.register_custom_recognition("no_exit_popup", NoExitPopup())
         resource.register_custom_action("click", Click())
         resource.register_custom_action("fallback", Fallback())
         pipeline = {
+            navigation.EXIT_CONFIRM_NODE: {"recognition": {"type": "Custom", "param": {
+                "custom_recognition": "no_exit_popup",
+            }}, "action": "DoNothing"},
             "entry": {"recognition": "DirectHit", "action": {"type": "Custom", "param": {
                 "custom_action": "fallback",
             }}, "pre_delay": 0, "post_delay": 0},

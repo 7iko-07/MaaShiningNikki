@@ -101,6 +101,11 @@ DEFAULT_ALIASES = {
 DEFAULT_WAIT_RECOGNITIONS = ["在加载页面", "在接受投稿页面", "导航在空白页面"]
 DEFAULT_FALLBACK_STEPS = ["点击返回", "点击体力用尽确定", "主页点击esc", "点击OK-竞技场", "点击esc"]
 DEFAULT_DETECTION_HUBS = ["主页面", "独自", "设计中心", "结伴"]
+EXIT_CONFIRM_NODE = "关闭退出游戏确认弹窗"
+
+
+class ExitConfirmError(RuntimeError):
+    pass
 
 
 @AgentServer.custom_action("page_navigate")
@@ -110,6 +115,13 @@ class PageNavigateAction(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> bool:
+        try:
+            return self._navigate(context, argv)
+        except ExitConfirmError as exc:
+            logger.error(f"page_navigate: {exc}")
+            return False
+
+    def _navigate(self, context, argv):
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
         target_page = self._normalize_page(
             self._get_first_param(params, "target", "target_page", "目标页面"),
@@ -153,6 +165,8 @@ class PageNavigateAction(CustomAction):
                     retry_delay=retry_delay,
                     ordered_pages=ordered_pages,
                     target_page=target_page,
+                    timeout=wait_timeout,
+                    interval=wait_interval,
                 )
 
             logger.debug(
@@ -232,6 +246,9 @@ class PageNavigateAction(CustomAction):
         hits = 0
         while True:
             image = self._screencap(context)
+            image, dismissed = self._dismiss_exit_confirm(context, image, deadline, interval)
+            if dismissed:
+                hits = 0
             ready = not self._intermediate_reason(context, image, wait_nodes)
             ready = ready and any(self._recognize(context, image, node) for node in nodes)
             hits = hits + 1 if ready else 0
@@ -254,6 +271,11 @@ class PageNavigateAction(CustomAction):
             if context.tasker.stopping:
                 return False
             image = self._screencap(context)
+            image, dismissed = self._dismiss_exit_confirm(context, image, deadline, interval)
+            if dismissed:
+                # Closing the modal may reveal a routable page. Do not immediately
+                # run another fallback Esc against the newly exposed homepage.
+                return True
             if not self._intermediate_reason(context, image, wait_nodes):
                 if waited:
                     # Loading may have reached the destination. Let the caller
@@ -325,6 +347,7 @@ class PageNavigateAction(CustomAction):
         waited = False
         while time.monotonic() < deadline:
             image = self._screencap(context)
+            image, _ = self._dismiss_exit_confirm(context, image, deadline, interval)
             reason = self._intermediate_reason(
                 context,
                 image,
@@ -368,10 +391,12 @@ class PageNavigateAction(CustomAction):
         candidates.extend(pages)
         return list(dict.fromkeys(page for page in candidates if page in pages and page in reachable))
 
-    def _detect_current_page(self, context: Context, pages, retry, retry_delay, ordered_pages, target_page):
+    def _detect_current_page(self, context: Context, pages, retry, retry_delay, ordered_pages, target_page,
+                             timeout=15, interval=.25):
         for attempt in range(max(1, retry)):
             started = time.monotonic()
             image = self._screencap(context)
+            image, _ = self._dismiss_exit_confirm(context, image, started + max(0, timeout), interval)
             checked_nodes = set()
             detected = None
             for page_name in ordered_pages:
@@ -395,6 +420,47 @@ class PageNavigateAction(CustomAction):
                 time.sleep(retry_delay)
 
         return None
+
+    def _dismiss_exit_confirm(self, context, image, deadline, interval=.25):
+        """Consume the modal before trusting its visible background; never repeat Esc."""
+        if image is None:
+            raise ExitConfirmError("退出弹窗检查截图失败")
+        if not self._exit_confirm_present(context, image):
+            return image, False
+        if context.tasker.stopping or time.monotonic() >= deadline:
+            raise ExitConfirmError("退出弹窗处理已取消或超时")
+        logger.info("page_navigate: 检测到退出游戏确认弹窗，按 Esc 关闭")
+        try:
+            action = context.run_action("点击esc")
+        except Exception as exc:
+            raise ExitConfirmError(f"退出弹窗 Esc 动作异常：{exc}") from exc
+        if not action or not action.success:
+            raise ExitConfirmError("退出弹窗 Esc 动作失败")
+        while True:
+            if context.tasker.stopping or time.monotonic() >= deadline:
+                raise ExitConfirmError("退出弹窗未在期限内消失")
+            image = self._screencap(context)
+            if image is None:
+                raise ExitConfirmError("退出弹窗检查截图失败")
+            present = self._exit_confirm_present(context, image)
+            if context.tasker.stopping or time.monotonic() >= deadline:
+                raise ExitConfirmError("退出弹窗处理已取消或超时")
+            if not present:
+                logger.info("page_navigate: 已确认退出游戏弹窗消失，重新判断页面")
+                return image, True
+            time.sleep(min(max(.1, interval), max(0, deadline - time.monotonic())))
+
+    def _exit_confirm_present(self, context, image):
+        # Recognition errors must not expose background buttons to navigation.
+        try:
+            result = context.run_recognition(EXIT_CONFIRM_NODE, image)
+            if result is None:
+                raise ExitConfirmError("退出弹窗识别未返回结果")
+            return bool(result.hit)
+        except ExitConfirmError:
+            raise
+        except Exception as exc:
+            raise ExitConfirmError(f"退出弹窗识别失败：{exc}") from exc
 
     def _recognize(self, context: Context, image, node_name):
         try:
@@ -559,6 +625,19 @@ class MainStoryReturnToSoloAction(CustomAction):
         return True
 
 
+@AgentServer.custom_action("dismiss_exit_confirm")
+class DismissExitConfirmAction(CustomAction):
+    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        navigation = PageNavigateAction()
+        deadline = time.monotonic() + 15
+        try:
+            navigation._dismiss_exit_confirm(context, navigation._screencap(context), deadline)
+            return True
+        except ExitConfirmError as exc:
+            logger.error(f"dismiss_exit_confirm: {exc}")
+            return False
+
+
 @AgentServer.custom_action("navigation_click")
 class NavigationClickAction(CustomAction):
     """Retry only a recognised button on the original, non-loading page."""
@@ -632,6 +711,13 @@ class NavigationClickAction(CustomAction):
             return False
 
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        try:
+            return self._click(context, argv)
+        except ExitConfirmError as exc:
+            logger.error(f"navigation_click: {exc}")
+            return False
+
+    def _click(self, context, argv):
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
         sources = params.get("source_nodes", [])
         targets = params.get("target_nodes", [])
@@ -651,6 +737,7 @@ class NavigationClickAction(CustomAction):
                 logger.error(f"navigation_click: timeout node={argv.node_name}, clicks={clicks}, target_seen={target_seen}")
                 return False
             image = navigation._screencap(context)
+            image, _ = navigation._dismiss_exit_confirm(context, image, deadline)
             if time.monotonic() >= deadline:
                 logger.error(f"navigation_click: capture exceeded deadline node={argv.node_name}")
                 return False

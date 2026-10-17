@@ -11,6 +11,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+import numpy as np
+
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.pipeline import JClick, JInputText, JOCR, JSwipe
@@ -358,6 +360,54 @@ def matches(result):
 class Card:
     stars: int
     box: tuple
+    stars_confirmed: bool = False
+
+
+def star_bands(image, roi, *, axis, minimum, maximum):
+    """数橙色星星轮廓的投影段；文字、细边框和尺寸不符的区域不参与计数。"""
+    x, y, w, h = roi
+    height, width = image.shape[:2]
+    if x < 0 or y < 0 or x + w > width or y + h > height:
+        return []
+    crop = image[y:y + h, x:x + w]
+    blue, green, red = crop[:, :, 0], crop[:, :, 1], crop[:, :, 2]
+    orange = (red >= 235) & (green >= 115) & (green <= 210) & (blue <= 120)
+    active = orange.sum(axis=axis) >= 3
+    edges = np.flatnonzero(np.diff(np.r_[False, active, False].astype(np.int8)))
+    bands = []
+    for start, end in zip(edges[::2], edges[1::2]):
+        # 抗锯齿可能使同一颗星的轮廓断开一行/列；相邻星之间至少有两行/列间隔。
+        if bands and start - bands[-1][1] <= 1:
+            bands[-1] = (bands[-1][0], int(end))
+        else:
+            bands.append((int(start), int(end)))
+    return [(start, end) for start, end in bands if minimum <= end - start <= maximum]
+
+
+def map_star_count(image, box):
+    x, y, w, h = box
+    # 一星模板也可能命中多星卡的最下方；以最后一颗星为锚点向上数，保留原命中框用于点击。
+    last = y + h - 32
+    top = max(0, last - 62)
+    bands = star_bands(image, (x + 8, top, 24, last + 14 - top),
+                       axis=1, minimum=16, maximum=26)
+    centers = [(start + end - 1) / 2 + top for start, end in bands]
+    if not 1 <= len(centers) <= 3 or abs(centers[-1] - last) > 4:
+        return None
+    if any(not 19 <= b - a <= 27 for a, b in zip(centers, centers[1:])):
+        return None
+    return len(centers)
+
+
+def detail_star_count(image):
+    # 720 短边横屏的“订单详情”右侧星星；区域来自已确认的订单详情截图。
+    bands = star_bands(image, (960, 145, 160, 50), axis=0, minimum=25, maximum=42)
+    centers = [(start + end - 1) / 2 for start, end in bands]
+    if not 1 <= len(centers) <= 3 or not 15 <= centers[0] <= 35:
+        return None
+    if any(not 43 <= b - a <= 53 for a, b in zip(centers, centers[1:])):
+        return None
+    return len(centers)
 
 
 def same_card(a, b):
@@ -371,8 +421,8 @@ def same_card(a, b):
 
 def deduplicate_cards(cards):
     kept = []
-    # 优先完整的高星卡，避免其内部一颗星被低星素材重复命中。
-    for card in sorted(cards, key=lambda c: -c.stars):
+    # 优先已确认的星数及完整高星卡，避免其内部一颗星被低星素材重复命中。
+    for card in sorted(cards, key=lambda c: (not c.stars_confirmed, -c.stars)):
         if not any(same_card(card.box, other.box) for other in kept):
             kept.append(card)
     return sorted(kept, key=lambda c: (c.stars, c.box[1], c.box[0]))
@@ -634,7 +684,7 @@ class DreamRunner:
             # 标签靠近相邻订单；从文字中心向左下偏移，落在本张订单卡片内。
             x, y, w, h = box
             self.click((x + w // 2 - 20, y + h // 2 + 20, 1, 1))
-            self.wait(lambda image: self.hit("织梦订单详情标题", image), "订单详情")
+            self.wait(self.order_detail, "订单详情")
             self.button("织梦详情交付按钮")
             self.wait(lambda image: self.hit("织梦选择产品页面", image), "选择产品")
             self.click([319, 221, 17, 11])
@@ -668,7 +718,15 @@ class DreamRunner:
 
     def completed(self, card, image):
         height, width = image.shape[:2]
-        return self.hit("织梦订单完成对号", image, check_roi(card.box, width, height))
+        left, top, w, h = check_roi(card.box, width, height)
+        # 全屏识别所有对号，再按卡片右下方的位置关联，避免其他订单的对号误判本单。
+        for item in matches(self.reco("织梦订单完成对号", image)):
+            box = valid_box(item.box)
+            if box:
+                x, y, bw, bh = box
+                if left <= x and top <= y and x + bw <= left + w and y + bh <= top + h:
+                    return True
+        return False
 
     def cards(self, image):
         found = []
@@ -676,8 +734,15 @@ class DreamRunner:
             for item in matches(self.reco(node, image)):
                 box = valid_box(item.box)
                 if box:
-                    found.append(Card(stars, box))
+                    count = map_star_count(image, box)
+                    found.append(Card(count or stars, box, count is not None))
         return deduplicate_cards(found)
+
+    def order_detail(self, image):
+        if not self.hit("织梦订单详情标题", image):
+            return None
+        # 元组让星级未知时也结束原有页面等待，不增加数星重试或固定延迟。
+        return (detail_star_count(image),)
 
     def read_orders(self, remaining):
         cards = self.cards(self.image())
@@ -693,7 +758,11 @@ class DreamRunner:
             if self.box("织梦可交付订单", image) is not None:
                 raise DreamError("读取订单时出现可交付订单，请重新执行以重新交付")
             self.click(current.box)
-            self.wait(lambda image: self.hit("织梦订单详情标题", image), "读取订单详情")
+            detail_stars, = self.wait(self.order_detail, "读取订单详情")
+            if detail_stars is not None:
+                current = Card(detail_stars, current.box, True)
+            else:
+                logger.warning("织梦订单：详情页星级未确认，保留地图结果并继续读取数量及素材")
 
             def requirements(image):
                 quantity = parse_quantity(self.text("织梦订单数量", image))
@@ -702,7 +771,8 @@ class DreamRunner:
 
             quantity, tags = self.wait(requirements, "订单数量及素材标签")
             orders.append(Order(current, quantity, tags))
-            logger.info(f"织梦订单：{current.stars} 星，位置 {current.box}，需求 {quantity} 件，标签 {tags}")
+            star_text = f"{current.stars} 星" if current.stars_confirmed else "星级未确认"
+            logger.info(f"织梦订单：{star_text}，位置 {current.box}，需求 {quantity} 件，标签 {tags}")
             self.click([250, 70, 100, 60])  # 已确认点击左侧地图空白关闭详情。
             self.wait(self.map_ready, "关闭详情回到订单地图")
         if len(orders) != remaining:
@@ -1132,7 +1202,7 @@ class DreamRunner:
             task = re.fullmatch(r"制作1件(连衣裙|上衣|下装)", text)
             kind = task[1] if task else {
                 "分享1次定制成衣": "分享", "进行1次人台换衣": "换衣",
-                "完成1次灵感拾趣": "拾趣",
+                "完成1次灵感拾趣": "拾趣", "进行1次灵感讨论": "讨论",
             }.get(text)
             if kind is None or kind in completed:
                 continue
@@ -1171,21 +1241,31 @@ class DreamRunner:
 
     def seven_open_task(self, category, column, box):
         deadline = time.monotonic() + 30
-        self.click(box)
+        if category == "讨论":
+            x, y, w, h = box
+            self.click((x + w // 2, y + h // 2, 1, 1))
+        else:
+            self.click(box)
         unchanged = 0
         while time.monotonic() < deadline:
             image = self.image()
             if self.hit("七日制衣新建", image):
                 return
             if self.seven_ready(image):
-                title = "分享1次定制成衣" if category == "分享" else "制作1件" + category
+                title = {"分享": "分享1次定制成衣", "讨论": "进行1次灵感讨论"}.get(
+                    category, "制作1件" + category,
+                )
                 same_task = (column, title) in self.seven_titles(image)
                 target = self.box("七日妙想前往完成", image, [55 + column * 300, 631, 260, 67]) if same_task else None
                 if target:
                     unchanged += 1
                     if unchanged == 2:
                         # 仅前往完成允许重试，而且必须仍是同一张任务卡。
-                        self.click(target)
+                        if category == "讨论":
+                            x, y, w, h = target
+                            self.click((x + w // 2, y + h // 2, 1, 1))
+                        else:
+                            self.click(target)
                         unchanged = 0
                 else:
                     unchanged = 0
@@ -1201,6 +1281,72 @@ class DreamRunner:
         if not result or not result.success:
             raise DreamError(f"七日制衣动作失败：{node}")
 
+    def seven_button_center(self, node, *, deadline=None):
+        x, y, w, h = self.wait(lambda image: self.box(node, image), node, deadline=deadline)
+        self.click((x + w // 2, y + h // 2, 1, 1))
+
+    def seven_back_until_ready(self):
+        deadline = time.monotonic() + 30
+        next_click = 0.0
+        confirmations = 0
+        while time.monotonic() < deadline:
+            image = self.image()
+            if self.seven_ready(image):
+                confirmations += 1
+                if confirmations == 2:
+                    return
+            else:
+                confirmations = 0
+                box = None if self.hit("织梦空间专属加载中", image) else self.box("七日分享返回按钮", image)
+                if box and next_click <= time.monotonic() < deadline:
+                    x, y, w, h = box
+                    self.click((x + w // 2, y + h // 2, 1, 1))
+                    next_click = time.monotonic() + 0.5
+            time.sleep(0.2)
+        raise DreamError("逐次返回后未回到七日妙想页面")
+
+    def seven_discussion(self):
+        self.seven_button_center("七日制衣新建")
+        self.seven_choose_custom("讨论")
+        self.seven_button_center("七日灵感讨论灯泡")
+        self.seven_button_center("七日灵感讨论我再想想")
+        self.seven_back_until_ready()
+
+        def completed(image):
+            if not self.seven_ready(image):
+                return False
+            return any(text == "进行1次灵感讨论" and self.seven_card_complete(image, column)
+                       for column, text in self.seven_titles(image))
+
+        self.wait(completed, "灵感讨论任务完成对号")
+
+    def seven_claim_rewards(self):
+        deadline = time.monotonic() + 30
+
+        def state(image):
+            if self.hit("织梦获得奖励文字", image):
+                return "奖励"
+            if not self.seven_ready(image):
+                return None
+            return "可领取" if self.hit("七日黄色礼盒可领取", image) else "无需领取"
+
+        def dismiss():
+            self.seven_action("七日奖励点击空白")
+            self.wait(lambda image: not self.hit("织梦获得奖励文字", image) and self.seven_ready(image),
+                      "关闭七日奖励后回到七日妙想", deadline=deadline)
+
+        current = self.wait(state, "七日妙想黄色礼盒状态", deadline=deadline)
+        while current == "奖励":
+            dismiss()
+            current = self.wait(state, "关闭已有奖励后检查黄色礼盒", deadline=deadline)
+        if current == "无需领取":
+            return
+        # 只在金色盒身和红色领取标记同时命中后点一次，不依赖外围涟漪。
+        self.seven_action("七日黄色礼盒点击")
+        self.wait(lambda image: self.hit("织梦获得奖励文字", image), "七日妙想恭喜获得", deadline=deadline)
+        dismiss()
+        logger.info("七日妙想：已领取黄色礼盒奖励")
+
     def seven_clothes_list(self, image):
         if not self.hit("七日制衣切换部位", image):
             return None
@@ -1214,7 +1360,11 @@ class DreamRunner:
         return self.hit("七日制衣面料选择", image) and self.hit("七日制衣生成成衣", image)
 
     def seven_works(self, image):
-        if not self.hit("七日分享成衣作品", image):
+        if self.hit("七日分享成衣作品", image):
+            kind = "成衣"
+        elif self.hit("七日分享作品草稿", image):
+            kind = "草稿"
+        else:
             return None
         counts = []
         for item in matches(self.reco("七日分享作品数量", image)):
@@ -1222,7 +1372,7 @@ class DreamRunner:
             if count and 0 <= int(count[1]) <= int(count[2]) and int(count[2]) > 0:
                 counts.append(int(count[1]))
         # 元组保留 0，避免将空作品列表当成未就绪而反复等待。
-        return (counts[0],) if len(counts) == 1 else None
+        return (kind, counts[0]) if len(counts) == 1 else None
 
     def seven_share_page(self, image):
         return self.hit("七日分享按钮", image) and self.hit("七日分享保存本地", image)
@@ -1234,17 +1384,26 @@ class DreamRunner:
         self.button("七日制衣连衣裙")
         self.wait(self.seven_clothes_list, "类别衣服列表及首件名称")
         self.seven_action("七日制衣选择首件")
-        count, = self.wait(self.seven_works, "首件衣服的成衣作品及数量")
+        kind, count = self.wait(self.seven_works, "首件衣服的成衣作品或作品草稿及数量")
         if count == 0:
-            raise DreamError("首件连衣裙没有成衣作品，无法完成分享任务")
-        self.seven_action("七日分享选择首个作品")
+            raise DreamError(f"首件连衣裙的{kind}作品为空，无法完成分享任务")
 
-        def selected(image):
-            if not self.hit("七日分享成衣作品", image) or not self.hit("七日分享前往编辑", image):
-                return None
-            return self.box("七日分享作品图标", image)
+        if kind == "草稿":
+            self.seven_action("七日分享选择首个草稿")
+            x, y, w, h = self.wait(
+                lambda image: self.box("七日制衣生成成衣", image), "选中草稿后的生成成衣按钮",
+            )
+            self.click((x + w // 2, y + h // 2, 1, 1))
+            self.seven_rename(for_share=True)
+        else:
+            self.seven_action("七日分享选择首个作品")
 
-        self.click(self.wait(selected, "选中首个作品后的分享图标"))
+            def selected(image):
+                if not self.hit("七日分享成衣作品", image) or not self.hit("七日分享前往编辑", image):
+                    return None
+                return self.box("七日分享作品图标", image)
+
+            self.click(self.wait(selected, "选中首个作品后的分享图标"))
 
         def result_share(image):
             if self.hit("织梦空间专属加载中", image) or not self.hit("七日制衣离开制衣", image):
@@ -1265,7 +1424,7 @@ class DreamRunner:
 
     def seven_choose_custom(self, category):
         deadline = time.monotonic() + 30
-        destination = "七日制衣" + category
+        destination = "七日灵感讨论灯泡" if category == "讨论" else "七日制衣" + category
         clicks = 0
         next_click = 0.0
         confirmations = 0
@@ -1285,22 +1444,31 @@ class DreamRunner:
             confirmations = 0
             box = self.box("七日制衣我来定制", image)
             if box and next_click <= time.monotonic() < deadline:
-                self.click(box)
+                if category == "讨论":
+                    x, y, w, h = box
+                    self.click((x + w // 2, y + h // 2, 1, 1))
+                else:
+                    self.click(box)
                 clicks += 1
                 next_click = time.monotonic() + 0.5
             time.sleep(0.1)
-        raise DreamError(f"我来定制后未出现{category}类别，已点击{clicks}次")
+        target = "灵感讨论灯泡" if category == "讨论" else category + "类别"
+        raise DreamError(f"我来定制后未出现{target}，已点击{clicks}次")
 
-    def seven_input_name(self):
+    def seven_input_name(self, node="七日制衣输入临时"):
         if self.context.tasker.stopping:
             raise DreamError("任务已取消")
         # Custom 回调需要有效的识别结果；run_action 会传入 reco_id=0。
         # 此节点没有后继，只执行一次默认 DirectHit 识别和文本输入。
-        result = self.context.run_task("七日制衣输入临时")
+        result = self.context.run_task(node)
         if not result or not result.status.succeeded:
-            raise DreamError("七日制衣动作失败：七日制衣输入临时")
+            raise DreamError(f"七日制衣动作失败：{node}")
 
-    def seven_rename(self):
+    def seven_rename(self, *, for_share=False):
+        name = "分享成衣" if for_share else "临时"
+        input_node = "七日分享输入名称" if for_share else "七日制衣输入临时"
+        name_node = "七日分享名称已输入" if for_share else "七日制衣名称已输入"
+
         def confirm(image):
             if not self.hit("七日制衣名称弹窗", image):
                 return None
@@ -1308,14 +1476,14 @@ class DreamRunner:
 
         confirm_box = self.wait(confirm, "更改作品名称弹窗及确定按钮")
         self.button("七日制衣点击名称框")
-        self.seven_input_name()
-        self.wait(lambda image: self.hit("七日制衣名称已输入", image), "作品名称输入临时")
+        self.seven_input_name(input_node)
+        self.wait(lambda image: self.hit(name_node, image), f"作品名称输入{name}")
         # 第一次点击原确定位置只收起输入框；名称落到游戏弹窗后才提交。
         self.click(confirm_box)
         self.wait(
             lambda image: self.hit("七日制衣名称弹窗", image)
-            and self.hit("七日制衣名称已输入", image),
-            "收起输入框后作品名称显示临时",
+            and self.hit(name_node, image),
+            f"收起输入框后作品名称显示{name}",
         )
         self.button("七日制衣名称确定")
 
@@ -1504,10 +1672,12 @@ class DreamRunner:
         while True:
             candidate = self.seven_current(completed)
             if candidate is None:
-                logger.info("七日妙想：当前画面没有待做的制作、分享、人台换衣或灵感拾趣任务")
+                self.seven_claim_rewards()
+                logger.info("七日妙想：当前画面没有待做的制作、分享、人台换衣、灵感拾趣或灵感讨论任务")
                 return
             category, column, box = candidate
             if category == "全部完成":
+                self.seven_claim_rewards()
                 logger.info("七日妙想：第一张任务卡出现完成对号，全部任务已完成")
                 return
             if category == "换衣":
@@ -1518,12 +1688,304 @@ class DreamRunner:
                 self.seven_open_task(category, column, box)
                 if category == "分享":
                     self.seven_share()
+                elif category == "讨论":
+                    self.seven_discussion()
                 else:
                     self.seven_make(category)
             completed.add(category)
             outcome = {"分享": "已分享1次定制成衣", "换衣": "已进行1次人台换衣",
-                       "拾趣": "已完成1局灵感拾趣"}.get(category, f"已制作1件{category}")
+                       "拾趣": "已完成1局灵感拾趣", "讨论": "已进行1次灵感讨论"}.get(category, f"已制作1件{category}")
             logger.info(f"七日妙想：{outcome}")
+
+    def cleanup(self, name):
+        CleanupRunner(self, name).run()
+
+
+class CleanupRunner:
+    """保持管理状态，按完整名称点击可清理作品；不识别选中状态、不滑动。"""
+
+    def __init__(self, runner, name):
+        if not isinstance(name, str) or not name.strip() or "\n" in name or "\r" in name:
+            raise DreamError("清理成衣：请输入完整作品名称，多个名称用逗号分隔")
+        names = [part.strip() for part in re.split(r"[,，]", name)]
+        if not all(names):
+            raise DreamError("清理成衣：逗号之间的作品名称不能为空")
+        self.r = runner
+        self.name = name.strip()
+        self.names = tuple(dict.fromkeys(names))
+        self.deadline = time.monotonic() + 600
+        self.location = ""
+        self.deleted = 0
+
+    def phase_deadline(self):
+        if self.r.context.tasker.stopping:
+            raise DreamError("任务已取消")
+        if time.monotonic() >= self.deadline:
+            raise DreamError("清理成衣：遍历超过总时限")
+        return min(self.deadline, time.monotonic() + 30)
+
+    def button(self, node):
+        self.r.seven_button_center(node, deadline=self.phase_deadline())
+
+    def wait(self, predicate, description):
+        return self.r.wait(predicate, description, deadline=self.phase_deadline())
+
+    def items(self, image, node, roi=None):
+        found = []
+        for item in matches(self.r.reco(node, image, roi)):
+            box = valid_box(item.box)
+            text = getattr(item, "text", "").strip()
+            if box and text:
+                found.append((text, box))
+        return sorted(found, key=lambda item: (item[1][1], item[1][0]))
+
+    @staticmethod
+    def signature(items):
+        # 不比较背景粒子、选中后的服装预览或涟漪，只比较列表文字与位置。
+        return tuple((text, round(box[0] / 8), round(box[1] / 8)) for text, box in items)
+
+    def stable(self, reader, description):
+        previous = None
+
+        def settled(image):
+            nonlocal previous
+            items = reader(image)
+            if items is None:
+                previous = None
+                return None
+            signature = self.signature(items)
+            if signature != previous:
+                previous = signature
+                return None
+            return image, items
+
+        return self.wait(settled, description)
+
+    def center(self, box):
+        self.phase_deadline()
+        x, y, w, h = box
+        self.r.click((x + w // 2, y + h // 2, 1, 1))
+
+    def sidebar(self, image, *, categories):
+        node = "清理成衣成衣标签" if categories else "七日制衣切换部位"
+        if not self.r.hit(node, image):
+            return None
+        excluded = {"普通", "稀有", "非凡", "闪耀", "传说", "成衣", "草稿", "切换部位"}
+        rows = []
+        for text, box in self.items(image, "清理成衣侧栏文字"):
+            if normalized(text) in excluded or box[1] < 85 or box[1] + box[3] > 620:
+                continue
+            # 不滚动时名称位于缩略图下方的固定行；图内稀有度即使误读也不参与选择。
+            if not categories and not any(
+                top <= box[1] and box[1] + box[3] <= top + 40
+                for top in (195, 348, 501)
+            ):
+                continue
+            row = next((row for row in rows if abs(row[0][1][1] - box[1]) <= 10), None)
+            if row is None:
+                rows.append([(text, box)])
+            else:
+                row.append((text, box))
+        found = []
+        if categories:
+            for category in ("连衣裙", "外套", "上衣", "下装"):
+                node = "清理成衣外套" if category == "外套" else "七日制衣" + category
+                box = self.r.box(node, image)
+                if box and box[1] >= 85 and box[1] + box[3] <= 620:
+                    found.append((category, box))
+        for row in rows:
+            row.sort(key=lambda item: item[1][0])
+            text = normalized("".join(item[0] for item in row))
+            left = min(box[0] for _, box in row)
+            top = min(box[1] for _, box in row)
+            right = max(box[0] + box[2] for _, box in row)
+            bottom = max(box[1] + box[3] for _, box in row)
+            box = (left, top, right - left, bottom - top)
+            if not any(same_card(box, old) for _, old in found) and len(text) > 1:
+                found.append((text, box))
+        return sorted(found, key=lambda item: item[1][1])
+
+    def walk_sidebar(self, *, categories):
+        reader = lambda image: self.sidebar(image, categories=categories)
+        seen = set()
+        while True:
+            _, items = self.stable(reader, "清理成衣服装列表稳定")
+            candidate = next(((text, box) for text, box in items if text not in seen), None)
+            if candidate:
+                text, box = candidate
+                seen.add(text)
+                yield text, box
+                continue  # 处理后重新读取，不能按原来的第二行坐标继续点击。
+            return  # 只遍历当前可见内容，不上划、下划或回到顶部。
+
+    def count(self, image):
+        if not self.r.hit("七日分享成衣作品", image):
+            return None
+        values = []
+        for text, _ in self.items(image, "七日分享作品数量"):
+            match = re.fullmatch(r"(\d+)/(\d+)", normalized(text))
+            if match and 0 <= int(match[1]) <= int(match[2]) and int(match[2]) > 0:
+                values.append(int(match[1]))
+        return values[0] if len(values) == 1 else None
+
+    def work_items(self, image):
+        if self.count(image) is None or not self.r.hit("清理成衣取消管理", image):
+            return None
+        return [(text, box) for text, box in self.items(image, "清理成衣作品文字")
+                if text != "审核中" and box[1] >= 270 and box[1] + box[3] <= 560]
+
+    def review(self, image, name_box):
+        x, y, w, h = name_box
+        # 实机名称中心 (769,287)，审核字中心 (769.5,254.5)，相差约 33 像素。
+        roi = (x + w // 2 - 32, y + h // 2 - 46, 64, 28)
+        height, width = image.shape[:2]
+        if roi[0] < 700 or roi[1] < 165 or roi[0] + roi[2] > min(width, 1095) or roi[1] + roi[3] > min(height, 560):
+            return "状态不明"
+        texts = self.items(image, "清理成衣作品文字", roi)
+        if any(any(char in normalized(text) for char in "审核") for text, _ in texts):
+            return "审核中"
+        return "可清理"
+
+    def skip(self, name, reason):
+        logger.warning(f"清理成衣：{self.location}，跳过作品 {name!r}：{reason}")
+
+    def manage(self):
+        if not self.r.hit("清理成衣取消管理", self.r.image()):
+            self.button("清理成衣管理")
+            self.wait(lambda image: self.r.hit("清理成衣取消管理", image), "清理成衣管理模式")
+        return True
+
+    def select_batch(self, image, items):
+        clicked = []
+        for text, name_box in items:
+            if text not in self.names:  # 任一完整名称字面相等，不能用包含或正则。
+                continue
+            if any(same_card(name_box, box) for _, box in clicked):
+                continue
+            image = self.r.image()
+            x, y, w, h = name_box
+            column = round((x + w / 2 - 770) / 125)
+            if not 0 <= column < 3 or abs(x + w / 2 - (770 + 125 * column)) > 30:
+                self.skip(text, "作品位置不明")
+                continue
+            fresh = [(name, box) for name, box in self.items(image, "清理成衣作品文字")
+                     if same_card(box, name_box)]
+            if len(fresh) != 1 or fresh[0][0] != text:
+                self.skip(text, "点击前完整名称无法确认")
+                continue
+            status = self.review(image, fresh[0][1])
+            if status != "可清理":
+                self.skip(text, status)
+                continue
+            self.center(fresh[0][1])
+            clicked.append((text, fresh[0][1]))
+        return clicked
+
+    def delete_batch(self, clicked, before_count):
+        image = self.r.image()
+        if (not clicked or not isinstance(before_count, int) or before_count <= 0
+                or len(clicked) > before_count or self.count(image) != before_count
+                or any(name not in self.names for name, _ in clicked)
+                or not self.r.hit("清理成衣取消管理", image)):
+            raise DreamError("清理成衣：点击记录、作品数量或管理页面不一致，未执行删除")
+        if not self.r.hit("清理成衣删除可用", image):
+            self.skip(self.name, "删除按钮不可用")
+            return False
+        self.button("清理成衣删除可用")
+        self.wait(lambda image: self.r.hit("清理成衣删除弹窗", image), "清理成衣删除确认及无法恢复提示")
+        self.button("清理成衣确认删除")
+        expected = before_count - len(clicked)
+
+        def changed(image):
+            if self.r.hit("清理成衣删除弹窗", image):
+                return False
+            count = self.count(image)
+            return count == expected if count is not None else (
+                expected == 0 and (self.r.hit("七日制衣切换部位", image)
+                                   or self.r.hit("清理成衣成衣标签", image))
+            )
+
+        self.wait(changed, "清理成衣删除后作品数量减少或自动返回")
+        self.deleted += len(clicked)
+        deleted_names = tuple(dict.fromkeys(name for name, _ in clicked))
+        logger.info(f"清理成衣：{self.location}，已删除 {len(clicked)} 件成衣作品，名称 {deleted_names!r}")
+        return True
+
+    def garment(self):
+        self.wait(lambda image: self.r.hit("七日分享成衣作品", image), "清理成衣作品列表")
+        initial = self.count(self.r.image())
+        if not initial:
+            if initial is None:
+                self.skip(self.name, "作品数量无法确认")
+            return
+        if not self.manage():
+            return
+        reader = self.work_items
+        while True:
+            image, items = self.stable(reader, "清理成衣作品名称就绪")
+            before = self.count(image)
+            if not before:
+                if before is None:
+                    self.skip(self.name, "作品数量无法确认")
+                return
+            clicked = self.select_batch(image, items)
+            if clicked:
+                if not self.delete_batch(clicked, before):
+                    return
+                if before == len(clicked):  # 已由数量变化/自动返回验证清空。
+                    return
+                # 删除导致重排，保持管理状态并重新读取当前可见作品。
+                if not self.manage():
+                    return
+                continue
+            if not items and before:
+                self.skip(self.name, "作品名称无法识别")
+            return
+
+    def reopen_category(self, category):
+        _, categories = self.stable(lambda image: self.sidebar(image, categories=True),
+                                    "清理成衣重新识别服装类别")
+        matches = [box for name, box in categories if name == category]
+        if len(matches) != 1:
+            raise DreamError(f"清理成衣：无法重新确认服装类别 {category!r}")
+        self.center(matches[0])
+        self.wait(lambda image: self.r.hit("七日制衣切换部位", image), "清理成衣重新打开原类别")
+
+    def clean_category(self, category):
+        reader = lambda image: self.sidebar(image, categories=False)
+        _, initial = self.stable(reader, "清理成衣记录类别服装列表")
+        # 删除后列表可能变化，保留初始名称和总数；点击位置每次重新识别。
+        garments = tuple(dict.fromkeys(name for name, _ in initial))
+        logger.info(f"清理成衣：{category}，已记录 {len(garments)} 件可见服装，按顺序检查 {garments!r}")
+        for index, garment in enumerate(garments, 1):
+            if self.r.hit("清理成衣成衣标签", self.r.image()):
+                self.reopen_category(category)
+            _, current = self.stable(reader, "清理成衣定位下一件服装")
+            boxes = [box for name, box in current if name == garment]
+            self.location = f"{category}/{garment}"
+            if len(boxes) != 1:
+                logger.warning(f"清理成衣：{self.location}，跳过服装：原名单中的名称无法确认，进度 {index}/{len(garments)}")
+                continue
+            self.center(boxes[0])
+            self.garment()
+            logger.info(f"清理成衣：{self.location}，已检查 {index}/{len(garments)} 件服装")
+
+        # 最后一件删除后也可能已自动返回类别页，不再点击不存在的“切换部位”。
+        if not self.r.hit("清理成衣成衣标签", self.r.image()):
+            self.button("七日制衣切换部位")
+            self.wait(lambda image: self.r.hit("清理成衣成衣标签", image), "清理成衣返回服装类别")
+
+    def run(self):
+        self.wait(self.r.space_ready, "清理成衣进入织梦空间")
+        self.button("清理成衣至臻定制")
+        self.button("清理成衣成衣标签")
+        for category, box in self.walk_sidebar(categories=True):
+            self.center(box)
+            self.wait(lambda image: self.r.hit("七日制衣切换部位", image), "清理成衣服装类别列表")
+            self.clean_category(category)
+        self.button("七日分享返回按钮")
+        self.wait(self.r.space_ready, "清理成衣返回织梦空间")
+        logger.info(f"清理成衣：完成，共删除 {self.deleted} 件作品")
 
 
 @AgentServer.custom_action("dreamweaver_input_text")
@@ -1590,8 +2052,11 @@ class DreamweaverSpaceAction(CustomAction):
                 has_management = enabled("织梦选择经营") and any(
                     enabled(node) for node in ("织梦选择每日能量晶矿", "织梦选择订单驿站", "织梦选择售卖橱窗")
                 )
-                if enabled("织梦选择今日签到") or has_management:
+                if enabled("织梦选择今日签到") or has_management or enabled("织梦选择清理成衣"):
                     runner.return_from_seven()
+            if enabled("织梦选择清理成衣"):
+                data = context.get_node_data("清理成衣设置") or {}
+                runner.cleanup(data.get("attach", {}).get("name"))
             if enabled("织梦选择今日签到"):
                 runner.sign_in()
             if enabled("织梦选择经营") and enabled("织梦选择每日能量晶矿"):

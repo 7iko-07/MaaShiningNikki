@@ -79,13 +79,101 @@ class DreamTests(unittest.TestCase):
         d = dream.Card(1, (260, 100, 65, 50))
         self.assertEqual(dream.deduplicate_cards([b, a, c, d]), [d, c, a])
 
+    def test_counted_stars_take_priority_over_an_uncertain_template_match(self):
+        confirmed = dream.Card(2, (100, 100, 70, 77), True)
+        uncertain = dream.Card(3, (100, 78, 68, 99))
+        self.assertEqual(dream.deduplicate_cards([uncertain, confirmed]), [confirmed])
+
+    def test_map_counts_extra_stars_above_a_one_star_template_match(self):
+        image = dream.np.zeros((720, 1280, 3), dtype=dream.np.uint8)
+        box = (1082, 451, 70, 53)
+        self.assertIsNone(dream.map_star_count(image, box))
+        image[462:482, 1090:1114] = (50, 160, 255)
+        self.assertEqual(dream.map_star_count(image, box), 1)
+        image[440:460, 1090:1114] = (50, 160, 255)
+        self.assertEqual(dream.map_star_count(image, box), 2)
+        image[416:436, 1090:1114] = (50, 160, 255)
+        self.assertEqual(dream.map_star_count(image, box), 3)
+        self.assertIsNone(dream.map_star_count(image, (1270, 451, 70, 53)))
+
+    def test_detail_counts_one_to_three_stars_and_rejects_bad_spacing(self):
+        image = dream.np.zeros((720, 1280, 3), dtype=dream.np.uint8)
+        self.assertIsNone(dream.detail_star_count(image))
+        for count, x in enumerate((966, 1014, 1062), 1):
+            image[152:186, x:x + 32] = (50, 160, 255)
+            self.assertEqual(dream.detail_star_count(image), count)
+        image[:, 1014:1046] = 0
+        self.assertIsNone(dream.detail_star_count(image))
+
+    def test_unreadable_detail_stars_do_not_extend_the_page_wait(self):
+        runner = self.runner()
+        image = dream.np.zeros((720, 1280, 3), dtype=dream.np.uint8)
+        runner.hit = Mock(return_value=True)
+        self.assertEqual(runner.order_detail(image), (None,))
+        runner.hit.return_value = False
+        self.assertIsNone(runner.order_detail(image))
+
+    def test_map_corrects_partial_one_star_hits_and_keeps_unknown_candidates(self):
+        runner = self.runner()
+        boxes = [(1082, 451, 70, 53), (556, 503, 70, 53)]
+        def reco(node, image):
+            items = [SimpleNamespace(box=box) for box in boxes] if node == "织梦一星订单" else []
+            return SimpleNamespace(hit=bool(items), filtered_results=items)
+        runner.reco = Mock(side_effect=reco)
+        with patch.object(dream, "map_star_count", side_effect=[2, None]):
+            cards = runner.cards(object())
+        self.assertEqual(cards, [dream.Card(1, boxes[1]), dream.Card(2, boxes[0], True)])
+
+    def test_read_orders_corrects_detail_stars_or_continues_when_unknown(self):
+        for map_confirmed, detail_stars in ((False, 2), (False, None), (True, None)):
+            runner = self.runner()
+            card = dream.Card(1, (490, 285, 68, 54), map_confirmed)
+            runner.cards = Mock(return_value=[card])
+            runner.image = Mock(return_value=object())
+            runner.completed = Mock(return_value=False)
+            runner.box = Mock(return_value=None)
+            runner.click = Mock()
+            tags = (None, "特殊", "灰色系")
+            runner.wait = Mock(side_effect=[(detail_stars,), (10, tags), (4, 5)])
+            orders = runner.read_orders(1)
+            self.assertEqual((orders[0].quantity, orders[0].tags), (10, tags))
+            self.assertEqual(orders[0].card.stars, detail_stars or card.stars)
+            self.assertEqual(orders[0].card.stars_confirmed, detail_stars is not None or map_confirmed)
+            self.assertEqual(runner.wait.call_count, 3)
+            self.assertEqual(runner.wait.call_args_list[0].args[0], runner.order_detail)
+            self.assertEqual(runner.click.call_args_list[0].args, (card.box,))
+
     def test_tick_roi_is_relative_lower_right_and_clipped(self):
         self.assertEqual(dream.check_roi((490, 285, 68, 54), 1280, 720), [524, 298, 68, 68])
         self.assertEqual(dream.check_roi((1220, 670, 60, 50), 1280, 720), [1250, 682, 30, 38])
         runner = self.runner()
-        runner.hit = Mock(return_value=True)
-        self.assertTrue(runner.completed(self.order().card, SimpleNamespace(shape=(720, 1280, 3))))
-        self.assertEqual(runner.hit.call_args.args[2], [524, 298, 68, 68])
+        image = SimpleNamespace(shape=(720, 1280, 3))
+        runner.reco = Mock(return_value=SimpleNamespace(
+            hit=True, filtered_results=[SimpleNamespace(box=(540, 320, 42, 32))],
+        ))
+        self.assertTrue(runner.completed(self.order().card, image))
+        runner.reco.assert_called_once_with("织梦订单完成对号", image)
+
+    def test_full_screen_ticks_only_complete_their_own_card(self):
+        runner = self.runner()
+        image = SimpleNamespace(shape=(720, 1280, 3))
+        card = dream.Card(1, (968, 508, 70, 53))
+        for boxes, expected in (
+            ([(599, 522, 42, 32)], False),
+            ([(599, 522, 42, 32), (1011, 527, 42, 32)], True),
+            ([(1011, 527, 0, 32)], False),
+            ([], False),
+        ):
+            runner.reco = Mock(return_value=SimpleNamespace(
+                hit=bool(boxes), filtered_results=[SimpleNamespace(box=box) for box in boxes],
+            ))
+            self.assertEqual(runner.completed(card, image), expected)
+            self.assertFalse(runner.completed(dream.Card(2, (1083, 430, 70, 77)), image))
+
+    def test_order_labels_stars_and_ticks_use_full_screen_recognition(self):
+        pipeline = load_jsonc(ROOT / "assets/resource/pipeline/dreamweaver_space.json")
+        for node in ("织梦可交付订单", "织梦一星订单", "织梦二星订单", "织梦三星订单", "织梦订单完成对号"):
+            self.assertNotIn("roi", pipeline[node]["recognition"]["param"], node)
 
     def test_ocr_reads_all_tags_once_in_display_order(self):
         runner = self.runner()
@@ -625,10 +713,10 @@ class DreamTests(unittest.TestCase):
             factory.return_value.orders.side_effect = dream.DreamError("未完成")
             self.assertFalse(dream.DreamweaverSpaceAction().run(context, SimpleNamespace()))
 
-    def test_future_flows_not_wired_and_choice_overrides_exist(self):
+    def test_task_entry_and_choice_overrides_exist(self):
         pipeline = load_jsonc(ROOT / "assets/resource/pipeline/dreamweaver_space.json")
         interface = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-8"))
-        task = next(task for task in interface["task"] if task["name"] == "织梦空间")
+        task = next(task for task in interface["task"] if task["entry"] == "织梦空间任务链入口")
         self.assertIn(task["entry"], pipeline)
         self.assertEqual(pipeline["织梦空间任务链准备"]["next"], ["织梦空间执行子任务"])
         for option in ("织梦空间子任务", "织梦经营子任务", "织梦订单生产完成方式"):
@@ -637,7 +725,7 @@ class DreamTests(unittest.TestCase):
                     self.assertIn(node, pipeline)
         self.assertEqual(
             [c["name"] for c in interface["option"]["织梦空间子任务"]["cases"]],
-            ["七日妙想", "今日签到", "织梦经营"],
+            ["七日妙想", "今日签到", "织梦经营", "清理成衣作品"],
         )
         self.assertEqual(
             [c["name"] for c in interface["option"]["织梦经营子任务"]["cases"]],

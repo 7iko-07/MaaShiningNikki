@@ -415,6 +415,7 @@
         ]
     },
     "竞技场稳守段位": {
+        "attach": {"challenge_after_refresh_limit": false},
         "recognition": {
             "type": "OCR",
             "param": {
@@ -444,6 +445,7 @@
         }
     },
     "竞技场战力对比": {
+        "attach": {"challenge_after_refresh_limit": false},
         "recognition": {
 			"type": "OCR",
 			"param": {

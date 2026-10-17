@@ -8,6 +8,7 @@ from . import page_navigation
 from . import click_and_wait_change
 from . import information_house_action
 from . import memory_shop
+from . import monthly_card
 from . import claim_rewards
 from . import card_matching
 from . import share_counter

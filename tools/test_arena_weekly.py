@@ -43,6 +43,7 @@ class ArenaTests(unittest.TestCase):
         self.addCleanup(patcher.stop)
         state._sessions.clear()
         self.context = Mock()
+        self.context.tasker.stopping = False
         self.context.tasker.controller.uuid = "device-a"
         self.context.tasker.get_task_detail.return_value = SimpleNamespace(
             status=SimpleNamespace(succeeded=True))

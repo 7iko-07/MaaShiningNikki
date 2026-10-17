@@ -19,8 +19,181 @@ with patch.object(AgentServer, "register_custom_action", return_value=True):
     spec.loader.exec_module(navigation)
 
 
-class NavigationTests(unittest.TestCase):
+class ExitConfirmTests(unittest.TestCase):
     def setUp(self):
+        self.now = 0.0
+        self.action = navigation.PageNavigateAction()
+        self.context = Mock()
+        self.context.tasker.stopping = False
+        self.context.run_recognition.side_effect = lambda name, image: SimpleNamespace(hit=image == "popup")
+        self.context.run_action.return_value = SimpleNamespace(success=True)
+        for patcher in (
+            patch.object(navigation.time, "monotonic", side_effect=lambda: self.now),
+            patch.object(navigation.time, "sleep", side_effect=self.advance),
+        ):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def advance(self, seconds):
+        self.now += seconds
+
+    def test_absent_popup_keeps_image_and_does_not_press_esc(self):
+        self.assertEqual(self.action._dismiss_exit_confirm(self.context, "home", 1), ("home", False))
+        self.context.run_action.assert_not_called()
+
+    def test_popup_takes_priority_over_visible_homepage_and_uses_fresh_image(self):
+        self.action._screencap = Mock(side_effect=["popup", "home"])
+        self.action._recognize = Mock(return_value=True)
+        page = self.action._detect_current_page(
+            self.context, {"主页": ["home"]}, 1, 0, ["主页"], "主页")
+        self.assertEqual(page, "主页")
+        self.action._recognize.assert_called_once_with(self.context, "home", "home")
+        self.context.run_action.assert_called_once_with("点击esc")
+
+    def test_delayed_disappearance_waits_without_repeating_esc(self):
+        self.action._screencap = Mock(side_effect=["popup", "popup", "home"])
+        self.assertEqual(self.action._dismiss_exit_confirm(self.context, "popup", 1), ("home", True))
+        self.assertEqual(self.now, .5)
+        self.context.run_action.assert_called_once_with("点击esc")
+
+    def test_confirmation_resets_observations_after_popup(self):
+        self.action._screencap = Mock(side_effect=["home", "popup", "home", "home"])
+        self.action._recognize = Mock(side_effect=lambda ctx, image, node: image == "home")
+        self.assertTrue(self.action._wait_for_page(self.context, ["home"], "主页", [], 1, .25))
+        self.assertEqual(self.action._screencap.call_count, 4)
+        self.context.run_action.assert_called_once_with("点击esc")
+
+    def test_fallback_redetects_after_closing_instead_of_reopening_popup(self):
+        self.action._screencap = Mock(side_effect=["popup", "home"])
+        self.action._run_task = Mock()
+        self.assertTrue(self.action._run_fallback_step(
+            self.context, ["主页点击esc", "点击esc"], target_nodes=["回家"]))
+        self.context.run_action.assert_called_once_with("点击esc")
+        self.action._run_task.assert_not_called()
+
+    def test_failed_esc_aborts_navigation_before_background_clicks(self):
+        for result in (None, SimpleNamespace(success=False)):
+            with self.subTest(result=result):
+                self.context.run_action.return_value = result
+                self.action._screencap = Mock(return_value="popup")
+                self.assertFalse(self.action.run(self.context, SimpleNamespace(
+                    custom_action_param=json.dumps({"target": "回家"}))))
+                self.context.run_task.assert_not_called()
+                self.context.run_action_direct.assert_not_called()
+
+    def test_persistent_popup_uses_existing_deadline_and_fails_once(self):
+        self.action._screencap = Mock(return_value="popup")
+        self.assertFalse(self.action.run(self.context, SimpleNamespace(
+            custom_action_param=json.dumps({"target": "回家", "wait_timeout": 1}))))
+        self.assertEqual(self.now, 1)
+        self.context.run_action.assert_called_once_with("点击esc")
+        self.context.run_task.assert_not_called()
+        self.context.run_action_direct.assert_not_called()
+
+    def test_recognition_failure_never_treats_background_as_ready(self):
+        for result in (None, RuntimeError("OCR failed")):
+            with self.subTest(result=result):
+                self.context.run_recognition.side_effect = result if isinstance(result, Exception) else None
+                self.context.run_recognition.return_value = result
+                self.action._screencap = Mock(return_value="home")
+                self.assertFalse(self.action.run(self.context, SimpleNamespace(
+                    custom_action_param=json.dumps({"target": "主页面"}))))
+                self.context.run_action.assert_not_called()
+                self.context.run_task.assert_not_called()
+
+    def test_cancellation_after_esc_stops_confirmation(self):
+        def cancel(name):
+            self.context.tasker.stopping = True
+            return SimpleNamespace(success=True)
+        self.context.run_action.side_effect = cancel
+        self.action._screencap = Mock()
+        with self.assertRaises(navigation.ExitConfirmError):
+            self.action._dismiss_exit_confirm(self.context, "popup", 1)
+        self.action._screencap.assert_not_called()
+
+    def test_mid_route_popup_is_closed_before_retrying_entry(self):
+        state = ["source"]
+        events = []
+        def recognize(name, image):
+            return SimpleNamespace(hit=image == "popup" if name == navigation.EXIT_CONFIRM_NODE else True,
+                                   box=Rect(10, 20, 30, 40))
+        def click(*args):
+            self.assertEqual(state[0], "source")
+            events.append("click")
+            state[0] = "popup" if events.count("click") == 1 else "target"
+            return SimpleNamespace(success=True)
+        def esc(name):
+            events.append("esc")
+            state[0] = "source"
+            return SimpleNamespace(success=True)
+        self.context.run_recognition.side_effect = recognize
+        self.context.run_action_direct.side_effect = click
+        self.context.run_action.side_effect = esc
+        with patch.object(navigation.PageNavigateAction, "_screencap", side_effect=lambda ctx: state[0]), \
+             patch.object(navigation.PageNavigateAction, "_recognize",
+                          side_effect=lambda ctx, image, node: image == node):
+            self.assertTrue(navigation.NavigationClickAction().run(self.context, SimpleNamespace(
+                node_name="button", custom_action_param=json.dumps({
+                    "source_nodes": ["source"], "target_nodes": ["target"], "timeout": 2000}))))
+        self.assertEqual(events, ["click", "esc", "click"])
+
+    def test_popup_at_destination_does_not_complete_until_closed(self):
+        with patch.object(navigation.PageNavigateAction, "_screencap", side_effect=["popup", "target"]), \
+             patch.object(navigation.PageNavigateAction, "_recognize", return_value=True), \
+             patch.object(navigation.PageNavigateAction, "_intermediate_reason", return_value=""):
+            self.assertTrue(navigation.NavigationClickAction().run(self.context, SimpleNamespace(
+                node_name="button", custom_action_param=json.dumps({
+                    "source_nodes": ["source"], "target_nodes": ["target"]}))))
+        self.context.run_action.assert_called_once_with("点击esc")
+        self.context.run_action_direct.assert_not_called()
+
+    def test_click_timeout_does_not_restart_budget_when_popup_appears(self):
+        self.now = 0
+        with patch.object(navigation.PageNavigateAction, "_screencap", return_value="popup"):
+            self.assertFalse(navigation.NavigationClickAction().run(self.context, SimpleNamespace(
+                node_name="button", custom_action_param=json.dumps({
+                    "source_nodes": ["source"], "target_nodes": ["target"], "timeout": 500}))))
+        self.assertEqual(self.now, .5)
+        self.context.run_action.assert_called_once_with("点击esc")
+        self.context.run_action_direct.assert_not_called()
+
+    def test_legacy_return_handler_waits_for_disappearance_and_has_finite_failure(self):
+        for closes in (True, False):
+            with self.subTest(closes=closes):
+                self.now = 0
+                self.context.run_action.reset_mock()
+                images = Mock(side_effect=["popup", "home"]) if closes else Mock(return_value="popup")
+                with patch.object(navigation.PageNavigateAction, "_screencap", new=images):
+                    self.assertEqual(navigation.DismissExitConfirmAction().run(self.context, SimpleNamespace()), closes)
+                self.context.run_action.assert_called_once_with("点击esc")
+                self.assertEqual(self.now, 0 if closes else 15)
+
+    def test_pipeline_modal_precedes_home_and_matches_question_mark_variants(self):
+        import re
+        nodes = load_jsonc(ROOT / "assets/resource/pipeline/back_to_homepage.json")
+        self.assertEqual(nodes["返回主页面"]["next"][0], "[JumpBack]" + navigation.EXIT_CONFIRM_NODE)
+        node = nodes[navigation.EXIT_CONFIRM_NODE]
+        self.assertNotIn("next", node)
+        self.assertEqual(node["action"]["param"]["custom_action"], "dismiss_exit_confirm")
+        expected = node["recognition"]["param"]["expected"][0]
+        for text in ("确定退出游戏吗", "确定退出游戏吗?", "确定退出游戏吗？"):
+            self.assertIsNotNone(re.fullmatch(expected, text))
+        self.assertIsNone(re.fullmatch(expected, "确定"))
+
+
+class WithoutExitPopupTests(unittest.TestCase):
+    """Keep existing route tests focused; modal integration is exercised separately."""
+
+    def setUp(self):
+        patcher = patch.object(navigation.PageNavigateAction, "_dismiss_exit_confirm",
+                               side_effect=lambda context, image, *args: (image, False))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+
+class NavigationTests(WithoutExitPopupTests):
+    def setUp(self):
+        super().setUp()
         self.action = navigation.PageNavigateAction()
 
     def test_detection_keeps_target_ahead_of_parent_and_hubs(self):
@@ -428,8 +601,9 @@ class NavigationTests(unittest.TestCase):
             self.assertNotIn(name, nodes)
 
 
-class NavigationFallbackTests(unittest.TestCase):
+class NavigationFallbackTests(WithoutExitPopupTests):
     def setUp(self):
+        super().setUp()
         self.action = navigation.PageNavigateAction()
         self.context = Mock()
         self.context.tasker.stopping = False
@@ -518,7 +692,7 @@ class NavigationFallbackTests(unittest.TestCase):
         self.action._run_task.assert_called_once_with(self.context, "点击esc")
 
 
-class MainStoryReturnTests(unittest.TestCase):
+class MainStoryReturnTests(WithoutExitPopupTests):
     def simulate(self, destinations):
         now = [0.0]
         state = ["导航在主线故事页面"]
@@ -580,7 +754,7 @@ class MainStoryReturnTests(unittest.TestCase):
             self.assertEqual(elapsed, expected_time)
 
 
-class NavigationClickTests(unittest.TestCase):
+class NavigationClickTests(WithoutExitPopupTests):
     def simulate(self, source=lambda t: True, target=lambda t: False,
                  loading=lambda t: False, button=lambda t: True, params=None):
         now = [0.0]

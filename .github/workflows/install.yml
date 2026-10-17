@@ -376,6 +376,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/download-artifact@v8
         with:
+          pattern: MaaShiningNikki-*
           path: release-assets
 
       - name: Check release assets directory
@@ -423,13 +424,28 @@ jobs:
           python tools/ci/build_incremental_updates.py
           --assets release-assets --repository "${{ github.repository }}"
           --version "${{ needs.meta.outputs.tag }}" --history 3
+          --artifacts actions-assets
+      - uses: actions/setup-node@v6
+        continue-on-error: true
+        with:
+          node-version: 24
+      - name: Upload incremental packages and metadata to Actions
+        continue-on-error: true
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const path = require('node:path');
+            const {pathToFileURL} = require('node:url');
+            const prefix = path.join(process.env.RUNNER_TEMP, 'incremental-artifacts');
+            await exec.exec('npm', ['install', '--prefix', prefix, '--no-audit', '--no-fund', '--ignore-scripts', '@actions/artifact@6.3.1']);
+            const {DefaultArtifactClient} = await import(pathToFileURL(path.join(prefix, 'node_modules/@actions/artifact/lib/artifact.js')).href);
+            const {uploadIncrementalArtifacts} = await import(pathToFileURL(path.join(process.env.GITHUB_WORKSPACE, 'tools/ci/upload_incremental_artifacts.mjs')).href);
+            await uploadIncrementalArtifacts('actions-assets', new DefaultArtifactClient());
       - uses: softprops/action-gh-release@v2
         with:
           files: |
             release-assets/*.zip
             release-assets/checksums.sha256
-            release-assets/manifest-*.json
-            release-assets/update-index.json
           tag_name: ${{ needs.meta.outputs.tag }}
           body: ${{ needs.changelog.outputs.release_body }}
           draft: false
