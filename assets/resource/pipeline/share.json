@@ -33,33 +33,28 @@
     },
     "点击分享": {
         "recognition": {
-            "type": "Or",
-            "param":{
-                "any_of": [
-                    {"recognition": {
-                        "type": "OCR",
-                        "param": {
-                            "roi":[445, 1107, 275, 173],
-							"expected": ["[分享]"]
-                        }
-                    }},
-                    {"recognition": {
-                        "type": "OCR",
-						"param": {
-							"roi":[2, 97, 223, 1183],
-							"expected": ["[分享]"]
-			}
-                    }}
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    2,
+                    97,
+                    223,
+                    1183
+                ],
+                "expected": [
+                    "分享"
                 ]
             }
         },
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 2000,
-		"next": ["点击qq"],
-		"timeout": 2000
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "next": [
+            "点击qq"
+        ],
+        "timeout": 2000
     },
     "点击qq": {
         "recognition": {
@@ -122,30 +117,25 @@
 	},
     "识别到无分享奖励": {
         "recognition": {
-            "type": "Or",
-            "param":{
-                "any_of": [
-                    {"recognition": {
-                        "type": "OCR",
-                        "param": {
-                            "roi":[445, 1107, 275, 173],
-							"expected": ["[奖励]"]
-                        }
-                    }},
-                    {"recognition": {
-                        "type": "OCR",
-						"param": {
-							"roi":[2, 97, 223, 1183],
-							"expected": ["[奖励]"]
-			}
-                    }}
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    2,
+                    97,
+                    223,
+                    1183
+                ],
+                "expected": [
+                    "奖励"
                 ]
             }
         },
         "inverse": true,
-		"action": {},
-		"post_delay": 2000,
-		"next": ["点击谜之海-感应第二次-空白"],
-		"timeout": 2000
+        "action": {},
+        "post_delay": 2000,
+        "next": [
+            "stop"
+        ],
+        "timeout": 2000
     }
 }

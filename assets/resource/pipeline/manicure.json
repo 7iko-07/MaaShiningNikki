@@ -506,24 +506,33 @@
 		"timeout": 2000
     },
 	"此刻投稿-我的投稿":{
-		"recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [550, 1133, 170, 147],
-				"expected": ["我的投稿"]
-			}
-		},
-		"action": {
-			"type": "DoNothing",
-			"param": {}
-		},
-		"focus": {
-			"Node.Action.Starting": "#[color:red][b]美甲投稿需自行搭配[/b][/color]"
-		},
-		"next": ["点击话题任务"],
-		"post_delay": 2000,
-		"timeout": 2000
-	},
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    550,
+                    1133,
+                    170,
+                    147
+                ],
+                "expected": [
+                    "我的投稿"
+                ]
+            }
+        },
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "focus": {
+            "Node.Action.Starting": "#[color:red][b]美甲投稿需自行搭配[/b][/color]"
+        },
+        "next": [
+            "美甲话题任务分流"
+        ],
+        "post_delay": 2000,
+        "timeout": 2000
+    },
 	"美甲周期奖励确认":{
 		"recognition": {
 			"type": "OCR",
@@ -654,23 +663,31 @@
 		"timeout": 2000
     },
     "点击返回点赞美甲页面": {
-		"recognition": {
+        "recognition": {
             "type": "TemplateMatch",
             "param": {
                 "template": "back1.png",
-                "roi": [0, 0, 379, 404]
+                "roi": [
+                    0,
+                    0,
+                    379,
+                    404
+                ]
             }
         },
         "action": {
-			"type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
-			}
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {}
+            }
         },
         "timeout": 5000,
         "post_delay": 1000,
-		"next": ["[JumpBack]在加载页面","点击话题任务"]
+        "next": [
+            "[JumpBack]在加载页面",
+            "美甲话题任务分流"
+        ]
     },
     "点击话题任务": {
         "recognition": {
@@ -706,6 +723,61 @@
         }
     },
     "timeout": 30000
-}
-
+},
+    "美甲话题任务分流": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "manicure_topic_dispatch"
+            }
+        },
+        "post_delay": 0,
+        "next": [
+            "点击话题任务"
+        ]
+    },
+    "美甲话题页面就绪": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [
+                                    550,
+                                    1133,
+                                    170,
+                                    147
+                                ],
+                                "expected": [
+                                    "我的投稿"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [
+                                    0,
+                                    1133,
+                                    550,
+                                    147
+                                ],
+                                "expected": [
+                                    "话题任务"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 0
+    }
 }

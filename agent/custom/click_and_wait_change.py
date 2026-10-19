@@ -41,6 +41,9 @@ class ClickAndWaitChangeAction(CustomAction):
         before = self._screencap(controller)
         click_x, click_y = self._target_center(target)
 
+        guarded = self._before_click(context, argv)
+        if guarded is not None:
+            return guarded
         controller.post_click(click_x, click_y).wait()
         time.sleep(params.get("after_click_delay", 300) / 1000.0)
 
@@ -84,10 +87,16 @@ class ClickAndWaitChangeAction(CustomAction):
             )
             logger.debug(f"变化比例: {last_ratio:.6f}")
             before = after.copy()
+            guarded = self._before_click(context, argv)
+            if guarded is not None:
+                return guarded
             controller.post_click(click_x, click_y).wait()
             time.sleep(params.get("after_click_delay", 300) / 1000.0)
 
         return not fail_on_timeout
+
+    def _before_click(self, context, argv):
+        return None
 
     def _get_target(self, params, argv):
         target = params.get("target")

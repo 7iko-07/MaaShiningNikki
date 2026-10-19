@@ -162,14 +162,16 @@ class ShopTests(unittest.TestCase):
         runner = self.runner()
         batch = dream.SaleBatch((None, None, "黄色系"), scheduled=5)
         runner.pending[(0, 0)] = dream.ProductionBatch(batch, 5)
-        runner.wait = Mock(return_value=True)
+        runner.wait = Mock(side_effect=lambda predicate, label, **kwargs: predicate(object()))
+        runner.management_ready = Mock(return_value=True)
+        runner.tile_state = Mock(return_value=("休息中", (1, 1, 10, 10)))
         runner.image = Mock(return_value=object())
         runner.tile_states = Mock(side_effect=[{(0, 0): ("可收获", (1, 1, 10, 10))}, {}])
         runner.wait_tile = Mock(return_value=(1, 1, 10, 10))
         runner.click = Mock()
         runner.harvest()
         self.assertEqual(batch.harvested, 5)
-        self.assertEqual(runner.wait_tile.call_args.args, ((0, 0), ("空闲中", "休息中")))
+        self.assertEqual(runner.tile_state.call_args.args[2], ("可收获", "空闲中", "休息中"))
 
     def test_natural_round_deadline_is_not_extended(self):
         runner = self.runner()
@@ -190,6 +192,33 @@ class ShopTests(unittest.TestCase):
         ])
         runner.finish_tiles(((0, 0),), True, 610)
         runner.accelerate.assert_called_once_with((0, 0), 610)
+
+    def test_stone_exhaustion_switches_all_remaining_tiles_and_later_rounds(self):
+        runner = self.runner()
+        tiles = ((0, 0), (0, 1))
+        runner.management_ready = Mock(return_value=True)
+        runner.image = Mock(return_value=object())
+        runner.wait = Mock(side_effect=lambda predicate, label, **kwargs: predicate(object()))
+        runner.harvest = Mock(return_value=set(tiles))
+
+        def states(image, expected=None, **kwargs):
+            state = ("生产中" if expected is None or expected == ("可收获", "生产中")
+                     else "可收获" if expected == "可收获" else "空闲中")
+            return {tile: (state, (1, 1, 10, 10)) for tile in tiles}
+
+        def exhausted(tile, deadline):
+            runner._stone_exhausted = True
+            return None
+
+        runner.tile_states = Mock(side_effect=states)
+        runner.accelerate = Mock(side_effect=exhausted)
+        runner.finish_tiles(tiles, True, 610)
+        self.assertTrue(all(call.kwargs["deadline"] == 610 for call in runner.wait.call_args_list))
+        runner.wait.reset_mock()
+        runner.finish_tiles(tiles, True, 1210)
+        self.assertTrue(all(call.kwargs["deadline"] == 1210 for call in runner.wait.call_args_list))
+        runner.accelerate.assert_called_once_with(tiles[0], 610)
+        self.assertEqual(runner.harvest.call_count, 2)
 
     def prepare_shop(self, uplift):
         runner = self.runner()

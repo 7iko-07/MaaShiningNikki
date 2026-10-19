@@ -6,8 +6,8 @@
     "license": "MIT",
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "v0.0.13-nightly.20261015.02",
-    "title": "闪现吧暖暖v0.0.13#10.15 - 湘间君子女#10.09",
+    "version": "v0.0.14-nightly.20261019",
+    "title": "闪现吧暖暖v0.0.14#10.19 - 湘间君子女#10.09",
     "icon": "logo.ico",
     "mirrorchyan_multiplatform":false,
     "agent": {
@@ -230,7 +230,7 @@
             "group": ["日常任务"]
         },
         {
-            "name": "【实验】织梦空间",
+            "name": "织梦空间",
             "entry": "织梦空间任务链入口",
             "option": ["织梦空间子任务"],
             "description": "按勾选执行七日妙想、今日签到、织梦经营，执行顺序与选项从上往下一致。经营子任务也可以多选，依次执行每日能量晶矿、订单驿站、售卖橱窗。每批生产5件，订单与橱窗分别选择自然等待（每轮最多10分钟）或使用能量石。七日妙想支持当前画面中的1件连衣裙、上衣、下装制作、分享1次定制成衣、进行1次人台换衣及完成1次灵感拾趣，不滑动查找其他任务；第一张完整任务卡出现白色大对号时结束全部七日妙想任务。灵感拾趣主动收集小物并避碰，只玩一局，结算后返回七日妙想。分享需出现QQ的新用户及登录页面，识别后关闭QQ并返回游戏。",
@@ -937,6 +937,7 @@
                             "custom_action": "make_target_clothes_batch_challenge",
                             "custom_action_param": {
                                 "mode": "heart_maze",
+                                "result_ready_node": "等待制衣挑战结果",
                                 "load_delay": 0,
                                 "sufficient_roi": [379, 355, 265, 63],
                                 "sufficient_expected": ["数量已足够"],

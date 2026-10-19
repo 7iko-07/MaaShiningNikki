@@ -246,7 +246,9 @@
 			"type": "Custom",
 			"param": {
 				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action_param": {
+					"compare_roi": [93, 502, 534, 278]
+				}
 			}
 		},
 		"post_delay": 2000,
@@ -380,11 +382,11 @@
             }
         },
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {"custom_action": "arena_return_to_compare"}
 		},
-		"post_delay": 10000,
-		"next": ["[JumpBack]点击OK-竞技场", "竞技场搭配完成确认"],
+		"post_delay": 0,
+		"next": ["竞技场搭配完成确认"],
 		"timeout": 30000
     },
     "竞技场搭配完成确认": {

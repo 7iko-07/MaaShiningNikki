@@ -469,6 +469,7 @@ class DreamRunner:
     def __init__(self, context):
         self.context = context
         self.pending = {}  # 本次任务工位 -> 实际排产批次；不跨任务、账号共享。
+        self._stone_exhausted = False
 
     def image(self):
         if self.context.tasker.stopping:
@@ -647,11 +648,31 @@ class DreamRunner:
         states = self.tile_states(self.image(), "可收获", tiles=tiles)
         for ready in sorted(states):
             box = self.wait_tile(ready, "可收获", deadline=deadline, confirmations=1)
-            self.click(box)
+            x, y, w, h = box
+            self.click((x + w // 2, y + h // 2, 1, 1))
             clicked.append(ready)
         # 先依次收掉当前可收获的工位，再确认空闲/休息并记录实际产量。
         for ready in clicked:
-            self.wait_tile(ready, ("空闲中", "休息中"), deadline=deadline)
+            next_click = time.monotonic() + 1
+
+            def harvested(image):
+                nonlocal next_click
+                if not self.management_ready(image, full=False):
+                    return False
+                state = self.tile_state(ready, image, ("可收获", "空闲中", "休息中"))
+                now = time.monotonic()
+                if self.context.tasker.stopping or now >= deadline or not state:
+                    return False
+                if state[0] in ("空闲中", "休息中"):
+                    return True
+                if now >= next_click:
+                    x, y, w, h = state[1]
+                    self.click((x + w // 2, y + h // 2, 1, 1))
+                    next_click = time.monotonic() + 1
+                return False
+
+            self.wait(harvested, f"工位 {ready} 收获后空闲或休息", deadline=deadline,
+                      confirmations=1)
             batch = self.pending.pop(ready, None)
             if batch is not None:
                 order = batch.order
@@ -892,7 +913,24 @@ class DreamRunner:
         # 调度已确认生产；点击前只需一次新框复核，避免再次卡在连续命中。
         click_deadline = min(deadline, time.monotonic() + PRODUCTION_CONFIRM_SECONDS)
         self.click(self.wait_tile(tile, "生产中", deadline=click_deadline, confirmations=1))
-        self.wait(lambda image: self.hit("织梦加速页面", image), "生产加速页面", deadline=deadline)
+        popup_deadline = min(deadline, time.monotonic() + PRODUCTION_CONFIRM_SECONDS)
+        confirmations = 0
+        while time.monotonic() < popup_deadline:
+            image = self.image()
+            confirmations = confirmations + 1 if self.hit("织梦加速页面", image) else 0
+            if time.monotonic() >= deadline:
+                raise DreamError("等待超时：生产加速页面")
+            if confirmations == 2:
+                break
+            time.sleep(min(0.2, max(0, popup_deadline - time.monotonic())))
+        else:
+            if time.monotonic() >= deadline:
+                raise DreamError("等待超时：生产加速页面")
+            if not self.management_ready(self.image(), full=False):
+                raise DreamError("未出现生产加速弹窗，且未确认仍在织梦经营工位页")
+            self._stone_exhausted = True
+            logger.info("能量石用完了，转为自然等待")
+            return None
         self.button("织梦立即完成按钮", deadline=deadline)
         # 扣能量石只点一次；动画未完成时继续认结果，不能再次扣除。
         self.wait_tile(tile, "可收获", deadline=deadline)
@@ -977,6 +1015,7 @@ class DreamRunner:
         return states if states and set(tiles).issubset(states) else None
 
     def finish_tiles(self, tiles, use_stone, deadline):
+        use_stone = use_stone and not self._stone_exhausted
         known_tiles = set(tiles)
         if not known_tiles:
             return {}
@@ -1004,7 +1043,11 @@ class DreamRunner:
                 remaining.difference_update(self.harvest(deadline=deadline, tiles=ready_tiles))
             elif use_stone:
                 tile = min(states)
-                remaining.difference_update(self.accelerate(tile, deadline))
+                harvested = self.accelerate(tile, deadline)
+                if harvested is None:
+                    use_stone = False
+                else:
+                    remaining.difference_update(harvested)
         return self.wait(
             lambda image: observe(image, ("空闲中", "休息中")), "本轮收获后工位状态",
             deadline=deadline, confirmations=1,

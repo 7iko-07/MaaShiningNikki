@@ -170,6 +170,7 @@ class ProductionTests(unittest.TestCase):
             scans.append((expected, set(tiles)))
             return next(snapshots)
         runner.tile_states = Mock(side_effect=scan)
+        runner.tile_state = Mock(return_value=("空闲中", box))
         runner.wait_tile = Mock(return_value=box)
         runner.click = Mock()
         runner.finish_tiles((first, second), False, dream.time.monotonic() + 30)
@@ -218,24 +219,95 @@ class ProductionTests(unittest.TestCase):
         order = self.order(10)
         order.scheduled = 10
         runner.pending = {tile: dream.ProductionBatch(order, 5) for tile in (first, second)}
-        runner.wait = Mock(return_value=True)
+        runner.wait = Mock(side_effect=lambda predicate, label, **kwargs: predicate(object()))
         runner.tile_states = Mock(side_effect=[
             {tile: ("可收获", box) for tile, box in boxes.items()},
             {second: ("可收获", boxes[second])}, {},
         ])
         events = []
         def wait_tile(tile, expected, **kwargs):
-            if expected != "可收获":
-                events.append(("idle", tile))
             return boxes[tile]
+        def confirmed(tile, image, expected):
+            events.append(("idle", tile))
+            return "空闲中", boxes[tile]
+        runner.tile_state = Mock(side_effect=confirmed)
         runner.wait_tile = Mock(side_effect=wait_tile)
         runner.click = Mock(side_effect=lambda box: events.append(("click", box)))
         runner.harvest()
-        self.assertEqual(events, [("click", boxes[first]), ("click", boxes[second]),
+        self.assertEqual(events, [("click", (705, 165, 1, 1)), ("click", (1125, 495, 1, 1)),
                                   ("idle", first), ("idle", second)])
         self.assertEqual(order.harvested, 10)
         self.assertEqual(runner.pending, {})
         self.assertTrue(all(call.args[1] == "可收获" for call in runner.tile_states.call_args_list))
+
+    def test_harvest_retries_fresh_centers_and_counts_only_confirmed_completion(self):
+        for final in ("空闲中", "休息中", "一直可收获", "未识别", "页面未就绪"):
+            with self.subTest(final=final):
+                runner = self.runner()
+                tile, now = (0, 3), [10.0]
+                order = self.order(4)
+                order.scheduled = 4
+                runner.pending[tile] = dream.ProductionBatch(order, 4)
+                runner.tile_states = Mock(return_value={tile: ("可收获", (100, 150, 100, 30))})
+                runner.wait_tile = Mock(return_value=(100, 150, 100, 30))
+                clicks = []
+
+                def click(box):
+                    expected = (150, 165, 1, 1) if not clicks else (240 + int(now[0] * 10), 170, 1, 1)
+                    self.assertEqual(box, expected)
+                    clicks.append(now[0])
+
+                def state(actual_tile, image, expected):
+                    self.assertEqual(actual_tile, tile)
+                    self.assertEqual(order.harvested, 0)
+                    self.assertIn(tile, runner.pending)
+                    if final in ("空闲中", "休息中") and len(clicks) == 2:
+                        return final, (200, 160, 80, 20)
+                    if final == "未识别":
+                        return None
+                    return "可收获", (200 + int(now[0] * 10), 160, 80, 20)
+
+                runner.click = Mock(side_effect=click)
+                runner.tile_state = Mock(side_effect=state)
+                runner.management_ready = Mock(side_effect=lambda image, **kwargs:
+                                               not (final == "页面未就绪" and clicks))
+                def sleep(seconds):
+                    now[0] += seconds
+                with (patch.object(dream.time, "monotonic", side_effect=lambda: now[0]),
+                      patch.object(dream.time, "sleep", side_effect=sleep)):
+                    if final in ("空闲中", "休息中"):
+                        self.assertEqual(runner.harvest(deadline=12), {tile})
+                        self.assertEqual(order.harvested, 4)
+                        self.assertNotIn(tile, runner.pending)
+                        self.assertEqual(len(clicks), 2)
+                    else:
+                        with self.assertRaisesRegex(dream.DreamError, "等待超时"):
+                            runner.harvest(deadline=12)
+                        self.assertEqual(order.harvested, 0)
+                        self.assertIn(tile, runner.pending)
+                        self.assertLess(now[0], 12.3)
+                        if final != "一直可收获":
+                            self.assertEqual(len(clicks), 1)
+                self.assertTrue(all(b - a >= 1 for a, b in zip(clicks, clicks[1:])))
+
+    def test_harvest_retry_failure_preserves_pending_quantity(self):
+        runner = self.runner()
+        tile = (0, 0)
+        order = self.order(5)
+        runner.pending[tile] = dream.ProductionBatch(order, 5)
+        runner.tile_states = Mock(return_value={tile: ("可收获", (100, 150, 100, 30))})
+        runner.wait_tile = Mock(return_value=(100, 150, 100, 30))
+        runner.tile_state = Mock(return_value=("可收获", (200, 150, 100, 30)))
+        runner.click = Mock(side_effect=[None, dream.DreamError("点击失败")])
+        now = [10.0]
+        def sleep(seconds):
+            now[0] += seconds
+        with (patch.object(dream.time, "monotonic", side_effect=lambda: now[0]),
+              patch.object(dream.time, "sleep", side_effect=sleep),
+              self.assertRaisesRegex(dream.DreamError, "点击失败")):
+            runner.harvest(deadline=12)
+        self.assertEqual(order.harvested, 0)
+        self.assertIn(tile, runner.pending)
 
     def test_failed_production_confirmation_never_repeats_start_or_counts_success(self):
         runner = self.runner()
@@ -276,7 +348,9 @@ class ProductionTests(unittest.TestCase):
             actual_order.scheduled += 5
             runner.pending[tile] = dream.ProductionBatch(actual_order, 5)
         def click(box):
-            tile = next(tile for tile in tiles if boxes[tile] == box)
+            tile = next(tile for tile in tiles if (
+                boxes[tile][0] + boxes[tile][2] // 2,
+                boxes[tile][1] + boxes[tile][3] // 2, 1, 1) == box)
             events.append(("harvest", tile))
             states[tile] = ("空闲中", box)
         def sleep(seconds):

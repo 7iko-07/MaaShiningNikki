@@ -9,6 +9,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 from maa.controller import CustomController
@@ -87,6 +88,11 @@ class RecordAction(CustomAction):
         self.calls = []
 
     def run(self, context, argv):
+        if argv.node_name.startswith("批量挑战"):
+            params = json.loads(argv.custom_action_param)
+            prepared = params.get("prepared_values")
+            if not prepared or prepared["task_id"] != argv.task_detail.task_id or prepared["mode"] != params["mode"]:
+                return False
         self.calls.append((argv.node_name, self.controller.frames))
         return True
 
@@ -109,6 +115,50 @@ def simulated_recognition(recognition):
 
 
 class ClothingReadinessTests(unittest.TestCase):
+    def test_ocr_exceptions_fail_native_task_without_following_return_or_recheck(self):
+        from tools.test_time_corridor_challenge import module
+        for branch in ("主线", "心灵迷宫"):
+            for stage in ("ready", "batch"):
+                with self.subTest(branch=branch, stage=stage):
+                    batch = f"批量挑战{branch}制衣材料"
+                    gate = f"等待制衣挑战页面就绪-{branch}"
+                    return_node = f"返回制衣页面-{branch}"
+                    pipeline = {name: copy.deepcopy(PIPELINE[name]) for name in (gate, batch)}
+                    pipeline[return_node] = {"recognition": "DirectHit", "action": {
+                        "type": "Custom", "param": {"custom_action": "record"}}, "post_delay": 0}
+                    pipeline["在加载页面"] = {"recognition": {"type": "Custom", "param": {
+                        "custom_recognition": "loading"}}, "action": "DoNothing"}
+                    controller = ScreenController()
+                    record = RecordAction(controller)
+                    with tempfile.TemporaryDirectory() as directory:
+                        bundle = Path(directory)
+                        (bundle / "pipeline").mkdir()
+                        (bundle / "pipeline/test.json").write_text(
+                            json.dumps(pipeline, ensure_ascii=False), encoding="utf-8")
+                        resource = Resource()
+                        self.assertTrue(resource.register_custom_recognition(
+                            "loading", LoadingRecognition(controller, [])))
+                        self.assertTrue(resource.register_custom_action(
+                            "make_target_clothes_wait_ready", module.MakeTargetClothesWaitReadyAction()))
+                        self.assertTrue(resource.register_custom_action(
+                            "make_target_clothes_batch_challenge", module.MakeTargetClothesBatchChallengeAction()))
+                        self.assertTrue(resource.register_custom_action("record", record))
+                        self.assertTrue(resource.post_bundle(bundle).wait().status.succeeded)
+                        self.assertTrue(controller.post_connection().wait().status.succeeded)
+                        tasker = Tasker()
+                        self.assertTrue(tasker.bind(resource, controller))
+                        with patch.object(module.MakeTargetClothesBatchChallengeAction, "_read_round_values",
+                                          side_effect=AttributeError("'list' object has no attribute 'x'")) as read, \
+                             patch.object(module.logger, "exception") as error:
+                            result = tasker.post_task(gate if stage == "ready" else batch).wait()
+                            self.assertFalse(result.status.succeeded)
+                            read.assert_called_once()
+                            error.assert_called_once()
+                        self.assertEqual(record.calls, [])
+                        self.assertEqual(controller.clicks, [])
+                        del tasker
+                        del resource
+
     def run_return(self, entry, stuck=False, back_visible=True, already_ready=False):
         from tools.test_time_corridor_challenge import module
         pipeline = copy.deepcopy(PIPELINE)
@@ -274,7 +324,11 @@ class ClothingReadinessTests(unittest.TestCase):
         for name, node in pipeline.items():
             node["recognition"] = simulated_recognition(node["recognition"])
             if name not in (entry, gate):
-                node["action"] = {"type": "Custom", "param": {"custom_action": "record"}}
+                original = node.get("action", {})
+                params = original.get("param", {}).get("custom_action_param", {}) if isinstance(original, dict) else {}
+                node["action"] = {"type": "Custom", "param": {
+                    "custom_action": "record", "custom_action_param": params,
+                }}
                 node["next"] = []
                 node["pre_delay"] = node["post_delay"] = 0
                 node.pop("post_wait_freezes", None)
@@ -285,6 +339,28 @@ class ClothingReadinessTests(unittest.TestCase):
             "action": "DoNothing",
         }
         controller = ScreenController(animated=animated)
+        if custom_wait and gate_action["param"]["custom_action_param"].get("prepare_node"):
+            from tools.test_time_corridor_challenge import module
+
+            def numbers(context, runtime_controller, mode, stamina_roi, cost_roi, remaining_roi, *args, **kwargs):
+                if controller.frames < ready_frame:
+                    return None
+                frame_texts = texts() if callable(texts) else texts
+                def fraction(roi):
+                    match = re.search(r"(\d+)\s*[/／]\s*\d+", frame_texts.get(tuple(roi), ""))
+                    return int(match[1]) if match else None
+                stamina = fraction(stamina_roi)
+                cost_match = re.search(r"每次消耗.*?(\d+)", frame_texts.get(tuple(cost_roi), ""))
+                cost = int(cost_match[1]) if cost_match else None
+                remaining = fraction(remaining_roi) if remaining_roi else None
+                if stamina is None or not cost or (mode == "heart_maze" and remaining is None):
+                    return None
+                return stamina, cost, remaining
+
+            # Native graph, freeze waits and Context handoff stay real; only OCR IO is simulated.
+            patcher = patch.object(module.MakeTargetClothesBatchChallengeAction, "_read_round_values", side_effect=numbers)
+            patcher.start()
+            self.addCleanup(patcher.stop)
         recognition = ScreenRecognition(controller, texts, ready_frame)
         loading = LoadingRecognition(controller, loading_frames)
         action = RecordAction(controller)
@@ -373,14 +449,14 @@ class ClothingReadinessTests(unittest.TestCase):
                 self.assertTrue(success)
                 self.assertEqual(len(calls), 1)
 
-    def test_sufficient_quantity_can_finish_without_challenge_numbers(self):
+    def test_first_entry_does_not_use_sufficient_quantity_as_readiness(self):
         for branch in ("心灵迷宫", "主线"):
             with self.subTest(branch=branch):
                 success, calls = self.run_gate("点击前往获取" + branch + "制衣材料", {
                     (379, 355, 265, 63): "数量已足够",
                 })
-                self.assertTrue(success)
-                self.assertEqual(len(calls), 1)
+                self.assertFalse(success)
+                self.assertEqual(calls, [])
 
     def test_option_overrides_cannot_restore_initial_three_second_sleep(self):
         interface = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-8"))
@@ -406,7 +482,8 @@ class ClothingReadinessTests(unittest.TestCase):
         for frames in (range(1, 9), range(3, 9)):
             with self.subTest(loading_frames=frames):
                 success, calls = self.run_gate("点击前往获取主线制衣材料", {
-                    (379, 355, 265, 63): "数量已足够",
+                    (82, 0, 145, 40): "100/140", (55, 755, 205, 52): "每次消耗：4",
+                    (68, 817, 108, 40): "挑战一次",
                 }, loading_frames=frames, wait_timeout=1600)
                 self.assertTrue(success)
                 self.assertEqual(len(calls), 1)
@@ -414,7 +491,8 @@ class ClothingReadinessTests(unittest.TestCase):
 
     def test_no_loading_symbol_is_required(self):
         success, calls = self.run_gate("点击前往获取主线制衣材料", {
-            (379, 355, 265, 63): "数量已足够",
+            (82, 0, 145, 40): "100/140", (55, 755, 205, 52): "每次消耗：4",
+            (68, 817, 108, 40): "挑战一次",
         }, loading_frames=())
         self.assertTrue(success)
         self.assertEqual(len(calls), 1)
@@ -454,8 +532,9 @@ class NativeReadinessProcessTests(unittest.TestCase):
             "sys.exit(not result.wasSuccessful())"
         )
         result = subprocess.run([sys.executable, "-X", "utf8", "-c", code], cwd=ROOT,
-                                capture_output=True, encoding="utf-8", errors="replace", timeout=45)
+                                capture_output=True, encoding="utf-8", errors="replace", timeout=75)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn("Exception ignored on calling ctypes callback", result.stderr)
 
 
 def load_tests(loader, tests, pattern):

@@ -21,3 +21,5 @@ from . import union_secret_task
 from . import switch_account
 from . import arena_weekly
 from . import dreamweaver_space
+from . import memory_stairway
+from . import manicure

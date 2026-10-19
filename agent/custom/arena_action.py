@@ -20,6 +20,54 @@ class PopupOutcome(Enum):
     FAILED = auto()
 
 
+@AgentServer.custom_action("arena_return_to_compare")
+class ArenaReturnToCompareAction(CustomAction):
+    """在同一总期限内重识别、点击返回，直到确认我的搭配。"""
+
+    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        controller = context.tasker.controller
+        deadline = time.monotonic() + 30
+        next_click = 0.0
+        try:
+            while time.monotonic() < deadline and not context.tasker.stopping:
+                if not controller.post_screencap().wait().succeeded:
+                    logger.error("竞技场返回：截图失败")
+                    return False
+                image = controller.cached_image
+                for node in ("竞技场搭配完成确认", "点击OK-竞技场", argv.node_name):
+                    if context.tasker.stopping or time.monotonic() >= deadline:
+                        return False
+                    detail = context.run_recognition(node, image)
+                    if detail is None:
+                        logger.error(f"竞技场返回：识别失败：{node}")
+                        return False
+                    if context.tasker.stopping or time.monotonic() >= deadline:
+                        return False
+                    if not detail.hit:
+                        continue
+                    if node == "竞技场搭配完成确认":
+                        return True
+                    # 弹窗命中时不再检查或点击背后的返回按钮。
+                    if time.monotonic() >= next_click:
+                        box = detail.box
+                        if box is None or box.w <= 0 or box.h <= 0:
+                            logger.error(f"竞技场返回：点击框无效：{node}")
+                            return False
+                        if not controller.post_click(
+                            int(box.x + box.w / 2), int(box.y + box.h / 2)
+                        ).wait().succeeded:
+                            logger.error(f"竞技场返回：点击失败：{node}")
+                            return False
+                        next_click = time.monotonic() + 1
+                    break
+                time.sleep(min(0.3, max(0, deadline - time.monotonic())))
+        except Exception as exc:
+            logger.error(f"竞技场返回失败：{exc}")
+            return False
+        logger.error("竞技场返回未完成：任务停止或 30 秒内未识别到我的搭配")
+        return False
+
+
 @AgentServer.custom_action("arena_close_rank_popup")
 class ArenaCloseRankPopupAction(CustomAction):
     """动画变化不代表关闭；只在文字仍可见时补点，限时确认消失。"""

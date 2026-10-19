@@ -293,6 +293,99 @@ class ArenaActionTests(unittest.TestCase):
             "竞技场挑战统计：自身战力大于对手 0 次，小于 0 次，相等 0 次")
 
 
+class ArenaReturnActionTests(unittest.TestCase):
+    def setUp(self):
+        self.context = Mock()
+        self.context.tasker.stopping = False
+        self.controller = self.context.tasker.controller
+        self.controller.post_screencap.return_value.wait.return_value.succeeded = True
+        self.controller.post_click.return_value.wait.return_value.succeeded = True
+        self.now = 0.0
+        self.visible = lambda node: node == "返回竞技场战力对比页面"
+        self.context.run_recognition.side_effect = self.recognize
+        for patcher in (patch.object(arena.time, "monotonic", side_effect=lambda: self.now),
+                        patch.object(arena.time, "sleep", side_effect=self.sleep)):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def sleep(self, seconds):
+        self.now += seconds
+
+    def recognize(self, node, image):
+        return SimpleNamespace(hit=self.visible(node), box=SimpleNamespace(
+            x=int(self.now * 100), y=50, w=36, h=38))
+
+    def run_action(self):
+        return arena.ArenaReturnToCompareAction().run(self.context, SimpleNamespace(
+            node_name="返回竞技场战力对比页面"))
+
+    def test_retries_fresh_box_centers_until_destination_then_stops(self):
+        self.visible = lambda node: node == "返回竞技场战力对比页面" or (
+            node == "竞技场搭配完成确认" and self.now >= 2.5)
+        self.assertTrue(self.run_action())
+        points = [call.args for call in self.controller.post_click.call_args_list]
+        self.assertEqual(len(points), 3)
+        self.assertEqual(points[0], (18, 69))
+        self.assertTrue(all(y == 69 for x, y in points))
+        self.assertTrue(all(b[0] - a[0] >= 100 for a, b in zip(points, points[1:])))
+        # 已到达时不再识别或点击仍可见的返回按钮。
+        self.assertEqual(self.context.run_recognition.call_args.args[0], "竞技场搭配完成确认")
+        self.context.run_task.assert_not_called()
+
+    def test_destination_already_visible_never_clicks(self):
+        self.visible = lambda node: True
+        self.assertTrue(self.run_action())
+        self.controller.post_click.assert_not_called()
+
+    def test_ok_popup_precedes_return_and_shares_deadline(self):
+        self.visible = lambda node: node != "竞技场搭配完成确认"
+        self.assertFalse(self.run_action())
+        self.assertEqual(self.now, 30)
+        self.assertGreater(self.controller.post_click.call_count, 1)
+        nodes = [call.args[0] for call in self.context.run_recognition.call_args_list]
+        self.assertNotIn("返回竞技场战力对比页面", nodes)
+
+    def test_no_recognized_button_never_blind_clicks_and_times_out(self):
+        self.visible = lambda node: False
+        self.assertFalse(self.run_action())
+        self.assertEqual(self.now, 30)
+        self.controller.post_click.assert_not_called()
+
+    def test_ok_popup_closes_then_destination_completes(self):
+        self.visible = lambda node: (
+            node == "点击OK-竞技场" if self.now < 0.3
+            else node == "竞技场搭配完成确认")
+        self.assertTrue(self.run_action())
+        self.controller.post_click.assert_called_once_with(18, 69)
+
+    def test_capture_click_recognition_and_box_failures_stop(self):
+        for failure in ("capture", "click", "recognition", "box"):
+            with self.subTest(failure=failure):
+                self.setUp_failure(failure)
+                self.assertFalse(self.run_action())
+                self.assertEqual(self.now, 0)
+
+    def setUp_failure(self, failure):
+        self.controller.post_screencap.return_value.wait.return_value.succeeded = failure != "capture"
+        self.controller.post_click.return_value.wait.return_value.succeeded = failure != "click"
+        self.context.run_recognition.side_effect = self.recognize
+        if failure in ("recognition", "box"):
+            self.context.run_recognition.side_effect = lambda node, image: (
+                None if failure == "recognition" else SimpleNamespace(
+                    hit=node == "返回竞技场战力对比页面", box=SimpleNamespace(w=0, h=0)))
+
+    def test_stop_or_recognition_exceeding_deadline_never_clicks(self):
+        self.context.tasker.stopping = True
+        self.assertFalse(self.run_action())
+        self.context.tasker.stopping = False
+        def slow_recognition(node, image):
+            self.now = 31
+            return SimpleNamespace(hit=True)
+        self.context.run_recognition.side_effect = slow_recognition
+        self.assertFalse(self.run_action())
+        self.controller.post_click.assert_not_called()
+
+
 class RankPopupActionTests(unittest.TestCase):
     def setUp(self):
         self.context = Mock()
@@ -810,6 +903,7 @@ class NativePipelineProcessTests(unittest.TestCase):
 def load_tests(loader, tests, pattern):
     return unittest.TestSuite([
         loader.loadTestsFromTestCase(ArenaActionTests),
+        loader.loadTestsFromTestCase(ArenaReturnActionTests),
         loader.loadTestsFromTestCase(RankPopupActionTests),
         loader.loadTestsFromTestCase(NativePipelineProcessTests),
     ])

@@ -1,7 +1,16 @@
 {
     "心阶任务链入口": {
-		"next": ["心阶任务链准备"],
-		"timeout": 2000
+        "next": [
+            "心阶任务链准备"
+        ],
+        "timeout": 2000,
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "memory_stairway_guard"
+            }
+        }
     },
 	"心阶任务链准备": {
         "recognition": "DirectHit",
@@ -18,21 +27,21 @@
         "timeout": 30000
     },
 	"点击心阶页面-空白":{
-		"recognition": {
-            "type": "DirectHit",
-            "param": {}
-        },
+        "recognition": "DirectHit",
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [603, 42, 21, 12]
+                "custom_action": "memory_stairway_popups",
+                "custom_action_param": {
+                    "timeout": 15000
+                }
             }
-		},
-		"repeat": 3,
-		"repeat_delay": 1000,
-        "post_delay": 1000,
-		"next": ["点击快速挑战"]
-	},
+        },
+        "post_delay": 0,
+        "next": [
+            "点击快速挑战"
+        ]
+    },
     "点击快速挑战":{
         "recognition": {
 			"type": "OCR",
@@ -53,19 +62,18 @@
 		"timeout": 2000
     },
 	"点击心阶页面-空白2":{
-		"recognition": {
-            "type": "DirectHit",
-            "param": {}
-        },
+        "recognition": "DirectHit",
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [603, 42, 21, 12]
+                "custom_action": "memory_stairway_popups",
+                "custom_action_param": {
+                    "timeout": 15000,
+                    "after_quick_challenge": true
+                }
             }
 		},
-		"repeat": 3,
-		"repeat_delay": 500,
-        "post_delay": 1000,
+        "post_delay": 0,
 		"next": ["点击真我之境"]
 	},
 	"点击真我之境":{
@@ -146,16 +154,15 @@
         "action": {
             "type": "Custom",
 			"param": {
-				"custom_action": "click_and_wait_change",
+				"custom_action": "memory_stairway_next_step",
 				"custom_action_param": {
-                    "target": [65, 1183, 163, 44],
-					"compare_roi": [14, 252, 700, 914]
+                    "ready_node": "点击心阶-装备印象"
                 }
 			}
 		},
-        "post_delay": 1000,
+        "post_delay": 0,
         "timeout": 3000,
-		"next": ["[JumpBack]在加载页面","点击心阶-装备印象"]
+		"next": ["点击心阶-装备印象"]
 	},
     "点击心阶-装备印象":{
 		"recognition": {
@@ -170,7 +177,6 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [531, 384, 144, 42],
 					"compare_roi": [14, 252, 700, 914]
                 }
 			}
@@ -297,16 +303,15 @@
         "action": {
             "type": "Custom",
 			"param": {
-				"custom_action": "click_and_wait_change",
+				"custom_action": "memory_stairway_next_step",
 				"custom_action_param": {
-                    "target": [65, 1183, 163, 44],
-					"compare_roi": [5, 249, 715, 912]
+                    "ready_node": "点击心阶-装备印象2"
                 }
 			}
 		},
-        "post_delay": 1000,
+        "post_delay": 0,
         "timeout": 3000,
-		"next": ["[JumpBack]在加载页面","点击心阶-装备印象2"]
+		"next": ["点击心阶-装备印象2"]
 	},
     "点击心阶-装备印象2":{
 		"recognition": {
@@ -321,7 +326,6 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [531, 384, 144, 42],
 					"compare_roi": [5, 249, 715, 912]
                 }
 			}
@@ -448,16 +452,15 @@
         "action": {
             "type": "Custom",
 			"param": {
-				"custom_action": "click_and_wait_change",
+				"custom_action": "memory_stairway_next_step",
 				"custom_action_param": {
-                    "target": [65, 1183, 163, 44],
-					"compare_roi": [17, 259, 687, 905]
+                    "ready_node": "点击心阶-装备印象3"
                 }
 			}
 		},
-        "post_delay": 1000,
+        "post_delay": 0,
         "timeout": 3000,
-		"next": ["[JumpBack]在加载页面","点击心阶-装备印象3"]
+		"next": ["点击心阶-装备印象3"]
 	},
     "点击心阶-装备印象3":{
 		"recognition": {
@@ -472,7 +475,6 @@
 			"param": {
 				"custom_action": "click_and_wait_change",
 				"custom_action_param": {
-                    "target": [531, 384, 144, 42],
 					"compare_roi": [17, 259, 687, 905]
                 }
 			}
@@ -545,26 +547,41 @@
 		"next": ["[JumpBack]在加载页面","点击心阶-开始挑战"]
 	},
     "点击心阶-开始挑战":{
-		"recognition": {
+        "recognition": {
             "type": "OCR",
             "param": {
-				"expected": ["开始挑战"],
-				"roi": [298, 968, 132, 47]
-			}
+                "expected": [
+                    "开始挑战"
+                ],
+                "roi": [
+                    298,
+                    968,
+                    132,
+                    47
+                ]
+            }
         },
         "action": {
             "type": "Custom",
-			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {
-					"compare_roi": [29, 306, 653, 502]
-				}
-			}
-		},
+            "param": {
+                "custom_action": "memory_stairway_challenge",
+                "custom_action_param": {
+                    "compare_roi": [
+                        29,
+                        306,
+                        653,
+                        502
+                    ]
+                }
+            }
+        },
         "post_delay": 1000,
         "timeout": 3000,
-		"next": ["[JumpBack]在加载页面","点击心阶-空白"]
-	},
+        "next": [
+            "[JumpBack]在加载页面",
+            "点击心阶-空白"
+        ]
+    },
     "点击心阶-空白":{
 		"recognition": {
             "type": "DirectHit",
@@ -812,5 +829,75 @@
 		"repeat": 3,
 		"repeat_delay": 1000,
 		"next": ["stop"]
-	}
+	},
+    "心阶搭配下一步按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["下一步"],
+                "roi": [0, 1145, 301, 135]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 0
+    },
+    "心阶部件制作提示": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [80, 440, 410, 75],
+                "expected": ["设计工坊", "以下部件"]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 0
+    },
+    "心阶快速挑战奖励弹窗": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [260, 250, 200, 60],
+                "expected": ["快速挑战"]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 0
+    },
+    "心阶新赛季开始弹窗": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    0,
+                    0,
+                    720,
+                    1280
+                ],
+                "expected": [
+                    "新赛季\\s*开始",
+                    "新赛季"
+                ]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 0
+    },
+    "心阶我知道了弹窗": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    0,
+                    0,
+                    720,
+                    1280
+                ],
+                "expected": [
+                    "我\\s*知\\s*道\\s*了"
+                ]
+            }
+        },
+        "action": "DoNothing",
+        "post_delay": 0
+    }
 }

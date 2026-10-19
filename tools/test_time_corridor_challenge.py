@@ -143,25 +143,33 @@ class TimeCorridorChallengeTests(unittest.TestCase):
 
 class BatchChallengeResultTests(unittest.TestCase):
     def test_completion_wait_precedes_result_read_and_close(self):
-        self._run_result_wait(True)
+        for branch in ("主线", "心灵迷宫"):
+            with self.subTest(branch=branch):
+                self._run_result_wait(True, branch)
 
     def test_failed_wait_stops_without_close_or_repeated_challenge(self):
-        self._run_result_wait(False)
+        for branch in ("主线", "心灵迷宫"):
+            with self.subTest(branch=branch):
+                self._run_result_wait(False, branch)
 
     def test_missing_wait_result_stops_without_close_or_repeated_challenge(self):
-        self._run_result_wait(None)
+        for branch in ("主线", "心灵迷宫"):
+            with self.subTest(branch=branch):
+                self._run_result_wait(None, branch)
 
-    def _run_result_wait(self, succeeded):
+    def _run_result_wait(self, succeeded, branch):
         pipeline = json.loads(
             (ROOT / "assets/resource/pipeline/Make_the_target_clothes.json").read_text(encoding="utf-8")
         )
-        params = dict(pipeline["批量挑战主线制衣材料"]["action"]["param"]["custom_action_param"])
+        node_name = f"批量挑战{branch}制衣材料"
+        params = dict(pipeline[node_name]["action"]["param"]["custom_action_param"])
+        mode = params["mode"]
         action = module.MakeTargetClothesBatchChallengeAction()
         context = MagicMock()
         argv = SimpleNamespace(custom_action_param=json.dumps(params),
-                               node_name="批量挑战主线制衣材料", task_detail=SimpleNamespace(task_id=987654))
-        action.clear_task_state(987654, "main_story")
-        self.addCleanup(action.clear_task_state, 987654, "main_story")
+                               node_name=node_name, task_detail=SimpleNamespace(task_id=987654))
+        action.clear_task_state(987654, mode)
+        self.addCleanup(action.clear_task_state, 987654, mode)
         events = []
         def wait(node):
             self.assertEqual(node, "等待制衣挑战结果")
@@ -170,28 +178,54 @@ class BatchChallengeResultTests(unittest.TestCase):
         context.run_task.side_effect = wait
         def quantity(**kwargs):
             events.append("quantity")
-            return events.count("quantity") > 1
+            return True
         with patch.object(action, "_has_sufficient_quantity", side_effect=quantity), \
-             patch.object(action, "_read_round_values", return_value=(100, 5, None)), \
+             patch.object(action, "_read_round_values", return_value=(100, 5, 30 if mode == "heart_maze" else None)), \
              patch.object(action, "_read_required_number", return_value=50) as read_after, \
              patch.object(action, "_click_roi", side_effect=lambda controller, roi: events.append(tuple(roi))), \
              patch.object(module.time, "sleep") as sleep:
             self.assertEqual(action.run(context, argv), succeeded is True)
-            expected = ["quantity", tuple(params["multi_button"]), "wait"]
+            expected = [tuple(params["multi_button"]), "wait"]
             if succeeded:
                 expected.extend(["quantity", tuple(params["popup_close_roi"])])
                 read_after.assert_called_once()
             else:
                 read_after.assert_not_called()
-                self.assertNotIn((987654, "main_story"), action._task_challenge_counts)
+                self.assertNotIn((987654, mode), action._task_challenge_counts)
             self.assertEqual(events, expected)
             sleep.assert_not_called()
 
-    def test_main_story_option_keeps_completion_wait(self):
+    def test_challenge_options_keep_completion_wait(self):
         interface = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-8"))
-        override = interface["option"]["制作目标服装主线挑战次数"]["pipeline_override"]
-        params = override["批量挑战主线制衣材料"]["action"]["param"]["custom_action_param"]
-        self.assertEqual(params["result_ready_node"], "等待制衣挑战结果")
+        for branch in ("主线", "心灵迷宫"):
+            with self.subTest(branch=branch):
+                override = interface["option"][f"制作目标服装{branch}挑战次数"]["pipeline_override"]
+                params = override[f"批量挑战{branch}制衣材料"]["action"]["param"]["custom_action_param"]
+                self.assertEqual(params["result_ready_node"], "等待制衣挑战结果")
+
+    def test_exception_after_challenge_stops_before_result_read_close_or_retry(self):
+        pipeline = json.loads(
+            (ROOT / "assets/resource/pipeline/Make_the_target_clothes.json").read_text(encoding="utf-8")
+        )
+        for branch in ("主线", "心灵迷宫"):
+            with self.subTest(branch=branch):
+                node = f"批量挑战{branch}制衣材料"
+                params = pipeline[node]["action"]["param"]["custom_action_param"]
+                action = module.MakeTargetClothesBatchChallengeAction()
+                context = MagicMock()
+                context.run_task.side_effect = RuntimeError("result recognition failed")
+                argv = SimpleNamespace(node_name=node, custom_action_param=json.dumps(params),
+                                       task_detail=SimpleNamespace(task_id=987655))
+                with patch.object(action, "_read_round_values", return_value=(100, 5, 30)), \
+                     patch.object(action, "_click_roi") as click, \
+                     patch.object(action, "_has_sufficient_quantity") as quantity, \
+                     patch.object(module.logger, "exception") as error:
+                    self.assertFalse(action.run(context, argv))
+                click.assert_called_once_with(context.tasker.controller, params["multi_button"])
+                context.run_task.assert_called_once_with("等待制衣挑战结果")
+                quantity.assert_not_called()
+                context.override_next.assert_not_called()
+                error.assert_called_once()
 
 
 if __name__ == "__main__":

@@ -457,25 +457,83 @@ class DreamTests(unittest.TestCase):
 
     def test_acceleration_is_clicked_once_then_waits_for_tile(self):
         runner = self.runner()
+        runner.image = Mock(return_value=object())
+        runner.hit = Mock(return_value=True)
         runner.wait_tile = Mock(return_value=(1, 1, 10, 10))
         runner.wait = Mock(return_value=True)
         runner.click = Mock()
         runner.button = Mock()
         runner.harvest = Mock()
-        runner.accelerate((0, 0), 600)
+        with self.selection_clock():
+            runner.accelerate((0, 0), 600)
         self.assertEqual(runner.wait_tile.call_args_list[0].kwargs["confirmations"], 1)
         runner.button.assert_called_once_with("织梦立即完成按钮", deadline=600)
         self.assertEqual(runner.wait_tile.call_args_list[-1].args, ((0, 0), "可收获"))
 
     def test_acceleration_result_timeout_never_repeats_stone_click(self):
         runner = self.runner()
+        runner.image = Mock(return_value=object())
+        runner.hit = Mock(return_value=True)
         runner.wait_tile = Mock(side_effect=[(1, 1, 10, 10), dream.DreamError("动画未结束")])
         runner.wait = Mock(return_value=True)
         runner.click = Mock()
         runner.button = Mock()
-        with self.assertRaises(dream.DreamError):
+        with self.selection_clock(), self.assertRaises(dream.DreamError):
             runner.accelerate((0, 0), 600)
         runner.button.assert_called_once_with("织梦立即完成按钮", deadline=600)
+
+    def test_missing_acceleration_popup_marks_stones_exhausted_without_spending(self):
+        runner = self.runner()
+        runner.image = Mock(return_value=object())
+        runner.hit = Mock(return_value=False)
+        runner.management_ready = Mock(return_value=True)
+        runner.wait_tile = Mock(return_value=(1, 1, 10, 10))
+        runner.click = Mock()
+        runner.button = Mock()
+        runner.harvest = Mock()
+        with self.selection_clock() as now, patch.object(dream.logger, "info") as log:
+            self.assertIsNone(runner.accelerate((0, 0), 610))
+            self.assertEqual(now[0], 40)
+        self.assertTrue(runner._stone_exhausted)
+        self.assertFalse(self.runner()._stone_exhausted)
+        log.assert_called_once_with("能量石用完了，转为自然等待")
+        runner.click.assert_called_once()
+        runner.button.assert_not_called()
+        runner.harvest.assert_not_called()
+
+    def test_delayed_acceleration_popup_still_uses_stones(self):
+        runner = self.runner()
+        runner.image = Mock(return_value=object())
+        runner.wait_tile = Mock(return_value=(1, 1, 10, 10))
+        runner.click = Mock()
+        runner.button = Mock()
+        runner.harvest = Mock(return_value={(0, 0)})
+        with self.selection_clock() as now:
+            runner.hit = Mock(side_effect=lambda node, image: now[0] >= 12)
+            self.assertEqual(runner.accelerate((0, 0), 610), {(0, 0)})
+        self.assertFalse(runner._stone_exhausted)
+        runner.button.assert_called_once_with("织梦立即完成按钮", deadline=610)
+
+    def test_acceleration_failures_do_not_mean_stones_exhausted(self):
+        for failure in ("deadline", "capture", "recognition", "unknown_page", "cancel"):
+            with self.subTest(failure=failure), self.selection_clock(), \
+                    patch.object(dream.logger, "info") as log:
+                runner = self.runner()
+                runner.image = Mock(return_value=object())
+                runner.hit = Mock(return_value=False)
+                runner.management_ready = Mock(return_value=False)
+                runner.wait_tile = Mock(return_value=(1, 1, 10, 10))
+                runner.click = Mock()
+                runner.button = Mock()
+                if failure in ("capture", "cancel"):
+                    runner.image.side_effect = dream.DreamError(failure)
+                elif failure == "recognition":
+                    runner.hit.side_effect = dream.DreamError(failure)
+                with self.assertRaises(dream.DreamError):
+                    runner.accelerate((0, 0), 11 if failure == "deadline" else 610)
+                self.assertFalse(runner._stone_exhausted)
+                runner.button.assert_not_called()
+                log.assert_not_called()
 
     def test_natural_wait_is_ten_minutes_not_reset_by_polling(self):
         runner = self.runner()

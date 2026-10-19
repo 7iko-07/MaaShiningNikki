@@ -322,6 +322,7 @@
                 "custom_action": "make_target_clothes_batch_challenge",
                 "custom_action_param": {
                     "mode": "heart_maze",
+                    "result_ready_node": "等待制衣挑战结果",
                     "sufficient_roi": [379, 355, 265, 63],
                     "sufficient_expected": ["数量已足够"],
                     "stamina_roi": [82, 0, 145, 40],
@@ -1533,14 +1534,22 @@
                 "custom_action": "make_target_clothes_wait_ready",
                 "custom_action_param": {
                     "ready_node": "制衣挑战页面内容-心灵迷宫",
-                    "stable_roi": [55, 755, 573, 118],
-                    "timeout": 10000
+                    "stable_roi": [
+                        55,
+                        755,
+                        573,
+                        118
+                    ],
+                    "timeout": 10000,
+                    "prepare_node": "批量挑战心灵迷宫制衣材料"
                 }
             }
         },
         "pre_delay": 0,
         "post_delay": 0,
-        "next": ["批量挑战心灵迷宫制衣材料"],
+        "next": [
+            "批量挑战心灵迷宫制衣材料"
+        ],
         "timeout": 2000
     },
     "制衣挑战页面内容-心灵迷宫": {
@@ -1661,14 +1670,22 @@
                 "custom_action": "make_target_clothes_wait_ready",
                 "custom_action_param": {
                     "ready_node": "制衣挑战页面内容-主线",
-                    "stable_roi": [55, 755, 573, 118],
-                    "timeout": 10000
+                    "stable_roi": [
+                        55,
+                        755,
+                        573,
+                        118
+                    ],
+                    "timeout": 10000,
+                    "prepare_node": "批量挑战主线制衣材料"
                 }
             }
         },
         "pre_delay": 0,
         "post_delay": 0,
-        "next": ["批量挑战主线制衣材料"],
+        "next": [
+            "批量挑战主线制衣材料"
+        ],
         "timeout": 2000
     },
     "制衣挑战页面内容-主线": {
@@ -1847,6 +1864,49 @@
         },
         "action": "DoNothing",
         "pre_delay": 0,
+        "post_delay": 0
+    },
+    "制衣批量挑战按钮就绪": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [
+                                    68,
+                                    817,
+                                    108,
+                                    40
+                                ],
+                                "expected": [
+                                    "挑战"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [
+                                    210,
+                                    806,
+                                    135,
+                                    67
+                                ],
+                                "expected": [
+                                    "挑战"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "DoNothing",
         "post_delay": 0
     }
 }

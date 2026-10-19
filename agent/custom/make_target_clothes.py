@@ -1,6 +1,8 @@
 import json
 import re
 import time
+import unicodedata
+from numbers import Integral
 
 import numpy as np
 from maa.agent.agent_server import AgentServer
@@ -10,14 +12,98 @@ from maa.pipeline import JActionType, JClick, JOCR, JRecognitionType, JSwipe, JW
 from utils import logger, read_ocr_number, read_ocr_text
 
 
+def _ocr_box(value):
+    """OCR result boxes may be JSON lists even when the SDK annotates Rect."""
+    if not isinstance(value, (list, tuple)):
+        value = tuple(getattr(value, name, None) for name in ("x", "y", "w", "h"))
+    if len(value) != 4 or any(isinstance(part, bool) or not isinstance(part, Integral) for part in value):
+        return None
+    x, y, w, h = value
+    if x < 0 or y < 0 or w <= 0 or h <= 0:
+        return None
+    return x, y, w, h
+
+
+def _fraction_value(result):
+    """Accept a complete fraction or two intact, horizontally aligned number boxes."""
+    if result is None or not result.hit:
+        return None
+    candidates = getattr(result, "all_results", None) or getattr(result, "filtered_results", None) or []
+    if not candidates and getattr(result, "best_result", None) is not None:
+        candidates = [result.best_result]
+    parts = []
+    for item in candidates:
+        text = unicodedata.normalize("NFKC", str(getattr(item, "text", ""))).strip()
+        match = re.fullmatch(r"(?:剩余心灵迷宫次数\s*[:：]?\s*)?(\d+)\s*/\s*(\d+)", text)
+        if match and int(match[2]) > 0:
+            parts.append((item, text, (int(match[1]), int(match[2]))))
+        elif text:
+            parts.append((item, text, None))
+    if len(parts) == 1 and parts[0][2] is not None:
+        return parts[0][2][0]
+    if len(parts) not in (2, 3):
+        return None
+    if any(getattr(item, "score", 1.0) < .7 or getattr(item, "box", None) is None
+           for item, _, _ in parts):
+        return None
+    positioned = [(_ocr_box(item.box), text) for item, text, _ in parts]
+    if any(box is None for box, _ in positioned):
+        return None
+    positioned.sort(key=lambda part: part[0][0])
+    boxes = [box for box, _ in positioned]
+    if max(box[1] for box in boxes) >= min(box[1] + box[3] for box in boxes):
+        return None
+    if any(left[0] + left[2] > right[0] for left, right in zip(boxes, boxes[1:])):
+        return None
+    texts = [text for _, text in positioned]
+    if len(texts) == 3:
+        if texts[1] != "/" or not all(re.fullmatch(r"\d+", text) for text in (texts[0], texts[2])):
+            return None
+        text = "".join(texts)
+    elif all(re.fullmatch(r"\d+", text) for text in texts):
+        text = "/".join(texts)
+    elif ((re.fullmatch(r"\d+", texts[0]) and re.fullmatch(r"/\s*\d+", texts[1]))
+          or (re.fullmatch(r"\d+\s*/", texts[0]) and re.fullmatch(r"\d+", texts[1]))):
+        text = "".join(texts)
+    else:
+        return None
+    match = re.fullmatch(r"(\d+)\s*/\s*(\d+)", text)
+    if match and int(match[2]) > 0:
+        return int(match[1])
+    return None
+
+
+def _read_fraction(context, image, roi):
+    # Detection keeps split boxes; only_rec is a second attempt, never digit guessing.
+    for only_rec in (False, True):
+        detail = context.run_recognition_direct(JRecognitionType.OCR, JOCR(
+            roi=tuple(roi), expected=[".*"], only_rec=only_rec,
+        ), image)
+        value = _fraction_value(detail)
+        if value is not None:
+            return value
+    return None
+
+
 @AgentServer.custom_action("make_target_clothes_wait_ready")
 class MakeTargetClothesWaitReadyAction(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        try:
+            return self._run(context, argv)
+        except Exception:
+            logger.exception("make_target_clothes_wait_ready: 页面就绪检查异常，停止任务")
+            return False
+
+    def _run(self, context: Context, argv: CustomAction.RunArg) -> bool:
         params = json.loads(argv.custom_action_param)
         ready_node = params["ready_node"]
         stable_roi = tuple(params["stable_roi"])
         deadline = time.monotonic() + params.get("timeout", 10000) / 1000
         controller = context.tasker.controller
+
+        prepare_node = params.get("prepare_node")
+        if prepare_node:
+            return self._prepare_batch(context, argv, prepare_node, stable_roi, deadline)
 
         # 加载、内容就绪、动画稳定和复查共用一个期限，不通过回跳重置超时。
         while not context.tasker.stopping and time.monotonic() < deadline:
@@ -39,6 +125,54 @@ class MakeTargetClothesWaitReadyAction(CustomAction):
                 time.sleep(min(0.1, remaining))
 
         logger.error(f"make_target_clothes_wait_ready: 等待挑战弹窗就绪失败：{ready_node}")
+        return False
+
+    def _prepare_batch(self, context, argv, node, stable_roi, deadline):
+        data = context.get_node_data(node)
+        if not data:
+            return False
+        params = data["action"]["param"]["custom_action_param"]
+
+        def save(value):
+            return context.override_pipeline({node: {"action": {"param": {
+                "custom_action_param": dict(params, prepared_values=value),
+            }}}})
+
+        if not save(None):
+            return False
+        reader = MakeTargetClothesBatchChallengeAction()
+        controller = context.tasker.controller
+        while not context.tasker.stopping and time.monotonic() < deadline:
+            remaining_ms = int((deadline - time.monotonic()) * 1000)
+            if remaining_ms < 200:
+                break
+            stable = context.wait_freezes(wait_freezes_param=JWaitFreezes(
+                time=200, target=stable_roi, rate_limit=100, timeout=remaining_ms,
+            ))
+            if not stable or context.tasker.stopping or time.monotonic() >= deadline:
+                break
+            if not controller.post_screencap().wait().status.succeeded:
+                return False
+            image = controller.cached_image
+            loading = context.run_recognition("在加载页面", image)
+            if loading is not None and not loading.hit:
+                values = reader._read_round_values(
+                    context, controller, params["mode"], params["stamina_roi"],
+                    params["stamina_cost_roi"], params.get("remaining_count_roi"),
+                    1, 0, image=image, quiet=True,
+                )
+                if values is not None:
+                    stamina, cost, remaining = values
+                    needs_button = stamina >= cost and (remaining is None or remaining > 0)
+                    button = None
+                    if needs_button:
+                        button = context.run_recognition("制衣批量挑战按钮就绪", image)
+                    if (not needs_button or (button is not None and button.hit)) \
+                            and not context.tasker.stopping and time.monotonic() < deadline:
+                        return save({"task_id": argv.task_detail.task_id, "mode": params["mode"],
+                                     "values": values, "created": time.monotonic()})
+            time.sleep(min(.1, max(0, deadline - time.monotonic())))
+        logger.error(f"make_target_clothes_wait_ready: 等待挑战数据就绪失败：{node}")
         return False
 
     def _is_ready(self, context, controller, ready_node):
@@ -331,6 +465,13 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
         context: Context,
         argv: CustomAction.RunArg,
     ) -> bool:
+        try:
+            return self._run(context, argv)
+        except Exception:
+            logger.exception("make_target_clothes_batch_challenge: 批量挑战异常，停止任务")
+            return False
+
+    def _run(self, context: Context, argv: CustomAction.RunArg) -> bool:
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
 
         mode = params.get("mode")
@@ -387,6 +528,16 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
 
         controller = context.tasker.controller
         task_id = argv.task_detail.task_id
+        prepared = params.get("prepared_values")
+        if prepared is not None and not context.override_pipeline({argv.node_name: {
+            "action": {"param": {"custom_action_param": dict(params, prepared_values=None)}},
+        }}):
+            return False
+        first_values = None
+        if (isinstance(prepared, dict) and prepared.get("task_id") == task_id
+                and prepared.get("mode") == mode
+                and 0 <= time.monotonic() - prepared.get("created", 0) <= 2):
+            first_values = prepared.get("values")
         state_key = (task_id, mode)
         challenged = self._task_challenge_counts.get(state_key, 0)
 
@@ -405,22 +556,8 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             )
             time.sleep(load_delay)
 
-        if self._has_sufficient_quantity(
-            context=context,
-            controller=controller,
-            roi=sufficient_roi,
-            expected=sufficient_expected,
-            retry=retry,
-            retry_delay=retry_delay,
-        ):
-            logger.info(
-                "make_target_clothes_batch_challenge: 材料数量已足够，"
-                "跳过挑战"
-            )
-            return True
-
         for round_index in range(max_rounds):
-            values = self._read_round_values(
+            values = first_values if round_index == 0 and first_values is not None else self._read_round_values(
                 context=context,
                 controller=controller,
                 mode=mode,
@@ -644,7 +781,13 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
         remaining_count_roi,
         retry,
         retry_delay,
+        image=None,
+        quiet=False,
     ):
+        if image is None:
+            if not controller.post_screencap().wait().status.succeeded:
+                return None
+            image = controller.cached_image
         stamina = self._read_required_number(
             context=context,
             controller=controller,
@@ -654,6 +797,7 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             retry=retry,
             retry_delay=retry_delay,
             label="体力",
+            image=image, quiet=quiet,
         )
         if stamina is None:
             return None
@@ -663,10 +807,11 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             controller=controller,
             roi=stamina_cost_roi,
             node_name="_make_target_clothes_batch_cost_ocr",
-            expected=[r".*\d+"],
+            expected=[r"每次消耗.*\d+"],
             retry=retry,
             retry_delay=retry_delay,
             label="单次体力消耗",
+            image=image, quiet=quiet,
         )
         if stamina_cost is None:
             return None
@@ -687,6 +832,7 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                 retry=retry,
                 retry_delay=retry_delay,
                 label="心灵迷宫剩余挑战次数",
+                image=image, quiet=quiet,
             )
             if remaining_count is None:
                 return None
@@ -703,20 +849,31 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
         retry,
         retry_delay,
         label,
+        image=None,
+        quiet=False,
     ):
         for attempt in range(retry):
-            controller.post_screencap().wait()
+            if context.tasker.stopping:
+                return None
+            if image is None or attempt:
+                if not controller.post_screencap().wait().status.succeeded:
+                    return None
+                image = controller.cached_image
             number = read_ocr_number(
                 context,
-                controller.cached_image,
+                image,
                 node_name,
                 roi,
                 expected,
                 "make_target_clothes_batch_challenge",
             )
+            if number is None and label in ("体力", "挑战后体力", "心灵迷宫剩余挑战次数"):
+                number = _read_fraction(context, image, roi)
             if number is not None:
                 return number
 
+            if quiet:
+                continue
             logger.warning(
                 "make_target_clothes_batch_challenge: OCR 识别失败："
                 f"{label} 尝试次数 {attempt + 1}/{retry}"
@@ -724,9 +881,10 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             if attempt < retry - 1 and retry_delay > 0:
                 time.sleep(retry_delay)
 
-        logger.error(
-            f"make_target_clothes_batch_challenge: OCR 识别失败：{label}"
-        )
+        if not quiet:
+            logger.error(
+                f"make_target_clothes_batch_challenge: OCR 识别失败：{label}"
+            )
         return None
 
     def _click_roi(self, controller, roi):
