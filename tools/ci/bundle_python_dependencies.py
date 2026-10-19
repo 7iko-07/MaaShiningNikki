@@ -28,7 +28,7 @@ def trim_python(python_root: Path):
             path.unlink()
 
     # Windows 嵌入式 Python 和 Unix 独立 Python 的目录布局。
-    for site in [python_root / "Lib/site-packages", *python_root.glob("lib/python*/site-packages")]:
+    for site in [python_root / "Lib/site-packages", *(python_root / "lib").glob("python*/site-packages")]:
         for path in [site / "maa/bin", site / "MaaAgentBinary", site / "pip", *site.glob("pip-*.dist-info")]:
             if path.exists():
                 remove(path)
