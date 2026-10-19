@@ -9,7 +9,8 @@
     "version": "v0.0.14-nightly.20261019",
     "title": "闪现吧暖暖v0.0.14#10.19 - 湘间君子女#10.09",
     "icon": "logo.ico",
-    "mirrorchyan_multiplatform":false,
+    "mirrorchyan_rid": "MaaShiningNikki",
+    "mirrorchyan_multiplatform": true,
     "agent": {
         "child_exec": "python",
         "child_args": [
