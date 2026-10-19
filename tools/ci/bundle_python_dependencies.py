@@ -1,10 +1,11 @@
-"""在 CI 中用发行包自己的 Python 安装依赖，禁止用于开发虚拟环境。"""
+"""在 CI 中用发行包自己的 Python 安装并精简依赖，禁止用于开发虚拟环境。"""
 
 import argparse
 import importlib.metadata
 import json
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 
@@ -14,6 +15,43 @@ def framework_version(tag: str) -> str:
     if not re.fullmatch(r"v?\d+\.\d+\.\d+", tag):
         raise ValueError(f"Unsupported MaaFramework release tag: {tag!r}")
     return tag.removeprefix("v")
+
+
+def trim_python(python_root: Path):
+    """依赖安装完成后，移除重复库和 Android 工具、pip、NumPy 测试和缓存。"""
+    def remove(path):
+        # 删除范围限定在包内 Python。
+        path.resolve().relative_to(python_root.resolve())
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+
+    # Windows 嵌入式 Python 和 Unix 独立 Python 的目录布局。
+    for site in [python_root / "Lib/site-packages", *python_root.glob("lib/python*/site-packages")]:
+        for path in [site / "maa/bin", site / "MaaAgentBinary", site / "pip", *site.glob("pip-*.dist-info")]:
+            if path.exists():
+                remove(path)
+        for name in ("test", "tests"):
+            for path in list((site / "numpy").rglob(name)):
+                if path.is_dir():
+                    remove(path)
+
+    for scripts in (python_root / "Scripts", python_root / "bin"):
+        for path in scripts.glob("pip*"):
+            if re.fullmatch(r"pip(?:\d+(?:\.\d+)?)?(?:\.exe|-script\.py)?", path.name):
+                remove(path)
+    for name in ("setup_pip.py", "get-pip.py"):
+        path = python_root / name
+        if path.is_file():
+            remove(path)
+    for path in list(python_root.rglob("__pycache__")):
+        if path.is_dir():
+            remove(path)
+    for path in python_root.rglob("*.pyc"):
+        if path.with_suffix(".py").is_file():
+            remove(path)
+    print("Removed duplicate native libraries and Android tools, pip, NumPy tests and bytecode caches")
 
 
 def main():
@@ -51,6 +89,7 @@ def main():
         json.dumps({"maafw_version": expected, "packages": packages},
                    ensure_ascii=False, indent=2) + "\n", encoding="utf-8",
     )
+    trim_python(python_root)
     print(f"Bundled Python dependencies: {packages}")
 
 

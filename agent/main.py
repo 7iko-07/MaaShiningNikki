@@ -1,5 +1,6 @@
 import os
 import sys
+import sysconfig
 import json
 import importlib.util
 from importlib.metadata import PackageNotFoundError, version
@@ -60,8 +61,33 @@ def check_dependencies():
     logger.info(f"Agent 依赖检查通过，maafw={version('maafw')}；运行时不更新依赖")
 
 
+def configure_native_library_path():
+    """发行包与 UI 共用原生库；源码开发仍使用原有 wheel 或环境变量。"""
+    release_root = Path(parent_dir)
+    if not (release_root / "python-dependencies.json").is_file():
+        return
+
+    # 使用 Python 的目标平台，避免 Windows ARM 上的 x64 仿真选错架构。
+    python_platform = sysconfig.get_platform().lower()
+    os_tag = {"win": "win", "linux": "linux", "macosx": "osx"}.get(
+        python_platform.split("-", 1)[0]
+    )
+    arch_tag = {"amd64": "x64", "x86_64": "x64", "arm64": "arm64", "aarch64": "arm64"}.get(
+        python_platform.rsplit("-", 1)[-1]
+    )
+    if os_tag is None or arch_tag is None:
+        raise RuntimeError(f"发行包不支持当前 Python 平台: {python_platform}")
+
+    native_dir = release_root / "runtimes" / f"{os_tag}-{arch_tag}" / "native"
+    if not native_dir.is_dir():
+        raise RuntimeError(f"发行包缺少原生库目录: {native_dir}。请重新解压对应平台的完整安装包。")
+    os.environ["MAAFW_BINARY_PATH"] = str(native_dir.resolve())
+
+
 def agent():
     try:
+        configure_native_library_path()
+
         from maa.toolkit import Toolkit
         from maa.agent.agent_server import AgentServer
         import custom
