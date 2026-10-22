@@ -78,13 +78,14 @@ class MemoryShopCheckAction(CustomAction):
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
         # Independent UI options use separate nodes so their overrides do not
         # replace one another's custom_action_param object.
+        shop = params.get("shop", "回忆小铺")
         for key, node_name in (
             ("auto_buy_gold", "回忆小铺自动购买金币商品"),
             ("diamond_discount_threshold", "回忆小铺钻石暂停折扣"),
             ("diamond_price_threshold", "回忆小铺钻石暂停价格"),
             ("continue_refresh_when_not_free", "回忆小铺非免费继续刷新"),
         ):
-            config = context.get_node_data(node_name) or {}
+            config = context.get_node_data(node_name.replace("回忆小铺", shop, 1)) or {}
             attached = config.get("attach", {})
             if "value" in attached:
                 params[key] = attached["value"]
@@ -99,6 +100,7 @@ class MemoryShopCheckAction(CustomAction):
         back_roi = params.get("back_roi", [0, 36, 100, 64])
         shop_page_roi = params.get("shop_page_roi", [0, 448, 720, 790])
         pause_next = params.get("pause_next", ["stop"])
+        finish_next = params.get("finish_next", ["stop"])
         refresh_next = params.get("refresh_next", [argv.node_name])
         auto_buy_gold = self._as_bool(params.get("auto_buy_gold"), False)
         continue_refresh_when_not_free = self._as_bool(params.get("continue_refresh_when_not_free"), False)
@@ -135,6 +137,9 @@ class MemoryShopCheckAction(CustomAction):
             return False
 
         controller = context.tasker.controller
+        if not self._wait_shop_ready(context, controller):
+            logger.error(f"memory_shop_check: {shop} page is not ready")
+            return False
         image = self._screencap(controller)
         products = []
         gold_products = []
@@ -155,7 +160,7 @@ class MemoryShopCheckAction(CustomAction):
             products.append(product)
             logger.debug(
                 "memory_shop_check: "
-                f"slot={index + 1}, name={product['name']!r}, discount={product['discount']}, "
+                f"shop={shop}, slot={index + 1}, name={product['name']!r}, discount={product['discount']}, "
                 f"currency={product['currency']}, price={product['price']}, "
                 f"price_text={product['price_text']!r}"
             )
@@ -181,12 +186,12 @@ class MemoryShopCheckAction(CustomAction):
 
         if gold_products and not auto_buy_gold:
             logger.info("memory_shop_check: gold product found, pausing")
-            context.override_next(argv.node_name, pause_next)
-            return True
+            return self._route(context, argv.node_name, pause_next)
 
         if auto_buy_gold:
             for product in gold_products:
-                self._click_roi(controller, product["button_roi"])
+                if context.tasker.stopping or not self._click_roi(controller, product["button_roi"]):
+                    return False
                 time.sleep(post_buy_delay)
                 self._confirm_if_needed(context, controller, confirm_text_roi, confirm_roi, ocr_threshold)
                 time.sleep(post_buy_delay)
@@ -202,8 +207,7 @@ class MemoryShopCheckAction(CustomAction):
                     purchase_close_clicks,
                 ):
                     logger.info("memory_shop_check: purchase recovery failed, pausing")
-                    context.override_next(argv.node_name, pause_next)
-                    return True
+                    return False
 
         if diamond_price_pause_products:
             logger.info(
@@ -213,8 +217,7 @@ class MemoryShopCheckAction(CustomAction):
                     for item in diamond_price_pause_products
                 )
             )
-            context.override_next(argv.node_name, pause_next)
-            return True
+            return self._route(context, argv.node_name, pause_next)
 
         if diamond_pause_products:
             logger.info(
@@ -224,21 +227,20 @@ class MemoryShopCheckAction(CustomAction):
                     for item in diamond_pause_products
                 )
             )
-            context.override_next(argv.node_name, pause_next)
-            return True
+            return self._route(context, argv.node_name, pause_next)
 
         image = self._screencap(controller)
         refresh_free = self._is_refresh_free(context, image, refresh_text_roi, ocr_threshold)
         if not refresh_free and not continue_refresh_when_not_free:
-            logger.info("memory_shop_check: refresh is not free, pausing")
-            context.override_next(argv.node_name, pause_next)
-            return True
+            logger.info(f"memory_shop_check: {shop} refresh is not free, finishing shop")
+            return self._route(context, argv.node_name, finish_next)
 
         logger.info(
             "memory_shop_check: no product matched pause rules, refreshing, "
             f"refresh_free={refresh_free}"
         )
-        self._click_roi(controller, refresh_roi)
+        if context.tasker.stopping or not self._click_roi(controller, refresh_roi):
+            return False
         time.sleep(post_refresh_delay)
         image = self._screencap(controller)
         if self._is_refresh_exhausted_popup(
@@ -247,12 +249,36 @@ class MemoryShopCheckAction(CustomAction):
             refresh_exhausted_roi,
             ocr_threshold,
         ):
-            logger.info("memory_shop_check: refresh card exhausted popup found, pausing")
-            context.override_next(argv.node_name, pause_next)
-            return True
+            logger.info(f"memory_shop_check: {shop} refresh cards exhausted, closing popup")
+            if not self._click_roi(controller, back_roi):
+                return False
+            if not self._wait_shop_ready(context, controller):
+                logger.error("memory_shop_check: refresh popup did not close")
+                return False
+            return self._route(context, argv.node_name, finish_next)
 
-        context.override_next(argv.node_name, refresh_next)
-        return True
+        return self._route(context, argv.node_name, refresh_next)
+
+    def _route(self, context, node_name, next_nodes):
+        success = context.override_next(node_name, next_nodes)
+        if not success:
+            logger.error(f"memory_shop_check: cannot set {node_name}.next={next_nodes}")
+        return bool(success)
+
+    def _wait_shop_ready(self, context, controller, timeout=10.0):
+        """Require two fresh shop frames without a known modal; never click here."""
+        deadline = time.monotonic() + timeout
+        clear_frames = 0
+        while time.monotonic() < deadline and not context.tasker.stopping:
+            image = self._screencap(controller)
+            ready = self._is_memory_shop_page(context, image, [0, 448, 720, 790], 0.3)
+            if time.monotonic() >= deadline or context.tasker.stopping:
+                return False
+            clear_frames = clear_frames + 1 if ready else 0
+            if clear_frames >= 2:
+                return True
+            time.sleep(min(0.5, max(0, deadline - time.monotonic())))
+        return False
 
     def _read_product(
         self,
@@ -442,17 +468,27 @@ class MemoryShopCheckAction(CustomAction):
         delay,
         close_clicks,
     ):
+        deadline = time.monotonic() + max(10.0, (2 * attempts + close_clicks) * delay)
         for click_index in range(1, close_clicks + 1):
             logger.debug(
                 "memory_shop_check: clicking blank area after purchase, "
                 f"click={click_index}/{close_clicks}"
             )
-            self._click_roi(controller, reward_close_roi)
+            if (
+                context.tasker.stopping or time.monotonic() >= deadline
+                or not self._click_roi(controller, reward_close_roi)
+            ):
+                return False
             time.sleep(delay)
 
         for attempt in range(1, attempts + 1):
+            if context.tasker.stopping or time.monotonic() >= deadline:
+                return False
             image = self._screencap(controller)
-            if self._is_memory_shop_page(context, image, shop_page_roi, threshold):
+            ready = self._is_memory_shop_page(context, image, shop_page_roi, threshold)
+            if context.tasker.stopping or time.monotonic() >= deadline:
+                return False
+            if ready:
                 logger.debug(f"memory_shop_check: returned to memory shop, attempt={attempt}/{attempts}")
                 return True
 
@@ -460,15 +496,25 @@ class MemoryShopCheckAction(CustomAction):
                 "memory_shop_check: not on memory shop after purchase, clicking back, "
                 f"attempt={attempt}/{attempts}"
             )
-            self._click_roi(controller, back_roi)
+            if context.tasker.stopping or not self._click_roi(controller, back_roi):
+                return False
             time.sleep(delay)
-            self._click_roi(controller, reward_close_roi)
+            if (
+                context.tasker.stopping or time.monotonic() >= deadline
+                or not self._click_roi(controller, reward_close_roi)
+            ):
+                return False
             time.sleep(delay)
 
+        if context.tasker.stopping or time.monotonic() >= deadline:
+            return False
         image = self._screencap(controller)
-        return self._is_memory_shop_page(context, image, shop_page_roi, threshold)
+        ready = self._is_memory_shop_page(context, image, shop_page_roi, threshold)
+        return ready and not context.tasker.stopping and time.monotonic() < deadline
 
     def _is_memory_shop_page(self, context, image, roi, threshold):
+        if image is None or self._has_blocking_popup(context, image, threshold):
+            return False
         text = self._read_text(context, image, roi, threshold)
         normalized = self._normalize_name(text)
         hit = "回忆小铺" in normalized and (
@@ -479,6 +525,15 @@ class MemoryShopCheckAction(CustomAction):
             f"{text!r}, normalized={normalized!r}, hit={hit}"
         )
         return hit
+
+    def _has_blocking_popup(self, context, image, threshold):
+        if self._is_refresh_exhausted_popup(context, image, [231, 270, 241, 104], threshold):
+            return True
+        confirm_text = self._read_text(context, image, [335, 711, 230, 68], threshold)
+        if re.search(r"购买|确定|确认", confirm_text) or self._has_orange_button(image, [122, 708, 490, 72]):
+            return True
+        reward_text = self._read_text(context, image, [100, 300, 520, 220], threshold)
+        return bool(re.search(r"恭喜获得|获得奖励", reward_text))
 
     def _has_orange_button(self, image, roi):
         x, y, w, h = roi
@@ -496,12 +551,13 @@ class MemoryShopCheckAction(CustomAction):
         return ratio > 0.12
 
     def _screencap(self, controller):
-        controller.post_screencap().wait()
+        if not controller.post_screencap().wait().succeeded:
+            raise RuntimeError("memory_shop_check: screenshot failed")
         return controller.cached_image
 
     def _click_roi(self, controller, roi):
         x, y, w, h = roi
-        controller.post_click(x + w // 2, y + h // 2).wait()
+        return bool(controller.post_click(x + w // 2, y + h // 2).wait().succeeded)
 
     def _right_half_roi(self, roi):
         if not self._valid_roi(roi):
@@ -545,3 +601,65 @@ class MemoryShopCheckAction(CustomAction):
         if isinstance(value, str):
             return value.lower() not in ("0", "false", "no", "off")
         return bool(value)
+
+
+@AgentServer.custom_action("memory_shop_select")
+class MemoryShopSelectAction(MemoryShopCheckAction):
+    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        params = json.loads(argv.custom_action_param)
+        config = context.get_node_data(argv.node_name) or {}
+        # Selection and progress live in this task's explicit pipeline edges.
+        # Every invocation writes its next edge, including skipped shops.
+        if not self._as_bool(config.get("attach", {}).get("selected"), False):
+            return self._route(context, argv.node_name, params["finish_next"])
+
+        shop = params["shop"]
+        controller = context.tasker.controller
+        image = self._screencap(controller)
+        if self._has_blocking_popup(context, image, 0.3):
+            if not self._recover_after_purchase(
+                context, controller, [318, 1183, 69, 35], [0, 448, 720, 790],
+                [0, 36, 100, 64], 0.3, 8, 0.8, 3,
+            ):
+                logger.error(f"memory_shop_select: cannot close popup before {shop}")
+                return False
+        if not self._wait_shop_ready(context, controller):
+            logger.error(f"memory_shop_select: page is not ready before {shop}")
+            return False
+
+        deadline = time.monotonic() + 3.0
+        clean_missing = False
+        while time.monotonic() < deadline and not context.tasker.stopping:
+            image = self._screencap(controller)
+            ready = self._is_memory_shop_page(context, image, [0, 448, 720, 790], 0.3)
+            clean_missing = False
+            if ready:
+                result = context.run_recognition(params["tab_node"], image)
+                if result is None:
+                    logger.error(f"memory_shop_select: {shop} label recognition failed")
+                    return False
+                if time.monotonic() >= deadline or context.tasker.stopping:
+                    return False
+                if result.hit:
+                    box = result.box
+                    if hasattr(box, "x"):
+                        box = [box.x, box.y, box.w, box.h]
+                    if not isinstance(box, (list, tuple)) or len(box) != 4 or box[2] <= 0 or box[3] <= 0:
+                        logger.error(f"memory_shop_select: invalid {shop} label box")
+                        return False
+                    action = context.run_action(params["tab_node"], box=box)
+                    if not action or not action.success:
+                        return False
+                    if not self._wait_shop_ready(context, controller):
+                        logger.error(f"memory_shop_select: {shop} page did not become ready")
+                        return False
+                    logger.info(f"memory_shop_select: 已切换到{shop}")
+                    return self._route(context, argv.node_name, [params["check_node"]])
+                clean_missing = True
+            time.sleep(min(0.5, max(0, deadline - time.monotonic())))
+
+        if shop == "限时回忆小铺" and clean_missing and not context.tasker.stopping:
+            logger.info("memory_shop_select: 未找到限时回忆小铺，跳过")
+            return self._route(context, argv.node_name, params["finish_next"])
+        logger.error(f"memory_shop_select: {shop} label not found or page blocked")
+        return False

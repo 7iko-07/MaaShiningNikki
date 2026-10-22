@@ -878,7 +878,7 @@ class NavigationClickTests(WithoutExitPopupTests):
                 self.assertTrue(params["custom_action_param"][key])
                 for ref in params["custom_action_param"][key]:
                     self.assertIn(ref, all_nodes)
-        self.assertEqual(len(guarded), 27)
+        self.assertEqual(len(guarded), 28)
 
 
 if __name__ == "__main__":

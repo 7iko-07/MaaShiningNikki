@@ -6,8 +6,8 @@
     "license": "MIT",
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "v0.0.14-nightly.20261019",
-    "title": "闪现吧暖暖v0.0.14#10.19 - 湘间君子女#10.09",
+    "version": "v0.0.15-nightly.20261023",
+    "title": "闪现吧暖暖v0.0.15#10.23 - 寻阅山河#10.22",
     "icon": "logo.ico",
     "mirrorchyan_rid": "MaaShiningNikki",
     "mirrorchyan_multiplatform": true,
@@ -47,6 +47,12 @@
             "entry": "启动账号记录初始化",
             "option": ["切换服务器", "切换账号"],
             "description": "启动闪耀暖暖app，登录并进入游戏，游戏卡顿会导致持续时间较长。默认启动官服，开启切换服务器后可选择其他服务器。游戏语言需要切换为简体中文。",
+            "group": ["日常任务"]
+        },
+        {
+            "name": "兑换码",
+            "entry": "兑换码任务链入口",
+            "description": "尝试兑换全部当前可用的兑换码，也可在任务设置中单独兑换。仅展示本次结果，不保存账号兑换历史。",
             "group": ["日常任务"]
         },
         {
@@ -213,6 +219,16 @@
             "group": ["日常任务"]
         },
         {
+            "name": "活动：寻阅山河",
+            "entry": "活动2任务链入口",
+            "default_check": false,
+            "description": "###[color:red][b]活动剧情默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！复刻活动剧情可能有意想不到的点击，如果卡住了就自己点掉重新开一次该任务吧[/b][/color]",
+            "option": [
+                "活动2"
+            ],
+            "group": ["日常任务"]
+        },
+        {
             "name": "一键领取",
             "entry": "一键领取任务链入口",
             "description": "一键领取活跃任务\n\n一键领取时尚任务\n\n一键领取时尚提升计划",
@@ -220,14 +236,9 @@
         },
         {
             "name": "回忆小铺",
-            "description": "识别当前回忆小铺六个商品；遇到金币商品或低折扣非排除钻石商品时暂停，否则自动换一批",
+            "description": "按选择先处理限时回忆小铺，再处理回忆小铺；两家独立设置。遇到需人工查看的商品暂停整个任务；非免费刷新被禁止或刷新卡耗尽时进入下一家。没有限时店铺时自动跳过。",
             "entry": "回忆小铺任务链入口",
-            "option": [
-                "回忆小铺自动购买金币商品",
-                "回忆小铺钻石暂停折扣",
-                "回忆小铺钻石暂停价格",
-                "回忆小铺非免费继续刷新"
-            ],
+            "option": ["回忆小铺店铺选择"],
             "group": ["日常任务"]
         },
         {
@@ -1218,6 +1229,38 @@
                 }
             ]
         },
+        "活动2":{
+            "type": "checkbox",
+            "description": "",
+            "default_case": ["一键扫荡"],
+            "cases": [
+                {
+                    "name": "一键扫荡",
+                    "pipeline_override": {
+                        "活动2任务链入口": {
+                            "next": ["活动2任务链准备", "[JumpBack]返回主页面"]
+                        },
+                        "点击活动2荒野遇菇": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "活动剧情",
+                    "pipeline_override": {
+                        "活动2任务链入口": {
+                            "next": ["活动2任务链准备", "[JumpBack]返回主页面"]
+                        },
+                        "活动2扫荡结束": {
+                            "next": ["点击活动2剧情名称"]
+                        },
+                        "点击活动2剧情名称":{
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
         "美甲特约顾客任务":{
             "type": "switch",
             "description": "开启时美甲任务必须也开启，完成特约顾客三个手指，\n\n###**如果三个手指加起来达不到完美就会死循环，建议有一定美甲积累再做**",
@@ -1587,6 +1630,136 @@
                 }
             ]
         },
+        "回忆小铺店铺选择": {
+            "type": "checkbox",
+            "label": "店铺选择",
+            "description": "先限时回忆小铺，后回忆小铺；各自使用对应设置，未勾选的店铺不处理。",
+            "default_case": [
+                "回忆小铺"
+            ],
+            "cases": [
+                {
+                    "name": "限时回忆小铺",
+                    "option": [
+                        "限时回忆小铺自动购买金币商品",
+                        "限时回忆小铺钻石暂停折扣",
+                        "限时回忆小铺钻石暂停价格",
+                        "限时回忆小铺非免费继续刷新"
+                    ],
+                    "pipeline_override": {
+                        "商城选择限时回忆小铺": {
+                            "attach": {
+                                "selected": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "回忆小铺",
+                    "option": [
+                        "回忆小铺自动购买金币商品",
+                        "回忆小铺钻石暂停折扣",
+                        "回忆小铺钻石暂停价格",
+                        "回忆小铺非免费继续刷新"
+                    ],
+                    "pipeline_override": {
+                        "商城选择回忆小铺": {
+                            "attach": {
+                                "selected": true
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        "限时回忆小铺自动购买金币商品": {
+            "type": "input",
+            "label": "限时自动购买金币商品",
+            "inputs": [
+                {
+                    "name": "auto_buy_gold",
+                    "label": "限时自动购买金币商品",
+                    "description": "开启后发现金币商品会自动点击购买并确认；关闭时发现金币商品会暂停。",
+                    "default": "false",
+                    "pipeline_type": "bool",
+                    "verify": "^(true|false)$",
+                    "pattern_msg": "请输入 true 或 false"
+                }
+            ],
+            "pipeline_override": {
+                "限时回忆小铺自动购买金币商品": {
+                    "attach": {
+                        "value": "{auto_buy_gold}"
+                    }
+                }
+            }
+        },
+        "限时回忆小铺钻石暂停折扣": {
+            "type": "input",
+            "label": "限时钻石暂停折扣",
+            "inputs": [
+                {
+                    "name": "diamond_discount_threshold",
+                    "label": "限时钻石暂停折扣",
+                    "description": "请输入1-9之间的整数，例如4表示4折及以下暂停。\n\n出现低于此折扣的钻石商品时不再刷新。\n\n输入1时不因折扣暂停。",
+                    "default": "4",
+                    "pipeline_type": "int",
+                    "verify": "^[1-9]$",
+                    "pattern_msg": "请输入1-9之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "限时回忆小铺钻石暂停折扣": {
+                    "attach": {
+                        "value": "{diamond_discount_threshold}"
+                    }
+                }
+            }
+        },
+        "限时回忆小铺钻石暂停价格": {
+            "type": "input",
+            "label": "限时钻石暂停价格",
+            "inputs": [
+                {
+                    "name": "diamond_price_threshold",
+                    "label": "限时钻石暂停价格",
+                    "description": "不包括排除商品。存在实际价格低于该值的钻石商品时暂停，优先级高于折扣判断。\n\n输入0表示不按价格暂停。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^\\d+$",
+                    "pattern_msg": "请输入非负整数"
+                }
+            ],
+            "pipeline_override": {
+                "限时回忆小铺钻石暂停价格": {
+                    "attach": {
+                        "value": "{diamond_price_threshold}"
+                    }
+                }
+            }
+        },
+        "限时回忆小铺非免费继续刷新": {
+            "type": "input",
+            "label": "限时非免费继续刷新",
+            "inputs": [
+                {
+                    "name": "continue_refresh_when_not_free",
+                    "label": "限时非免费继续刷新",
+                    "description": "开启后“换一批”不是免费刷新时仍继续点击；关闭时结束当前店铺，继续下一家已选店铺。",
+                    "default": "false",
+                    "pipeline_type": "bool",
+                    "verify": "^(true|false)$",
+                    "pattern_msg": "请输入 true 或 false"
+                }
+            ],
+            "pipeline_override": {
+                "限时回忆小铺非免费继续刷新": {
+                    "attach": {
+                        "value": "{continue_refresh_when_not_free}"
+                    }
+                }
+            }
+        },
         "回忆小铺自动购买金币商品": {
             "type": "input",
             "label": "自动购买金币商品",
@@ -1660,7 +1833,7 @@
                 {
                     "name": "continue_refresh_when_not_free",
                     "label": "非免费继续刷新",
-                    "description": "开启后“换一批”不是免费刷新时仍继续点击；关闭时会暂停。",
+                    "description": "开启后“换一批”不是免费刷新时仍继续点击；关闭时结束当前店铺，继续下一家已选店铺。",
                     "default": "false",
                     "pipeline_type": "bool",
                     "verify": "^(true|false)$",

@@ -1,0 +1,83 @@
+{
+    "兑换码任务链入口": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "redeem_codes"
+            }
+        }
+    },
+    "兑换码前往名片": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {"target": "名片"}
+            }
+        }
+    },
+    "兑换码设置入口": {
+        "recognition": {"type": "OCR", "param": {
+            "roi": [125, 1175, 85, 100], "expected": ["^设置$"]
+        }}
+    },
+    "兑换码设置页面": {
+        "recognition": {"type": "OCR", "param": {
+            "roi": [300, 160, 130, 65], "expected": ["^设置$"]
+        }}
+    },
+    "兑换码弹窗入口": {
+        "recognition": {"type": "OCR", "param": {
+            "roi": [135, 980, 100, 40], "expected": ["输入兑换码"]
+        }}
+    },
+    "兑换码弹窗标题": {
+        "recognition": {"type": "OCR", "param": {
+            "roi": [130, 450, 350, 45], "expected": ["输入兑换码领取奖励"]
+        }}
+    },
+    "兑换码空输入框": {
+        "recognition": {"type": "OCR", "param": {
+            "roi": [140, 510, 440, 60], "expected": ["^输入兑换码$"]
+        }}
+    },
+    "兑换码输入区域": {
+        "recognition": {"type": "OCR", "param": {
+            "roi": [140, 510, 440, 60], "expected": [".+"]
+        }}
+    },
+    "兑换码输入确定": {
+        "recognition": {"type": "OCR", "param": {
+            "roi": [560, 1180, 140, 90], "expected": ["^确定$"]
+        }}
+    },
+    "兑换码领取": {
+        "recognition": {"type": "OCR", "param": {
+            "roi": [290, 610, 140, 60], "expected": ["^领取$"]
+        }}
+    },
+    "兑换码输入文本": {
+        "action": {"type": "Custom", "param": {
+            "custom_action": "dreamweaver_input_text"
+        }}
+    },
+    "兑换码全选旧码": {
+        "$comment": "Android Ctrl+A：先按修饰键，再按 A。随后删除选中文本。",
+        "action": {"type": "Shell", "param": {"cmd": "input keycombination 113 29"}},
+        "next": ["兑换码删除旧码"]
+    },
+    "兑换码删除旧码": {
+        "action": {"type": "ClickKey", "param": {"key": 67}}
+    },
+    "兑换码恭喜获得": {
+        "recognition": {"type": "OCR", "param": {
+            "roi": [200, 400, 330, 95], "expected": ["恭喜获得"]
+        }}
+    },
+    "兑换码失败提示": {
+        "recognition": {"type": "OCR", "param": {
+            "roi": [170, 615, 380, 50],
+            "expected": ["兑换码已失效", "您已使用过此兑换码", "兑换码不存在"]
+        }}
+    }
+}

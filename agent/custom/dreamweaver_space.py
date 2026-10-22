@@ -2040,7 +2040,7 @@ class DreamweaverInputTextAction(CustomAction):
             params = json.loads(argv.custom_action_param)
             text = params["input_text"]
             if not isinstance(text, str) or not text:
-                raise DreamError("作品名称不能为空")
+                raise DreamError("输入文本不能为空")
             info = context.tasker.controller.info
             config = info.get("config", {})
             if isinstance(config, str):
@@ -2074,10 +2074,10 @@ class DreamweaverInputTextAction(CustomAction):
             response = json.loads(result.stdout)
             if not isinstance(response, dict) or response.get("errcode") != 0:
                 raise DreamError(f"MuMu 文本输入失败：{response}")
-            logger.debug(f"七日制衣：MuMu 实例 {index} 已接收文本输入，等待页面核验")
+            logger.debug(f"MuMu 实例 {index} 已接收文本输入，等待页面核验")
             return not context.tasker.stopping
         except Exception as error:
-            logger.error(f"七日制衣文本输入失败：{error}")
+            logger.error(f"文本输入失败：{error}")
             return False
 
 

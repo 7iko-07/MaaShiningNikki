@@ -1,0 +1,322 @@
+{
+    "活动2任务链入口": {
+		"next": [],
+		"timeout": 2000
+    },
+	"活动2任务链准备": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {
+                    "target": "主页面"
+                }
+            }
+        },
+        "next": ["点击活动2名称","[JumpBack]上划活动条"],
+        "timeout": 30000
+    },
+    "点击活动2名称": {
+        "recognition": {
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+						"type": "OCR",
+						"param": {
+							"roi": [3, 122, 112, 695],
+							"expected": ["寻阅山河","寻阅","山河"]
+						}
+					}},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "roi": [3, 122, 112, 695],
+                            "template": "寻阅山河.png"
+                        }
+                    }}
+                ]
+            }
+        },
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{}
+            }
+		},
+		"post_wait_freezes": 20000,
+		"next": ["点击活动2页面-空白"],
+		"timeout": 2000
+    },
+	"点击活动2页面-空白":{
+		"recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [352, 27, 14, 10]
+            }
+		},
+		"repeat": 2,
+		"repeat_delay": 500,
+		"next": ["点击活动2荒野遇菇", "点击活动2剧情名称"],
+		"timeout": 30000
+	},
+    "点击活动2荒野遇菇": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [394, 1025, 326, 255],
+                                "expected": ["荒野", "遇菇"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "TemplateMatch",
+                            "param": {
+                                "roi": [394, 1025, 326, 255],
+                                "template": ["活动2_荒野遇菇.png", "活动2_荒野遇菇_蓝色.png"]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "Click",
+        "enabled": false,
+        "next": ["活动2扫荡次数用尽", "点击活动2一键扫荡"],
+        "timeout": 30000
+    },
+    "活动2扫荡次数用尽": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [480, 1210, 184, 40],
+                "expected": ["^(剩余挑战次数[：:]?\\s*)?0\\s*/\\s*5$"]
+            }
+        },
+        "action": "DoNothing",
+        "next": ["点击返回活动2页面"],
+        "timeout": 5000
+    },
+    "点击活动2一键扫荡": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "Or",
+                            "param": {
+                                "any_of": [
+                                    {
+                                        "recognition": {
+                                            "type": "OCR",
+                                            "param": {
+                                                "roi": [394, 1025, 326, 255],
+                                                "expected": ["一键扫荡"]
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "recognition": {
+                                            "type": "TemplateMatch",
+                                            "param": {
+                                                "roi": [394, 1025, 326, 255],
+                                                "template": "活动2_一键扫荡.png"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [480, 1210, 184, 40],
+                                "expected": ["^(剩余挑战次数[：:]?\\s*)?[1-5]\\s*/\\s*5$"]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": "Click",
+        "post_delay": 1000,
+        "next": ["活动2扫荡次数用尽"],
+        "timeout": 30000
+    },
+    "点击返回活动2页面": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "back1.png",
+                "roi": [0, 0, 379, 404]
+            }
+        },
+        "action": "Click",
+        "post_delay": 1000,
+        "next": ["活动2扫荡结束"],
+        "timeout": 30000
+    },
+    "活动2扫荡结束": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": ["点击活动2荒野遇菇"]
+            }
+        },
+        "action": "DoNothing",
+        "next": []
+    },
+	"点击活动2剧情名称": {
+        "recognition": {
+            "type": "Or",
+            "param":{
+                "any_of": [
+                    {"recognition": {
+						"type": "OCR",
+						"param": {
+							"expected": ["[寻迹启程]"],
+							"roi": [0, 1011, 297, 269]
+						}
+					}},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "roi": [0, 1011, 297, 269],
+                            "template": "寻迹启程_蓝色.png"
+                        }
+                    }},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "roi": [0, 1011, 297, 269],
+                            "template": "寻迹启程_红色.png"
+                        }
+                    }}
+                ]
+            }
+        },
+		"action": {
+			"type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param":{
+					"change_threshold":0.7
+				}
+            }
+		},
+		"enabled": false,
+		"post_wait_freezes": 500,
+		"next": ["点击活动2剧情"],
+		"timeout": 2000
+    },
+    "点击活动2剧情": {
+        "recognition": {
+			"type": "DirectHit",
+			"param": {}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_region",
+				"custom_action_param": {
+					"step": 70,
+					"delay": 50,
+					"roi": [0, 0, 720, 1280],
+					"max_points": 20000,
+					"change_detection": true,
+					"exclude": [[0, 14, 120, 114], [543, 0, 177, 202],[0, 1156, 155, 89]],
+					"stop_on_no_change": true,
+					"direction":"left_to_right"
+				}
+			}
+		},
+		"post_wait_freezes": 500,
+		"next": ["在活动2剧情页面"],
+		"timeout": 2000,
+        "anchor": "点击活动2剧情"
+    },
+	"在活动2剧情页面": {
+		"recognition": "DirectHit",
+		"action": {
+			"type": "DoNothing",
+			"param": {}
+		},
+		"post_wait_freezes": 500,
+		"next": ["识别剧情过完了并停止任务2","[JumpBack]点击聊天框2","[Anchor]点击活动2剧情"],
+		"timeout": 2000
+    },
+    "点击聊天框2":{
+        "recognition": {
+			"type": "Or",
+			"param": {
+				"any_of": [
+					{
+						"recognition":{
+							"type": "OCR",
+							"param": {
+								"roi": [538, 0, 182, 277],
+								"expected": ["自动播放","自动","播放","文字速度","文字","速度"]
+							}
+						}
+					},
+					{
+						"recognition":{
+							"type": "ColorMatch",
+							"param": {
+								"roi": [538, 0, 182, 277],
+								"lower": [0, 0, 0],
+								"upper": [0, 0, 0],
+								"count": 3000,
+								"connected": true
+							}
+						}
+					}
+				]
+			}
+		},
+		"action": {
+			"type": "Custom",
+			"param": {
+				"custom_action": "click_region",
+				"custom_action_param": {
+					"step": 70,
+					"delay": 50,
+					"roi": [0, 301, 720, 804],
+					"max_points": 20000,
+					"change_detection": true,
+					"stop_on_no_change": true,
+					"direction":"left_to_right"
+				}
+			}
+		},
+		"timeout": 2000
+    },
+	"识别剧情过完了并停止任务2":{
+		"recognition": {
+			"type": "OCR",
+			"param":{
+				"roi": [552, 33, 168, 91],
+				"expected": ["跳过"]
+			}
+		},
+		"focus": {
+			"Node.Action.Starting": "#[color:blue][b]剧情过完了[/b][/color]"
+		},
+		"next": ["stop"]
+	}
+}

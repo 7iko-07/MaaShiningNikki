@@ -1,4 +1,31 @@
 {
+    "导航在名片页面": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "玩家名片页面点击esc",
+                    {"recognition": {"type": "OCR", "param": {
+                        "roi": [440, 910, 190, 95],
+                        "expected": ["收集度"]
+                    }}}
+                ]
+            }
+        }
+    },
+    "导航点击名片入口": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": ["是否是主页面"],
+                    "target_nodes": ["导航在名片页面"],
+                    "target": [60, 39, 14, 12]
+                }
+            }
+        }
+    },
     "页面导航": {
         "recognition": "DirectHit",
         "action": {
