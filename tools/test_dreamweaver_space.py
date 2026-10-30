@@ -455,7 +455,7 @@ class DreamTests(unittest.TestCase):
         self.assertEqual(order.harvested, 5)
         self.assertEqual(runner.pending, {})
 
-    def test_acceleration_is_clicked_once_then_waits_for_tile(self):
+    def test_acceleration_shares_short_deadline_with_result_and_harvest(self):
         runner = self.runner()
         runner.image = Mock(return_value=object())
         runner.hit = Mock(return_value=True)
@@ -463,12 +463,14 @@ class DreamTests(unittest.TestCase):
         runner.wait = Mock(return_value=True)
         runner.click = Mock()
         runner.button = Mock()
+        runner.complete_acceleration = Mock()
         runner.harvest = Mock()
         with self.selection_clock():
             runner.accelerate((0, 0), 600)
         self.assertEqual(runner.wait_tile.call_args_list[0].kwargs["confirmations"], 1)
-        runner.button.assert_called_once_with("织梦立即完成按钮", deadline=600)
-        self.assertEqual(runner.wait_tile.call_args_list[-1].args, ((0, 0), "可收获"))
+        runner.button.assert_not_called()
+        runner.complete_acceleration.assert_called_once_with((0, 0), 40)
+        runner.harvest.assert_called_once_with(deadline=40, tiles=((0, 0),))
 
     def test_acceleration_result_timeout_never_repeats_stone_click(self):
         runner = self.runner()
@@ -478,9 +480,13 @@ class DreamTests(unittest.TestCase):
         runner.wait = Mock(return_value=True)
         runner.click = Mock()
         runner.button = Mock()
+        runner.complete_acceleration = Mock(side_effect=dream.DreamError("动画未结束"))
+        runner.harvest = Mock()
         with self.selection_clock(), self.assertRaises(dream.DreamError):
             runner.accelerate((0, 0), 600)
-        runner.button.assert_called_once_with("织梦立即完成按钮", deadline=600)
+        runner.complete_acceleration.assert_called_once_with((0, 0), 40)
+        runner.button.assert_not_called()
+        runner.harvest.assert_not_called()
 
     def test_missing_acceleration_popup_marks_stones_exhausted_without_spending(self):
         runner = self.runner()
@@ -507,12 +513,13 @@ class DreamTests(unittest.TestCase):
         runner.wait_tile = Mock(return_value=(1, 1, 10, 10))
         runner.click = Mock()
         runner.button = Mock()
+        runner.complete_acceleration = Mock()
         runner.harvest = Mock(return_value={(0, 0)})
         with self.selection_clock() as now:
             runner.hit = Mock(side_effect=lambda node, image: now[0] >= 12)
             self.assertEqual(runner.accelerate((0, 0), 610), {(0, 0)})
         self.assertFalse(runner._stone_exhausted)
-        runner.button.assert_called_once_with("织梦立即完成按钮", deadline=610)
+        runner.complete_acceleration.assert_called_once_with((0, 0), 40)
 
     def test_acceleration_failures_do_not_mean_stones_exhausted(self):
         for failure in ("deadline", "capture", "recognition", "unknown_page", "cancel"):

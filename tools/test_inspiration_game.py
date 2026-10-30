@@ -259,7 +259,7 @@ class GameFlowTests(unittest.TestCase):
         self.assertLess(now[0], 90.1)
         runner.button.assert_not_called()
 
-    def test_task_returns_via_space_and_reopens_seven_before_marking_completed(self):
+    def test_task_returns_via_space_and_reopens_seven_before_recognizing_next_card(self):
         runner = self.runner()
         trace = Mock()
         for method in ("click", "wait", "button", "inspiration_play"):
@@ -273,12 +273,10 @@ class GameFlowTests(unittest.TestCase):
                           "click", "wait", "button", "wait"])
         runner.enter_seven = Mock()
         runner.seven_inspiration = Mock()
-        completed = []
-        candidates = iter([("拾趣", 0, None), ("全部完成", None, None)])
-        runner.seven_current = Mock(side_effect=lambda done: completed.append(set(done)) or next(candidates))
+        runner.seven_current = Mock(side_effect=[("拾趣", 0, None), ("全部完成", None, None)])
         runner.seven_open_task = Mock()
         runner.seven()
-        self.assertEqual(completed, [set(), {"拾趣"}])
+        self.assertEqual(runner.seven_current.call_count, 2)
         runner.seven_open_task.assert_not_called()
 
     def test_failed_return_does_not_continue_next_card(self):

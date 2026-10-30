@@ -120,7 +120,12 @@ class PageNavigateAction(CustomAction):
         try:
             return self._navigate(context, argv)
         except ExitConfirmError as exc:
-            logger.error(f"page_navigate: {exc}")
+            logger.debug(f"page_navigate: {exc}")
+            logger.error("页面切换失败")
+            return False
+        except TimeoutError as exc:
+            logger.debug(f"page_navigate: {exc}")
+            logger.warning("页面切换：等待页面超时")
             return False
 
     def _navigate(self, context, argv):
@@ -130,13 +135,15 @@ class PageNavigateAction(CustomAction):
             params,
         )
         if not target_page:
-            logger.error("page_navigate: missing target page")
+            logger.debug("page_navigate: missing target page")
+            logger.error("页面切换：未设置目标页面")
             return False
 
         pages = self._build_pages(params)
         routes = self._build_routes(params)
         if target_page not in pages:
-            logger.error(f"page_navigate: unknown target page {target_page!r}")
+            logger.debug(f"page_navigate: unknown target page {target_page!r}")
+            logger.error("页面切换：目标页面配置无效")
             return False
         ordered_pages = self._build_detection_order(pages, routes, target_page)
 
@@ -153,13 +160,6 @@ class PageNavigateAction(CustomAction):
             # A completed route already confirmed its destination on fresh images.
             # Detect again only at entry or after an unverified fallback action.
             if current_page is None:
-                if not self._wait_while_intermediate(
-                    context,
-                    wait_nodes=wait_nodes,
-                    timeout=wait_timeout,
-                    interval=wait_interval,
-                ):
-                    return False
                 current_page = self._detect_current_page(
                     context,
                     pages,
@@ -169,7 +169,10 @@ class PageNavigateAction(CustomAction):
                     target_page=target_page,
                     timeout=wait_timeout,
                     interval=wait_interval,
+                    wait_nodes=wait_nodes,
                 )
+                if context.tasker.stopping:
+                    return False
 
             logger.debug(
                 f"page_navigate: step={step_index + 1}/{max_steps}, "
@@ -178,7 +181,7 @@ class PageNavigateAction(CustomAction):
             if current_page == target_page:
                 return self._wait_for_page(
                     context, pages[target_page], target_page, wait_nodes,
-                    wait_timeout, wait_interval,
+                    wait_timeout, wait_interval, initial_ready=True,
                 )
 
             path = self._shortest_path(routes, current_page, target_page) if current_page else []
@@ -204,7 +207,8 @@ class PageNavigateAction(CustomAction):
                         return False
                 for task_index, task_name in enumerate(edge["tasks"]):
                     if not self._run_task(route_context, task_name):
-                        logger.error(f"page_navigate: route task failed: {task_name!r}")
+                        logger.debug(f"page_navigate: route task failed: {task_name!r}")
+                        logger.error("页面切换：前往目标页面失败")
                         return False
                     # Keep guards between tasks; the final task is guarded by
                     # the two-observation destination wait below.
@@ -226,7 +230,8 @@ class PageNavigateAction(CustomAction):
                 continue
 
             if current_page:
-                logger.warning(f"page_navigate: no route from {current_page} to {target_page}")
+                logger.debug(f"page_navigate: no route from {current_page} to {target_page}")
+                logger.warning("页面切换：当前页面无法直接前往目标页面")
             else:
                 logger.debug("page_navigate: no target-reachable page matched; trying fallback")
 
@@ -234,31 +239,43 @@ class PageNavigateAction(CustomAction):
                 context, fallback_steps, wait_nodes, wait_timeout, wait_interval,
                 target_nodes=pages[target_page],
             ):
-                logger.error("page_navigate: no fallback step matched current screen")
+                logger.debug("page_navigate: no fallback step matched current screen")
+                logger.error("页面切换：无法确认当前页面")
                 return False
             current_page = None
 
-        logger.error(f"page_navigate: exceeded maximum steps ({max_steps})")
+        logger.debug(f"page_navigate: exceeded maximum steps ({max_steps})")
+        logger.error("页面切换：多次尝试后仍未到达目标页面")
         return False
 
-    def _wait_for_page(self, context, nodes, page, wait_nodes, timeout, interval):
+    def _wait_for_page(self, context, nodes, page, wait_nodes, timeout, interval,
+                       initial_ready=False):
         """Require two fresh, non-loading observations before the next route edge."""
         started = time.monotonic()
         deadline = started + max(0, timeout)
-        hits = 0
+        # Entry detection has already checked its fresh image for loading and
+        # modals. Count that target hit once; route arrivals still start at zero.
+        hits = int(initial_ready)
+        if initial_ready:
+            time.sleep(min(max(0.1, interval), max(0, deadline - time.monotonic())))
         while True:
+            if context is not None and context.tasker.stopping:
+                return False
             image = self._screencap(context)
             image, dismissed = self._dismiss_exit_confirm(context, image, deadline, interval)
             if dismissed:
                 hits = 0
             ready = not self._intermediate_reason(context, image, wait_nodes)
             ready = ready and any(self._recognize(context, image, node) for node in nodes)
+            if context is not None and context.tasker.stopping:
+                return False
             hits = hits + 1 if ready else 0
-            if hits >= 2:
+            if hits >= 2 and time.monotonic() < deadline:
                 logger.debug(f"page_navigate: ready page={page}, elapsed={time.monotonic() - started:.3f}s")
                 return True
             if time.monotonic() >= deadline:
-                logger.error(f"page_navigate: destination timeout page={page}, nodes={nodes}, elapsed={time.monotonic() - started:.3f}s")
+                logger.debug(f"page_navigate: destination timeout page={page}, nodes={nodes}, elapsed={time.monotonic() - started:.3f}s")
+                logger.error("页面切换：等待目标页面超时")
                 return False
             time.sleep(min(max(0.1, interval), max(0, deadline - time.monotonic())))
 
@@ -285,7 +302,8 @@ class PageNavigateAction(CustomAction):
                     return True
                 break
             if time.monotonic() >= deadline:
-                logger.warning("page_navigate: loading timeout before fallback")
+                logger.debug("page_navigate: loading timeout before fallback")
+                logger.warning("页面切换：游戏加载超时")
                 return False
             waited = True
             time.sleep(min(interval, max(0, deadline - time.monotonic())))
@@ -303,7 +321,8 @@ class PageNavigateAction(CustomAction):
                     continue
                 box = result.box
                 if box is None or box.w <= 0 or box.h <= 0:
-                    logger.warning("page_navigate: fallback return has invalid recognition box")
+                    logger.debug("page_navigate: fallback return has invalid recognition box")
+                    logger.warning("页面切换：无法定位返回按钮")
                     continue
                 if context.tasker.stopping:
                     return False
@@ -321,7 +340,7 @@ class PageNavigateAction(CustomAction):
                     }},
                 )
                 success = task is not None and task.status.succeeded
-                logger.info(f"page_navigate: task={task_name}, success={success}")
+                logger.debug(f"page_navigate: task={task_name}, success={success}")
                 if success:
                     return True
                 # Once a matched action fails, do not try a different button on
@@ -332,7 +351,8 @@ class PageNavigateAction(CustomAction):
             logger.debug(f"page_navigate: running fallback step {task_name!r}")
             if self._run_task(context, task_name):
                 return True
-            logger.warning(f"page_navigate: fallback step failed: {task_name!r}")
+            logger.debug(f"page_navigate: fallback step failed: {task_name!r}")
+            logger.warning("页面切换：返回操作失败")
         return False
 
     def _wait_while_intermediate(
@@ -364,7 +384,8 @@ class PageNavigateAction(CustomAction):
             logger.debug(f"page_navigate: waiting intermediate page: {reason}")
             time.sleep(interval)
 
-        logger.warning("page_navigate: intermediate page wait timeout")
+        logger.debug("page_navigate: intermediate page wait timeout")
+        logger.warning("页面切换：等待页面超时")
         return False
 
     def _intermediate_reason(self, context, image, wait_nodes):
@@ -394,11 +415,22 @@ class PageNavigateAction(CustomAction):
         return list(dict.fromkeys(page for page in candidates if page in pages and page in reachable))
 
     def _detect_current_page(self, context: Context, pages, retry, retry_delay, ordered_pages, target_page,
-                             timeout=15, interval=.25):
+                             timeout=15, interval=.25, wait_nodes=()):
+        deadline = time.monotonic() + max(0, timeout)
         for attempt in range(max(1, retry)):
             started = time.monotonic()
-            image = self._screencap(context)
-            image, _ = self._dismiss_exit_confirm(context, image, started + max(0, timeout), interval)
+            while True:
+                if context is not None and context.tasker.stopping:
+                    return None
+                image = self._screencap(context)
+                image, _ = self._dismiss_exit_confirm(context, image, deadline, interval)
+                reason = self._intermediate_reason(context, image, wait_nodes)
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("入口页面检查超时")
+                if not reason:
+                    break
+                logger.debug(f"page_navigate: waiting intermediate page: {reason}")
+                time.sleep(min(max(.1, interval), max(0, deadline - time.monotonic())))
             checked_nodes = set()
             detected = None
             for page_name in ordered_pages:
@@ -416,6 +448,8 @@ class PageNavigateAction(CustomAction):
                 f"checked_nodes={len(checked_nodes)}, detected={detected}, "
                 f"attempt={attempt + 1}, elapsed={time.monotonic() - started:.3f}s"
             )
+            if time.monotonic() >= deadline:
+                raise TimeoutError("入口页面识别超时")
             if detected is not None:
                 return detected
             if attempt < retry - 1:
@@ -431,7 +465,7 @@ class PageNavigateAction(CustomAction):
             return image, False
         if context.tasker.stopping or time.monotonic() >= deadline:
             raise ExitConfirmError("退出弹窗处理已取消或超时")
-        logger.info("page_navigate: 检测到退出游戏确认弹窗，按 Esc 关闭")
+        logger.debug("page_navigate: 检测到退出游戏确认弹窗，按 Esc 关闭")
         try:
             action = context.run_action("点击esc")
         except Exception as exc:
@@ -448,7 +482,7 @@ class PageNavigateAction(CustomAction):
             if context.tasker.stopping or time.monotonic() >= deadline:
                 raise ExitConfirmError("退出弹窗处理已取消或超时")
             if not present:
-                logger.info("page_navigate: 已确认退出游戏弹窗消失，重新判断页面")
+                logger.debug("page_navigate: 已确认退出游戏弹窗消失，重新判断页面")
                 return image, True
             time.sleep(min(max(.1, interval), max(0, deadline - time.monotonic())))
 
@@ -469,7 +503,7 @@ class PageNavigateAction(CustomAction):
             result = context.run_recognition(node_name, image)
             return bool(result and getattr(result, "hit", False))
         except Exception as e:
-            logger.warning(f"page_navigate: recognition {node_name!r} failed: {e}")
+            logger.debug(f"page_navigate: recognition {node_name!r} failed: {e}")
             return False
 
     def _run_task(self, context: Context, task_name):
@@ -480,10 +514,11 @@ class PageNavigateAction(CustomAction):
             if success is None:
                 success = getattr(getattr(result, "status", None), "succeeded", False)
             succeeded = result is not None and bool(success)
-            logger.info(f"page_navigate: task={task_name}, success={succeeded}")
+            logger.debug(f"page_navigate: task={task_name}, success={succeeded}")
             return succeeded
         except Exception as e:
-            logger.error(f"page_navigate: task {task_name!r} raised: {e}")
+            logger.debug(f"page_navigate: task {task_name!r} raised: {e}")
+            logger.error("页面切换：执行异常")
             return False
 
     def _screencap(self, context: Context):
@@ -636,7 +671,8 @@ class DismissExitConfirmAction(CustomAction):
             navigation._dismiss_exit_confirm(context, navigation._screencap(context), deadline)
             return True
         except ExitConfirmError as exc:
-            logger.error(f"dismiss_exit_confirm: {exc}")
+            logger.debug(f"dismiss_exit_confirm: {exc}")
+            logger.error("关闭退出确认弹窗失败")
             return False
 
 
@@ -661,15 +697,18 @@ class NavigationClickAction(CustomAction):
                 })
                 result = action.result if action and action.success else None
                 if not result or not result.success:
-                    logger.error("navigation_click: display direction query failed")
+                    logger.debug("navigation_click: display direction query failed")
+                    logger.error("页面切换：无法确认屏幕方向")
                     return False
                 values = set(re.findall(r"SurfaceOrientation:\s*([0-3])\b", result.output))
                 if len(values) != 1:
-                    logger.error("navigation_click: display direction missing or ambiguous")
+                    logger.debug("navigation_click: display direction missing or ambiguous")
+                    logger.error("页面切换：无法确认屏幕方向")
                     return False
                 value = int(values.pop())
             except Exception as exc:
-                logger.error(f"navigation_click: display direction query raised: {exc}")
+                logger.debug(f"navigation_click: display direction query raised: {exc}")
+                logger.error("页面切换：读取屏幕方向失败")
                 return False
             now = time.monotonic()
             if context.tasker.stopping or now >= deadline:
@@ -683,7 +722,8 @@ class NavigationClickAction(CustomAction):
             else:
                 orientation, since = None, None
             time.sleep(min(0.1, max(0, deadline - now)))
-        logger.error("navigation_click: landscape stability timeout")
+        logger.debug("navigation_click: landscape stability timeout")
+        logger.error("页面切换：等待横屏超时")
         return False
 
     def _refresh_landscape(self, context, deadline):
@@ -695,7 +735,8 @@ class NavigationClickAction(CustomAction):
                 return False
             connection = controller.post_connection().wait()
             if not connection.succeeded:
-                logger.error("navigation_click: reconnect after rotation failed")
+                logger.debug("navigation_click: reconnect after rotation failed")
+                logger.error("页面切换：旋转屏幕后连接失败")
                 return False
             if context.tasker.stopping or time.monotonic() >= deadline:
                 return False
@@ -704,19 +745,22 @@ class NavigationClickAction(CustomAction):
                 return False
             image = controller.cached_image if capture.succeeded else None
             if image is None or image.shape[1] <= image.shape[0]:
-                logger.error("navigation_click: no fresh landscape capture after reconnect")
+                logger.debug("navigation_click: no fresh landscape capture after reconnect")
+                logger.error("页面切换：旋转屏幕后无法获取画面")
                 return False
             logger.debug("navigation_click: landscape capture refreshed after reconnect")
             return True
         except Exception as exc:
-            logger.error(f"navigation_click: landscape reconnect raised: {exc}")
+            logger.debug(f"navigation_click: landscape reconnect raised: {exc}")
+            logger.error("页面切换：旋转屏幕后重新连接失败")
             return False
 
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
         try:
             return self._click(context, argv)
         except ExitConfirmError as exc:
-            logger.error(f"navigation_click: {exc}")
+            logger.debug(f"navigation_click: {exc}")
+            logger.error("页面切换：点击操作异常")
             return False
 
     def _click(self, context, argv):
@@ -724,7 +768,8 @@ class NavigationClickAction(CustomAction):
         sources = params.get("source_nodes", [])
         targets = params.get("target_nodes", [])
         if not sources or not targets:
-            logger.error(f"navigation_click: missing page guards node={argv.node_name}")
+            logger.debug(f"navigation_click: missing page guards node={argv.node_name}")
+            logger.error("页面切换：页面识别配置不完整")
             return False
         navigation = PageNavigateAction()
         wait_nodes = navigation._build_wait_nodes(params)
@@ -736,18 +781,21 @@ class NavigationClickAction(CustomAction):
         landscape_refreshed = False
         while True:
             if time.monotonic() >= deadline:
-                logger.error(f"navigation_click: timeout node={argv.node_name}, clicks={clicks}, target_seen={target_seen}")
+                logger.debug(f"navigation_click: timeout node={argv.node_name}, clicks={clicks}, target_seen={target_seen}")
+                logger.error("页面切换：点击后未能及时进入目标页面")
                 return False
             image = navigation._screencap(context)
             image, _ = navigation._dismiss_exit_confirm(context, image, deadline)
             if time.monotonic() >= deadline:
-                logger.error(f"navigation_click: capture exceeded deadline node={argv.node_name}")
+                logger.debug(f"navigation_click: capture exceeded deadline node={argv.node_name}")
+                logger.error("页面切换：获取画面超时")
                 return False
             # Latch arrival: even a later transient miss must never click the old entry.
             target_seen = target_seen or any(navigation._recognize(context, image, node) for node in targets)
             loading = navigation._intermediate_reason(context, image, wait_nodes)
             if time.monotonic() >= deadline:
-                logger.error(f"navigation_click: recognition exceeded deadline node={argv.node_name}")
+                logger.debug(f"navigation_click: recognition exceeded deadline node={argv.node_name}")
+                logger.error("页面切换：识别页面超时")
                 return False
             if target_seen and not loading:
                 logger.debug(f"navigation_click: arrived node={argv.node_name}, clicks={clicks}, elapsed={time.monotonic() - started:.3f}s")
@@ -761,7 +809,8 @@ class NavigationClickAction(CustomAction):
                         target = params.get("target")
                         if target is None:
                             if box is None or box.w <= 0 or box.h <= 0:
-                                logger.error(f"navigation_click: invalid button box node={argv.node_name}")
+                                logger.debug(f"navigation_click: invalid button box node={argv.node_name}")
+                                logger.error("页面切换：无法定位目标按钮")
                                 return False
                             target = [box.x, box.y, box.w, box.h]
                         action = context.run_action_direct("Click", JClick(target=target))

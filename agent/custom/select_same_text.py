@@ -42,14 +42,16 @@ class SelectSameTextAfterThumbAction(CustomAction):
             ("confirm_roi", confirm_roi),
         ):
             if not self._valid_roi(roi):
-                logger.error(f"select_same_text_after_thumb: invalid {name}")
+                logger.debug(f"select_same_text_after_thumb: invalid {name}")
+                logger.error("美甲：操作区域配置无效")
                 return False
 
         controller = context.tasker.controller
 
         target_text = self._read_first_text(context, controller, source_roi, ocr_threshold)
         if not target_text:
-            logger.error("select_same_text_after_thumb: failed to OCR source text")
+            logger.debug("select_same_text_after_thumb: failed to OCR source text")
+            logger.error("美甲：无法识别搭配文字")
             return False
 
         logger.debug(f"select_same_text_after_thumb: target_text={target_text!r}")
@@ -79,7 +81,8 @@ class SelectSameTextAfterThumbAction(CustomAction):
             self._swipe_up(context, search_roi, swipe_distance, swipe_duration, swipe_end_hold)
             time.sleep(swipe_delay)
 
-        logger.warning(f"select_same_text_after_thumb: no match for {target_text!r}")
+        logger.debug(f"select_same_text_after_thumb: no match for {target_text!r}")
+        logger.warning(f"美甲：未找到「{target_text}」")
         return False
 
     def _read_first_text(self, context, controller, roi, threshold):
@@ -204,12 +207,14 @@ class ClickNailTabsSequenceAction(CustomAction):
         delay = self._as_float(params.get("delay"), 0.4)
 
         if not isinstance(rois, list) or not rois:
-            logger.error("click_nail_tabs_sequence: invalid rois")
+            logger.debug("click_nail_tabs_sequence: invalid rois")
+            logger.error("美甲：切换区域配置无效")
             return False
 
         for index, roi in enumerate(rois):
             if not self._valid_roi(roi):
-                logger.error(f"click_nail_tabs_sequence: invalid roi at index {index}")
+                logger.debug(f"click_nail_tabs_sequence: invalid roi at index {index}")
+                logger.error("美甲：切换区域配置无效")
                 return False
 
         controller = context.tasker.controller

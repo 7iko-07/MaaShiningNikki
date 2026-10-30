@@ -47,13 +47,16 @@ class CardMatchingAction(CustomAction):
         max_turns = self._as_int(params.get("max_turns"), rows * columns * 3)
 
         if not self._valid_pair(origin) or not self._valid_pair(card_size) or not self._valid_pair(step):
-            logger.error("card_matching: origin/card_size/step 必须是包含两个数字的数组")
+            logger.debug("card_matching: origin/card_size/step 必须是包含两个数字的数组")
+            logger.error("翻牌：牌面位置配置无效")
             return False
         if not self._valid_margin(crop_margin):
-            logger.error("card_matching: crop_margin 必须是 [left, top, right, bottom]")
+            logger.debug("card_matching: crop_margin 必须是 [left, top, right, bottom]")
+            logger.error("翻牌：牌面裁剪配置无效")
             return False
         if rows <= 0 or columns <= 0 or rows * columns % 2:
-            logger.error("card_matching: 牌数必须是正偶数")
+            logger.debug("card_matching: 牌数必须是正偶数")
+            logger.error("翻牌：牌数配置无效")
             return False
         if (
             match_threshold <= 0
@@ -65,20 +68,22 @@ class CardMatchingAction(CustomAction):
             or completion_check_delay < 0
             or max_turns <= 0
         ):
-            logger.error(
+            logger.debug(
                 "card_matching: 阈值必须大于 0，且 fallback_match_threshold "
                 "不能小于 match_threshold"
             )
+            logger.error("翻牌：匹配精度配置无效")
             return False
 
         cards = self._build_cards(rows, columns, origin, card_size, step)
         controller = context.tasker.controller
         image = self._screencap(controller)
         if not self._board_fits(image, cards):
-            logger.error(
+            logger.debug(
                 f"card_matching: 棋盘超出截图范围，image={image.shape[:2]}, "
                 f"last_card={cards[-1]}"
             )
+            logger.error("翻牌：牌面位置超出画面范围")
             return False
 
         unresolved = set(range(len(cards)))
@@ -89,10 +94,11 @@ class CardMatchingAction(CustomAction):
         completion_retry = 0
         turns = 0
 
-        logger.info(
+        logger.debug(
             f"card_matching: 开始翻牌，rows={rows}, columns={columns}, "
             f"threshold={match_threshold:.4f}"
         )
+        logger.info("开始翻牌")
 
         while True:
             if not unresolved:
@@ -107,20 +113,22 @@ class CardMatchingAction(CustomAction):
                 if not face_down:
                     break
                 if completion_retry >= completion_retry_count:
-                    logger.error(
+                    logger.debug(
                         "card_matching: 完成后补扫次数已用尽，仍检测到未翻开的牌："
                         + ", ".join(self._label(index, columns) for index in face_down)
                     )
+                    logger.error("翻牌：仍有未翻开的牌，未能完成配对")
                     return False
 
                 completion_retry += 1
                 unresolved.update(face_down)
                 known.clear()
-                logger.warning(
+                logger.debug(
                     f"card_matching: 完成后检测到 {len(face_down)} 张牌仍为背面，"
                     f"开始第 {completion_retry}/{completion_retry_count} 次补扫："
                     + ", ".join(self._label(index, columns) for index in face_down)
                 )
+                logger.warning("翻牌：仍有未翻开的牌，正在重新检查")
 
             if turns >= max_turns:
                 break
@@ -131,7 +139,7 @@ class CardMatchingAction(CustomAction):
                     known, unresolved, fallback_match_threshold
                 )
                 if remembered_pair is not None:
-                    logger.info(
+                    logger.debug(
                         "card_matching: 剩余牌均已记录，使用兜底阈值 "
                         f"{fallback_match_threshold:.4f} 完成最接近的配对"
                     )
@@ -164,10 +172,11 @@ class CardMatchingAction(CustomAction):
 
             unseen = sorted(unresolved.difference(known))
             if not unseen:
-                logger.error(
+                logger.debug(
                     "card_matching: 所有剩余牌均已记录但未找到配对；"
                     "请适当调大 fallback_match_threshold"
                 )
+                logger.error("翻牌：剩余牌未找到配对")
                 return False
 
             first = unseen[0]
@@ -202,10 +211,11 @@ class CardMatchingAction(CustomAction):
             known[first] = first_signature
             unseen = sorted(unresolved.difference(known))
             if not unseen:
-                logger.error(
+                logger.debug(
                     "card_matching: 最后一张牌没有找到配对；请检查网格参数或调大 "
                     "match_threshold"
                 )
+                logger.error("翻牌：最后一张牌未找到配对")
                 return False
 
             second = unseen[0]
@@ -244,12 +254,14 @@ class CardMatchingAction(CustomAction):
             time.sleep(mismatch_delay)
 
         if unresolved:
-            logger.error(
+            logger.debug(
                 f"card_matching: 超过最大轮数 {max_turns}，仍有 {len(unresolved)} 张牌"
             )
+            logger.error("翻牌：未能在限定次数内完成配对")
             return False
 
-        logger.info(f"card_matching: 完成全部 {len(cards) // 2} 组配对")
+        logger.debug(f"card_matching: 完成全部 {len(cards) // 2} 组配对")
+        logger.info(f"翻牌：已完成 {len(cards) // 2} 组配对")
         return True
 
     def _reveal(
@@ -278,14 +290,15 @@ class CardMatchingAction(CustomAction):
                 return after
 
             if attempt < retry_count:
-                logger.warning(
+                logger.debug(
                     f"card_matching: 点击后牌面未变化，准备补点，card={card}, "
                     f"attempt={attempt + 1}/{retry_count + 1}, change={distance:.4f}"
                 )
 
-        logger.warning(
+        logger.debug(
             f"card_matching: 补点后牌面仍未变化，继续使用当前截图，card={card}"
         )
+        logger.warning("翻牌：点击后牌面未变化")
         return after
 
     def _signature(self, image, card, margin):

@@ -149,11 +149,14 @@ class ClothingReadinessTests(unittest.TestCase):
                         self.assertTrue(tasker.bind(resource, controller))
                         with patch.object(module.MakeTargetClothesBatchChallengeAction, "_read_round_values",
                                           side_effect=AttributeError("'list' object has no attribute 'x'")) as read, \
-                             patch.object(module.logger, "exception") as error:
+                             patch.object(module, "debug_exception") as detail, \
+                             patch.object(module.logger, "error") as error:
                             result = tasker.post_task(gate if stage == "ready" else batch).wait()
                             self.assertFalse(result.status.succeeded)
                             read.assert_called_once()
+                            detail.assert_called_once()
                             error.assert_called_once()
+                            self.assertNotIn("AttributeError", error.call_args.args[0])
                         self.assertEqual(record.calls, [])
                         self.assertEqual(controller.clicks, [])
                         del tasker

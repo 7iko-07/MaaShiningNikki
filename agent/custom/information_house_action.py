@@ -31,7 +31,8 @@ class InformationHouseAutoInvestigateAction(CustomAction):
         challenge_times = self._as_int(params.get("challenge_times"), 0)
 
         if not all(self._valid_roi(roi) for roi in (stamina_roi, add_button_roi, cost_roi, minus_button_roi, start_button_roi)):
-            logger.error("information_house_auto_investigate: invalid roi param")
+            logger.debug("information_house_auto_investigate: invalid roi param")
+            logger.error("情报屋：操作区域配置无效")
             return False
 
         controller = context.tasker.controller
@@ -51,7 +52,8 @@ class InformationHouseAutoInvestigateAction(CustomAction):
             retry_label="stamina",
         )
         if stamina is None:
-            logger.error("information_house_auto_investigate: failed to read stamina")
+            logger.debug("information_house_auto_investigate: failed to read stamina")
+            logger.error("情报屋：无法识别当前体力")
             return False
 
         logger.debug(f"information_house_auto_investigate: stamina={stamina}")
@@ -63,14 +65,16 @@ class InformationHouseAutoInvestigateAction(CustomAction):
             retry_delay,
         )
         if cost is None:
-            logger.error("information_house_auto_investigate: failed to read initial cost")
+            logger.debug("information_house_auto_investigate: failed to read initial cost")
+            logger.error("情报屋：无法识别体力消耗")
             return False
 
         if cost > stamina:
-            logger.info(
+            logger.debug(
                 "information_house_auto_investigate: stamina is not enough for current cost, "
                 f"stamina={stamina}, cost={cost}"
             )
+            logger.info("情报屋：体力不足，结束调查")
             return True
 
         if challenge_times > 0:
@@ -106,10 +110,11 @@ class InformationHouseAutoInvestigateAction(CustomAction):
         if target_cost is None:
             return False
 
-        logger.info(
+        logger.debug(
             "information_house_auto_investigate: "
             f"start investigate, stamina={stamina}, target_cost={target_cost}"
         )
+        logger.info(f"情报屋：开始调查，预计消耗 {target_cost} 体力")
         self._click_roi(controller, start_button_roi)
         return True
 
@@ -154,7 +159,8 @@ class InformationHouseAutoInvestigateAction(CustomAction):
                 retry_delay,
             )
             if next_cost is None:
-                logger.error("information_house_auto_investigate: failed to read cost after target add")
+                logger.debug("information_house_auto_investigate: failed to read cost after target add")
+                logger.error("情报屋：无法确认调查次数")
                 return None
 
             logger.debug(
@@ -162,11 +168,11 @@ class InformationHouseAutoInvestigateAction(CustomAction):
                 f"target_cost_after_add={next_cost}, previous_cost={current_cost}, stamina={stamina}"
             )
             if next_cost == current_cost:
-                logger.info("information_house_auto_investigate: add did not change cost before target count")
+                logger.debug("information_house_auto_investigate: add did not change cost before target count")
                 return current_cost
 
             if next_cost > stamina:
-                logger.info(
+                logger.debug(
                     "information_house_auto_investigate: target cost exceeds stamina after add, "
                     f"cost={next_cost}, stamina={stamina}, rollback_cost={current_cost}"
                 )
@@ -181,14 +187,16 @@ class InformationHouseAutoInvestigateAction(CustomAction):
                     retry_delay,
                 )
                 if rollback_cost is None:
-                    logger.error("information_house_auto_investigate: failed to read cost after target rollback")
+                    logger.debug("information_house_auto_investigate: failed to read cost after target rollback")
+                    logger.error("情报屋：无法确认调整后的体力消耗")
                     return None
 
                 if rollback_cost != current_cost:
-                    logger.warning(
+                    logger.debug(
                         "information_house_auto_investigate: target rollback cost is different from expected, "
                         f"rollback_cost={rollback_cost}, expected={current_cost}"
                     )
+                    logger.warning("情报屋：体力消耗与预期不符")
                     if rollback_cost > stamina:
                         return None
                     return rollback_cost
@@ -230,7 +238,8 @@ class InformationHouseAutoInvestigateAction(CustomAction):
                 retry_delay,
             )
             if next_cost is None:
-                logger.error("information_house_auto_investigate: failed to read cost after add")
+                logger.debug("information_house_auto_investigate: failed to read cost after add")
+                logger.error("情报屋：无法确认调查次数")
                 return None
 
             logger.debug(
@@ -238,11 +247,11 @@ class InformationHouseAutoInvestigateAction(CustomAction):
                 f"cost_after_add={next_cost}, previous_cost={current_cost}, stamina={stamina}"
             )
             if next_cost == current_cost:
-                logger.info("information_house_auto_investigate: add did not change cost, already max count")
+                logger.debug("information_house_auto_investigate: add did not change cost, already max count")
                 return current_cost
 
             if next_cost > stamina:
-                logger.info(
+                logger.debug(
                     "information_house_auto_investigate: cost exceeds stamina after add, "
                     f"cost={next_cost}, stamina={stamina}, rollback_cost={current_cost}"
                 )
@@ -257,14 +266,16 @@ class InformationHouseAutoInvestigateAction(CustomAction):
                     retry_delay,
                 )
                 if rollback_cost is None:
-                    logger.error("information_house_auto_investigate: failed to read cost after rollback")
+                    logger.debug("information_house_auto_investigate: failed to read cost after rollback")
+                    logger.error("情报屋：无法确认调整后的体力消耗")
                     return None
 
                 if rollback_cost != current_cost:
-                    logger.warning(
+                    logger.debug(
                         "information_house_auto_investigate: rollback cost is different from expected, "
                         f"rollback_cost={rollback_cost}, expected={current_cost}"
                     )
+                    logger.warning("情报屋：体力消耗与预期不符")
                     if rollback_cost > stamina:
                         return None
                     return rollback_cost
@@ -273,7 +284,7 @@ class InformationHouseAutoInvestigateAction(CustomAction):
 
             current_cost = next_cost
 
-        logger.info(
+        logger.debug(
             "information_house_auto_investigate: reached max_adjust while increasing, "
             f"cost={current_cost}, max_adjust={max_adjust}"
         )

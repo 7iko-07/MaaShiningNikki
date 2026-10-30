@@ -118,10 +118,12 @@ class MemoryShopCheckAction(CustomAction):
         excluded_names = set(params.get("excluded_names", EXCLUDED_DIAMOND_NAMES))
 
         if not self._valid_roi(refresh_roi):
-            logger.error("memory_shop_check: invalid refresh_roi")
+            logger.debug("memory_shop_check: invalid refresh_roi")
+            logger.error("回忆小铺：刷新按钮配置无效")
             return False
         if not self._valid_roi(refresh_text_roi):
-            logger.error("memory_shop_check: invalid refresh_text_roi")
+            logger.debug("memory_shop_check: invalid refresh_text_roi")
+            logger.error("回忆小铺：刷新文字识别区域配置无效")
             return False
         for key, roi in (
             ("refresh_exhausted_roi", refresh_exhausted_roi),
@@ -130,18 +132,21 @@ class MemoryShopCheckAction(CustomAction):
             ("shop_page_roi", shop_page_roi),
         ):
             if not self._valid_roi(roi):
-                logger.error(f"memory_shop_check: invalid {key}")
+                logger.debug(f"memory_shop_check: invalid {key}")
+                logger.error("回忆小铺：操作区域配置无效")
                 return False
         if not isinstance(slots, list) or not slots:
-            logger.error("memory_shop_check: invalid slots")
+            logger.debug("memory_shop_check: invalid slots")
+            logger.error("回忆小铺：商品区域配置无效")
             return False
 
         controller = context.tasker.controller
-        if not self._wait_shop_ready(context, controller):
-            logger.error(f"memory_shop_check: {shop} page is not ready")
+        ready = self._wait_shop_ready(context, controller)
+        if not ready:
+            logger.debug(f"memory_shop_check: {shop} page is not ready")
+            logger.error(f"{shop}：页面未就绪")
             return False
-        image = self._screencap(controller)
-        products = []
+        image, page_result = ready
         gold_products = []
         diamond_price_pause_products = []
         diamond_pause_products = []
@@ -156,8 +161,10 @@ class MemoryShopCheckAction(CustomAction):
                 currency_threshold,
                 gold_template,
                 diamond_template,
+                page_result,
+                excluded_names,
+                diamond_price_threshold,
             )
-            products.append(product)
             logger.debug(
                 "memory_shop_check: "
                 f"shop={shop}, slot={index + 1}, name={product['name']!r}, discount={product['discount']}, "
@@ -185,11 +192,23 @@ class MemoryShopCheckAction(CustomAction):
                     diamond_pause_products.append(product)
 
         if gold_products and not auto_buy_gold:
-            logger.info("memory_shop_check: gold product found, pausing")
+            logger.info(
+                f"{shop}：刷到金币商品，暂停刷新："
+                + "、".join(
+                    (item['name'] or '名称未识别')
+                    + (f"（{item['price']}金币）" if item['price'] is not None else "")
+                    for item in gold_products
+                )
+            )
             return self._route(context, argv.node_name, pause_next)
 
         if auto_buy_gold:
             for product in gold_products:
+                logger.info(
+                    f"{shop}：刷到金币商品「{product['name'] or '名称未识别'}」"
+                    + (f"（{product['price']}金币）" if product['price'] is not None else "")
+                    + "，准备自动购买"
+                )
                 if context.tasker.stopping or not self._click_roi(controller, product["button_roi"]):
                     return False
                 time.sleep(post_buy_delay)
@@ -206,14 +225,15 @@ class MemoryShopCheckAction(CustomAction):
                     purchase_recovery_delay,
                     purchase_close_clicks,
                 ):
-                    logger.info("memory_shop_check: purchase recovery failed, pausing")
+                    logger.debug(f"memory_shop_check: {shop} purchase recovery failed, pausing")
+                    logger.error(f"{shop}：购买后未能返回店铺，请手动检查")
                     return False
 
         if diamond_price_pause_products:
             logger.info(
-                "memory_shop_check: low-price diamond product found, pausing: "
-                + ", ".join(
-                    f"{item['name']}({item['price']}钻)"
+                f"{shop}：刷到需求商品，暂停刷新："
+                + "、".join(
+                    f"{item['name'] or '名称未识别'}（{item['price']}钻）"
                     for item in diamond_price_pause_products
                 )
             )
@@ -221,21 +241,23 @@ class MemoryShopCheckAction(CustomAction):
 
         if diamond_pause_products:
             logger.info(
-                "memory_shop_check: valuable diamond product found, pausing: "
-                + ", ".join(
-                    f"{item['name']}({item['discount']}折)"
+                f"{shop}：刷到需求商品，暂停刷新："
+                + "、".join(
+                    f"{item['name'] or '名称未识别'}（{item['discount']}折）"
                     for item in diamond_pause_products
                 )
             )
             return self._route(context, argv.node_name, pause_next)
 
-        image = self._screencap(controller)
-        refresh_free = self._is_refresh_free(context, image, refresh_text_roi, ocr_threshold)
+        if auto_buy_gold and gold_products:
+            image = self._screencap(controller)
+            page_result = None
+        refresh_free = self._is_refresh_free(context, image, refresh_text_roi, ocr_threshold, page_result)
         if not refresh_free and not continue_refresh_when_not_free:
-            logger.info(f"memory_shop_check: {shop} refresh is not free, finishing shop")
+            logger.debug(f"memory_shop_check: {shop} refresh is not free, finishing shop")
             return self._route(context, argv.node_name, finish_next)
 
-        logger.info(
+        logger.debug(
             "memory_shop_check: no product matched pause rules, refreshing, "
             f"refresh_free={refresh_free}"
         )
@@ -249,11 +271,12 @@ class MemoryShopCheckAction(CustomAction):
             refresh_exhausted_roi,
             ocr_threshold,
         ):
-            logger.info(f"memory_shop_check: {shop} refresh cards exhausted, closing popup")
+            logger.debug(f"memory_shop_check: {shop} refresh cards exhausted, closing popup")
             if not self._click_roi(controller, back_roi):
                 return False
             if not self._wait_shop_ready(context, controller):
-                logger.error("memory_shop_check: refresh popup did not close")
+                logger.debug("memory_shop_check: refresh popup did not close")
+                logger.error("回忆小铺：刷新弹窗未能关闭")
                 return False
             return self._route(context, argv.node_name, finish_next)
 
@@ -262,23 +285,22 @@ class MemoryShopCheckAction(CustomAction):
     def _route(self, context, node_name, next_nodes):
         success = context.override_next(node_name, next_nodes)
         if not success:
-            logger.error(f"memory_shop_check: cannot set {node_name}.next={next_nodes}")
+            logger.debug(f"memory_shop_check: cannot set {node_name}.next={next_nodes}")
+            logger.error("回忆小铺：未能继续任务")
         return bool(success)
 
     def _wait_shop_ready(self, context, controller, timeout=10.0):
-        """Require two fresh shop frames without a known modal; never click here."""
+        """Return the ready frame and its OCR results within a bounded wait."""
         deadline = time.monotonic() + timeout
-        clear_frames = 0
         while time.monotonic() < deadline and not context.tasker.stopping:
             image = self._screencap(controller)
-            ready = self._is_memory_shop_page(context, image, [0, 448, 720, 790], 0.3)
+            result = self._read_shop_page(context, image, [0, 448, 720, 790], 0.3)
             if time.monotonic() >= deadline or context.tasker.stopping:
-                return False
-            clear_frames = clear_frames + 1 if ready else 0
-            if clear_frames >= 2:
-                return True
+                return None
+            if result is not None:
+                return image, result
             time.sleep(min(0.5, max(0, deadline - time.monotonic())))
-        return False
+        return None
 
     def _read_product(
         self,
@@ -290,10 +312,12 @@ class MemoryShopCheckAction(CustomAction):
         currency_threshold,
         gold_template,
         diamond_template,
+        page_result,
+        excluded_names,
+        diamond_price_threshold,
     ):
         name_roi = slot.get("name_roi")
         discount_roi = slot.get("discount_roi")
-        currency_roi = slot.get("currency_roi")
         button_roi = slot.get("button_roi")
         price_roi = slot.get("price_roi") or self._right_half_roi(button_roi)
         for key, roi in (
@@ -305,25 +329,37 @@ class MemoryShopCheckAction(CustomAction):
             if not self._valid_roi(roi):
                 raise ValueError(f"memory_shop_check: invalid {key} at slot {index + 1}")
 
-        name = self._read_text(context, image, name_roi, ocr_threshold)
-        discount_text = self._read_text(context, image, discount_roi, ocr_threshold)
-        price_text = self._read_text(context, image, price_roi, ocr_threshold)
+        name = self._normalize_name(self._text_in_roi(page_result, name_roi))
+        discount_text = self._text_in_roi(page_result, discount_roi)
+        currency = self._detect_currency(
+            context, image, button_roi, currency_threshold, gold_template, diamond_template,
+        )
+        price_text = ""
+        if currency == "gold" or (
+            currency == "diamond"
+            and diamond_price_threshold > 0
+            and not self._is_excluded_name(name, excluded_names)
+        ):
+            price_text = self._read_text(context, image, price_roi, ocr_threshold)
         return {
-            "name": self._normalize_name(name),
+            "name": name,
             "discount": self._parse_discount(discount_text),
             "discount_text": discount_text,
             "price": self._parse_price(price_text),
             "price_text": price_text,
-            "currency": self._detect_currency(
-                context,
-                image,
-                button_roi,
-                currency_threshold,
-                gold_template,
-                diamond_template,
-            ),
+            "currency": currency,
             "button_roi": button_roi,
         }
+
+    def _text_in_roi(self, result, roi):
+        if not result or not result.hit:
+            return ""
+        x, y, w, h = roi
+        return "".join(
+            item.text for item in result.filtered_results
+            if x <= item.box[0] + item.box[2] / 2 < x + w
+            and y <= item.box[1] + item.box[3] / 2 < y + h
+        )
 
     def _read_text(self, context, image, roi, threshold):
         result = context.run_recognition_direct(
@@ -384,8 +420,11 @@ class MemoryShopCheckAction(CustomAction):
             return None
         return int(numbers[-1])
 
-    def _is_refresh_free(self, context, image, roi, threshold):
-        text = self._read_text(context, image, roi, threshold)
+    def _is_refresh_free(self, context, image, roi, threshold, page_result=None):
+        text = (
+            self._text_in_roi(page_result, roi) if page_result is not None
+            else self._read_text(context, image, roi, threshold)
+        )
         normalized = self._normalize_name(text)
         is_free = "免费" in normalized
         logger.debug(
@@ -440,7 +479,7 @@ class MemoryShopCheckAction(CustomAction):
             )
             return bool(result and getattr(result, "hit", False))
         except Exception as e:
-            logger.warning(
+            logger.debug(
                 "memory_shop_check: currency template match failed, "
                 f"template={template!r}, roi={roi}, error={e}"
             )
@@ -450,7 +489,7 @@ class MemoryShopCheckAction(CustomAction):
         image = self._screencap(controller)
         text = self._read_text(context, image, text_roi, threshold)
         if re.search(r"购买|确定|确认", text) or self._has_orange_button(image, confirm_roi):
-            logger.info(f"memory_shop_check: confirming purchase popup, text={text!r}")
+            logger.debug(f"memory_shop_check: confirming purchase popup, text={text!r}")
             self._click_roi(controller, confirm_roi)
             return True
         logger.debug(f"memory_shop_check: no purchase popup detected, text={text!r}")
@@ -513,9 +552,15 @@ class MemoryShopCheckAction(CustomAction):
         return ready and not context.tasker.stopping and time.monotonic() < deadline
 
     def _is_memory_shop_page(self, context, image, roi, threshold):
+        return self._read_shop_page(context, image, roi, threshold) is not None
+
+    def _read_shop_page(self, context, image, roi, threshold):
         if image is None or self._has_blocking_popup(context, image, threshold):
-            return False
-        text = self._read_text(context, image, roi, threshold)
+            return None
+        result = context.run_recognition_direct(
+            JRecognitionType.OCR, JOCR(roi=roi, threshold=threshold), image,
+        )
+        text = self._text_in_roi(result, roi)
         normalized = self._normalize_name(text)
         hit = "回忆小铺" in normalized and (
             "换一批" in normalized or "刷新卡" in normalized or "剩余" in normalized
@@ -524,7 +569,7 @@ class MemoryShopCheckAction(CustomAction):
             "memory_shop_check: memory shop page text="
             f"{text!r}, normalized={normalized!r}, hit={hit}"
         )
-        return hit
+        return result if hit else None
 
     def _has_blocking_popup(self, context, image, threshold):
         if self._is_refresh_exhausted_popup(context, image, [231, 270, 241, 104], threshold):
@@ -621,22 +666,26 @@ class MemoryShopSelectAction(MemoryShopCheckAction):
                 context, controller, [318, 1183, 69, 35], [0, 448, 720, 790],
                 [0, 36, 100, 64], 0.3, 8, 0.8, 3,
             ):
-                logger.error(f"memory_shop_select: cannot close popup before {shop}")
+                logger.debug(f"memory_shop_select: cannot close popup before {shop}")
+                logger.error(f"{shop}：弹窗未能关闭")
                 return False
-        if not self._wait_shop_ready(context, controller):
-            logger.error(f"memory_shop_select: page is not ready before {shop}")
+        ready_frame = self._wait_shop_ready(context, controller)
+        if not ready_frame:
+            logger.debug(f"memory_shop_select: page is not ready before {shop}")
+            logger.error(f"{shop}：页面未就绪")
             return False
 
+        image, _ = ready_frame
+        ready = True
         deadline = time.monotonic() + 3.0
         clean_missing = False
         while time.monotonic() < deadline and not context.tasker.stopping:
-            image = self._screencap(controller)
-            ready = self._is_memory_shop_page(context, image, [0, 448, 720, 790], 0.3)
             clean_missing = False
             if ready:
                 result = context.run_recognition(params["tab_node"], image)
                 if result is None:
-                    logger.error(f"memory_shop_select: {shop} label recognition failed")
+                    logger.debug(f"memory_shop_select: {shop} label recognition failed")
+                    logger.error(f"{shop}：无法识别店铺入口")
                     return False
                 if time.monotonic() >= deadline or context.tasker.stopping:
                     return False
@@ -645,21 +694,26 @@ class MemoryShopSelectAction(MemoryShopCheckAction):
                     if hasattr(box, "x"):
                         box = [box.x, box.y, box.w, box.h]
                     if not isinstance(box, (list, tuple)) or len(box) != 4 or box[2] <= 0 or box[3] <= 0:
-                        logger.error(f"memory_shop_select: invalid {shop} label box")
+                        logger.debug(f"memory_shop_select: invalid {shop} label box")
+                        logger.error(f"{shop}：无法定位店铺入口")
                         return False
                     action = context.run_action(params["tab_node"], box=box)
                     if not action or not action.success:
                         return False
-                    if not self._wait_shop_ready(context, controller):
-                        logger.error(f"memory_shop_select: {shop} page did not become ready")
-                        return False
-                    logger.info(f"memory_shop_select: 已切换到{shop}")
+                    # The check node waits for the selected shop before reading products.
+                    logger.debug(f"memory_shop_select: 已点击{shop}入口")
                     return self._route(context, argv.node_name, [params["check_node"]])
                 clean_missing = True
             time.sleep(min(0.5, max(0, deadline - time.monotonic())))
+            if time.monotonic() < deadline and not context.tasker.stopping:
+                image = self._screencap(controller)
+                ready = self._is_memory_shop_page(context, image, [0, 448, 720, 790], 0.3)
+                if not ready:
+                    clean_missing = False
 
         if shop == "限时回忆小铺" and clean_missing and not context.tasker.stopping:
-            logger.info("memory_shop_select: 未找到限时回忆小铺，跳过")
+            logger.debug("memory_shop_select: 未找到限时回忆小铺，跳过")
             return self._route(context, argv.node_name, params["finish_next"])
-        logger.error(f"memory_shop_select: {shop} label not found or page blocked")
+        logger.debug(f"memory_shop_select: {shop} label not found or page blocked")
+        logger.error(f"{shop}：未找到入口或页面被弹窗遮挡")
         return False

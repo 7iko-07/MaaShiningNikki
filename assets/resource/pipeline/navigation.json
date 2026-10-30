@@ -6,7 +6,7 @@
                 "all_of": [
                     "玩家名片页面点击esc",
                     {"recognition": {"type": "OCR", "param": {
-                        "roi": [440, 910, 190, 95],
+                        "roi": [53, 135, 618, 901],
                         "expected": ["收集度"]
                     }}}
                 ]

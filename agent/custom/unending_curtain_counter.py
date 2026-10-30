@@ -35,25 +35,28 @@ class UnendingCurtainCounterAction(CustomAction):
             return True
 
         if operation != "count":
-            logger.error(f"unending_curtain_counter: invalid operation={operation!r}")
+            logger.debug(f"unending_curtain_counter: invalid operation={operation!r}")
+            logger.error("不落的帷幕：操作配置无效")
             return False
 
         _wait_started_at.pop(task_id, None)
         configured_runs = self._as_int(params.get("max_runs"), 0)
         if not 0 <= configured_runs <= 3:
-            logger.error(
+            logger.debug(
                 "unending_curtain_counter: max_runs must be between 0 and 3, "
                 f"got {configured_runs}"
             )
+            logger.error("不落的帷幕：独自登场次数须为 0～3")
             return False
 
         max_runs = 3 if configured_runs == 0 else configured_runs
         run_count = _task_run_counts.get(task_id, 0) + 1
         _task_run_counts[task_id] = run_count
-        logger.info(
+        logger.debug(
             "unending_curtain_counter: "
             f"solo_run_count={run_count}, max_runs={max_runs}"
         )
+        logger.info(f"不落的帷幕：独自登场 {run_count}/{max_runs} 次")
 
         if run_count < max_runs:
             next_nodes = ["点击第一幕"]
@@ -62,10 +65,11 @@ class UnendingCurtainCounterAction(CustomAction):
             _task_run_counts.pop(task_id, None)
 
         if not context.override_next(argv.node_name, next_nodes):
-            logger.error(
+            logger.debug(
                 "unending_curtain_counter: failed to set next nodes "
                 f"to {next_nodes!r}"
             )
+            logger.error("不落的帷幕：未能继续任务")
             return False
 
         return True
@@ -92,10 +96,11 @@ class UnendingCurtainWaitTimeoutRecognition(CustomRecognition):
         )
         timeout_seconds = self._as_float(params.get("timeout_seconds"), 180.0)
         if timeout_seconds <= 0:
-            logger.error(
+            logger.debug(
                 "unending_curtain_wait_timeout: timeout_seconds must be positive, "
                 f"got {timeout_seconds}"
             )
+            logger.error("不落的帷幕：等待时间配置无效")
             return None
 
         task_id = argv.task_detail.task_id
@@ -103,7 +108,7 @@ class UnendingCurtainWaitTimeoutRecognition(CustomRecognition):
         if started_at is None:
             started_at = time.monotonic()
             _wait_started_at[task_id] = started_at
-            logger.warning(
+            logger.debug(
                 "unending_curtain_wait_timeout: wait timer was not initialized; "
                 "starting it during recognition"
             )
@@ -115,10 +120,11 @@ class UnendingCurtainWaitTimeoutRecognition(CustomRecognition):
 
         _wait_started_at.pop(task_id, None)
         _task_run_counts.pop(task_id, None)
-        logger.warning(
+        logger.debug(
             "unending_curtain_wait_timeout: "
             f"solo result wait timed out after {elapsed:.1f}s"
         )
+        logger.warning("不落的帷幕：等待结算超时，停止挑战")
         return CustomRecognition.AnalyzeResult(
             box=(0, 0, 1, 1),
             detail={

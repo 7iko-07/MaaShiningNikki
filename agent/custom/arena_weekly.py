@@ -42,20 +42,24 @@ class ArenaWeekly(CustomAction):
         elif operation == "choose":
             run = self._runs.get(device)
             if not run or run["task_id"] != argv.task_detail.task_id:
-                logger.error("竞技场缺少本次任务状态，请从任务入口运行")
+                logger.debug("竞技场缺少本次任务状态，请从任务入口运行")
+                logger.error("竞技场：任务状态缺失，请从任务列表重新运行")
                 return False
             mode = params.get("mode", "never")
             if mode not in ("never", "always", "weekly"):
-                logger.error(f"未知竞技场搭配模式：{mode}")
+                logger.debug(f"未知竞技场搭配模式：{mode}")
+                logger.error("竞技场：搭配模式配置无效")
                 return False
             dress = mode != "never"
             if mode == "weekly" and run["account"]:
                 try:
                     dress = not state.StateStore().completed(run["account"], run["week"])
                 except (OSError, sqlite3.Error) as exc:
-                    logger.warning(f"竞技场完成记录读取失败，本次重新搭配：{exc}")
+                    logger.debug(f"竞技场完成记录读取失败，本次重新搭配：{exc}")
+                    logger.warning("竞技场：无法读取本周搭配记录，本次重新搭配")
             if mode != "never" and not run["account"]:
-                logger.warning("账号身份未确认，本次搭配但不读写周记录；请先运行 start")
+                logger.debug("账号身份未确认，本次搭配但不读写周记录；请先运行 start")
+                logger.warning("竞技场：账号未确认，本次照常搭配；请先运行启动任务以使用每周记录")
             run["dressing"] = dress
             if dress:
                 next_nodes = ["点击前往搭配", "我的搭配"]
@@ -65,7 +69,8 @@ class ArenaWeekly(CustomAction):
         elif operation == "complete":
             run = self._runs.get(device)
             if not run or run["task_id"] != argv.task_detail.task_id or not run["dressing"]:
-                logger.error("竞技场没有待确认的搭配，拒绝写入完成记录")
+                logger.debug("竞技场没有待确认的搭配，拒绝写入完成记录")
+                logger.error("竞技场：搭配尚未确认完成，未保存本周记录")
                 return False
             # 此节点只在完整搭配链返回、OCR 确认挑战页面之后执行。
             if run["account"] and run["week"] == state.week_key(now) and not state.in_settlement(now):
@@ -73,11 +78,13 @@ class ArenaWeekly(CustomAction):
                     state.StateStore().mark_completed(run["account"], run["week"], now)
                     logger.info("竞技场本周搭配已完成并保存")
                 except (OSError, sqlite3.Error) as exc:
-                    logger.warning(f"竞技场完成记录保存失败，下次将重新搭配：{exc}")
+                    logger.debug(f"竞技场完成记录保存失败，下次将重新搭配：{exc}")
+                    logger.warning("竞技场：本周搭配记录保存失败，下次将重新搭配")
             run["dressing"] = False
             next_nodes = ["竞技场挑战策略分流"]
         else:
-            logger.error(f"未知竞技场操作：{operation}")
+            logger.debug(f"未知竞技场操作：{operation}")
+            logger.error("竞技场：操作配置无效")
             return False
 
         if state.in_settlement(now):

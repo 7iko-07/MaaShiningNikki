@@ -18,13 +18,16 @@ if current_dir not in sys.path:
     sys.path.insert(0, current_dir)
 
 try:
-    from utils import logger
+    from utils import logger, debug_exception
 except ImportError:
     # 如果logger不存在，创建一个简单的logger
     import logging
 
     logging.basicConfig(format="%(asctime)s | %(levelname)s | %(message)s", level=logging.INFO)
     logger = logging
+
+    def debug_exception(message):
+        logger.debug(message, exc_info=True)
 
 
 REQUIRED_MODULES = {
@@ -58,7 +61,7 @@ def check_dependencies():
                     f"依赖版本不匹配: {package} 需要 {expected}，实际 {installed}。"
                     "请重新解压完整安装包，不要混用不同版本的 python 和 runtimes 目录。"
                 )
-    logger.info(f"Agent 依赖检查通过，maafw={version('maafw')}；运行时不更新依赖")
+    logger.debug(f"Agent 依赖检查通过，maafw={version('maafw')}；运行时不更新依赖")
 
 
 def configure_native_library_path():
@@ -90,6 +93,7 @@ def agent():
 
         from maa.toolkit import Toolkit
         from maa.agent.agent_server import AgentServer
+        from task_timing import TaskTimingSink
         import custom
 
         Toolkit.init_option("./")
@@ -98,16 +102,18 @@ def agent():
             raise RuntimeError("缺少 Agent 连接标识符，请通过主程序启动")
         socket_id = sys.argv[1]
 
+        AgentServer.add_tasker_sink(TaskTimingSink(parent_dir))
         if not AgentServer.start_up(socket_id):
             raise RuntimeError(f"AgentServer 启动失败: {socket_id}")
-        logger.info("AgentServer 已启动，等待客户端连接")
+        logger.debug("AgentServer 已启动，等待客户端连接")
         try:
             AgentServer.join()
         finally:
             AgentServer.shut_down()
-        logger.info("AgentServer 关闭")
+        logger.debug("AgentServer 关闭")
     except Exception as e:
-        logger.exception("Agent 运行过程中发生异常")
+        debug_exception("Agent 运行过程中发生异常")
+        logger.error("助手运行异常，请查看日志或重新启动")
         raise
 
 
@@ -115,10 +121,15 @@ def main():
     try:
         check_dependencies()
     except Exception:
-        logger.exception("Agent 依赖检查失败")
+        debug_exception("Agent 依赖检查失败")
+        logger.error("助手启动失败，请检查安装包是否完整")
         raise
     agent()
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        # main/agent 已分别记录用户提示和 DEBUG 堆栈，退出时避免重复打印堆栈。
+        sys.exit(1)

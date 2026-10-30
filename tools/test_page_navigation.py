@@ -195,6 +195,9 @@ class NavigationTests(WithoutExitPopupTests):
     def setUp(self):
         super().setUp()
         self.action = navigation.PageNavigateAction()
+        self.action._intermediate_reason = Mock(return_value="")
+        self.context = Mock()
+        self.context.tasker.stopping = False
 
     def test_detection_keeps_target_ahead_of_parent_and_hubs(self):
         self.action._screencap = Mock(return_value=object())
@@ -220,7 +223,7 @@ class NavigationTests(WithoutExitPopupTests):
             "pages": {"自定义目标": ["自定义目标识别"], "自定义来源": ["自定义来源识别"]},
             "routes": [{"from": "自定义来源", "to": "自定义目标", "tasks": ["自定义跳转"]}],
         }))
-        self.assertTrue(self.action.run(Mock(), argv))
+        self.assertTrue(self.action.run(self.context, argv))
         self.assertEqual([call.args[2] for call in self.action._recognize.call_args_list], [
             "自定义目标识别", "自定义来源识别",
         ])
@@ -261,6 +264,7 @@ class NavigationTests(WithoutExitPopupTests):
 
     def test_unknown_page_retries_only_reachable_candidates_without_actions(self):
         context = Mock()
+        context.tasker.stopping = False
         self.action._screencap = Mock(side_effect=["first", "second", "third"])
         self.action._recognize = Mock(return_value=False)
         with patch.object(navigation.time, "sleep") as sleep:
@@ -357,6 +361,7 @@ class NavigationTests(WithoutExitPopupTests):
 
     def test_destination_timeout_never_clicks(self):
         context = Mock()
+        context.tasker.stopping = False
         self.action._screencap = Mock(return_value=object())
         self.action._intermediate_reason = Mock(return_value="")
         self.action._recognize = Mock(return_value=False)
@@ -370,7 +375,7 @@ class NavigationTests(WithoutExitPopupTests):
         self.action._wait_for_page = Mock(return_value=False)
         self.action._run_fallback_step = Mock()
         argv = SimpleNamespace(custom_action_param=json.dumps({"target": "竞技场"}))
-        self.assertFalse(self.action.run(Mock(), argv))
+        self.assertFalse(self.action.run(self.context, argv))
         self.assertEqual(self.action._run_task.call_count, 1)
         self.action._run_fallback_step.assert_not_called()
 
@@ -386,9 +391,9 @@ class NavigationTests(WithoutExitPopupTests):
         argv = SimpleNamespace(custom_action_param=json.dumps({
             "target": "竞技场", "max_steps": 1,
         }))
-        self.assertTrue(self.action.run(Mock(), argv))
+        self.assertTrue(self.action.run(self.context, argv))
         self.action._detect_current_page.assert_called_once()
-        self.action._wait_while_intermediate.assert_called_once()
+        self.action._wait_while_intermediate.assert_not_called()
         self.action._wait_for_page.assert_called_once()
         self.action._run_fallback_step.assert_not_called()
 
@@ -406,7 +411,7 @@ class NavigationTests(WithoutExitPopupTests):
                 self.action._intermediate_reason = Mock(side_effect=lambda ctx, image, nodes: image == "loading")
                 self.action._recognize = Mock(side_effect=lambda ctx, image, node: image == "target")
                 with patch.object(navigation.time, "sleep"):
-                    self.assertTrue(self.action.run(Mock(), argv))
+                    self.assertTrue(self.action.run(self.context, argv))
                 self.assertEqual(self.action._screencap.call_count, len(screens))
                 self.action._detect_current_page.assert_called_once()
                 self.action._run_task.assert_called_once()
@@ -416,7 +421,7 @@ class NavigationTests(WithoutExitPopupTests):
         argv = SimpleNamespace(custom_action_param=json.dumps({
             "target": "竞技场", "max_steps": 2,
         }))
-        self.assertTrue(self.action.run(Mock(), argv))
+        self.assertTrue(self.action.run(self.context, argv))
         self.assertEqual([call.args[1] for call in self.action._run_task.call_args_list], [
             "导航确保底部菜单打开", "导航点击开始旅程入口", "导航确保独自页面",
             "导航点击钻石竞技场",
@@ -425,14 +430,14 @@ class NavigationTests(WithoutExitPopupTests):
             "独自", "竞技场",
         ])
         self.action._detect_current_page.assert_called_once()
-        # Initial loading check plus the two waits between homepage route tasks.
-        self.assertEqual(self.action._wait_while_intermediate.call_count, 3)
+        # Entry checks are merged into detection; keep both between-task waits.
+        self.assertEqual(self.action._wait_while_intermediate.call_count, 2)
 
     def test_between_task_loading_timeout_stops_before_next_click(self):
         self.prepare_route("主页面")
-        self.action._wait_while_intermediate.side_effect = [True, False]
+        self.action._wait_while_intermediate.return_value = False
         argv = SimpleNamespace(custom_action_param=json.dumps({"target": "竞技场"}))
-        self.assertFalse(self.action.run(Mock(), argv))
+        self.assertFalse(self.action.run(self.context, argv))
         self.action._run_task.assert_called_once()
         self.assertEqual(self.action._run_task.call_args.args[1], "导航确保底部菜单打开")
         self.action._wait_for_page.assert_not_called()
@@ -442,7 +447,7 @@ class NavigationTests(WithoutExitPopupTests):
         self.prepare_route(None)
         self.action._detect_current_page.side_effect = [None, "主页面"]
         argv = SimpleNamespace(custom_action_param=json.dumps({"target": "任务"}))
-        self.assertTrue(self.action.run(Mock(), argv))
+        self.assertTrue(self.action.run(self.context, argv))
         self.action._run_fallback_step.assert_called_once()
         self.assertEqual(self.action._detect_current_page.call_count, 2)
         self.assertEqual([call.args[1] for call in self.action._run_task.call_args_list], [
@@ -476,7 +481,7 @@ class NavigationTests(WithoutExitPopupTests):
         self.assertEqual([(call.args[1], call.args[2]) for call in self.action._recognize.call_args_list], [
             ("first_detail", "是否是主页面"), ("first_detail", "是否是主页面"),
             ("second_detail", "是否是主页面"), ("second_detail", "是否是主页面"),
-            ("home", "是否是主页面"), ("home", "是否是主页面"), ("home", "是否是主页面"),
+            ("home", "是否是主页面"), ("home", "是否是主页面"),
         ])
 
     def test_target_reached_during_scan_is_confirmed_without_return(self):
@@ -496,14 +501,14 @@ class NavigationTests(WithoutExitPopupTests):
         argv = SimpleNamespace(custom_action_param=json.dumps({"target": "主页面", "max_steps": 2}))
         with patch.object(navigation.time, "sleep"):
             self.assertTrue(self.action.run(context, argv))
-        self.assertEqual(self.action._screencap.call_count, 5)
+        self.assertEqual(self.action._screencap.call_count, 4)
         context.run_recognition.assert_not_called()
         context.run_task.assert_not_called()
         context.run_action_direct.assert_not_called()
 
     def test_direct_target_hit_requires_two_consecutive_non_loading_screens(self):
-        for screens in (["home", "home", "missing", "home", "home"],
-                        ["home", "home", "loading", "home", "home"]):
+        for screens in (["home", "missing", "home", "home"],
+                        ["home", "loading", "home", "home"]):
             with self.subTest(screens=screens):
                 self.action._wait_while_intermediate = Mock(return_value=True)
                 self.action._screencap = Mock(side_effect=screens)
@@ -514,7 +519,7 @@ class NavigationTests(WithoutExitPopupTests):
                 self.action._run_fallback_step = Mock()
                 argv = SimpleNamespace(custom_action_param=json.dumps({"target": "主页面", "max_steps": 1}))
                 with patch.object(navigation.time, "sleep"):
-                    self.assertTrue(self.action.run(Mock(), argv))
+                    self.assertTrue(self.action.run(self.context, argv))
                 self.assertEqual(self.action._screencap.call_count, len(screens))
                 self.action._run_task.assert_not_called()
                 self.action._run_fallback_step.assert_not_called()
@@ -523,7 +528,7 @@ class NavigationTests(WithoutExitPopupTests):
         self.prepare_route("主页面")
         self.action._wait_for_page.return_value = False
         argv = SimpleNamespace(custom_action_param=json.dumps({"target": "主页面"}))
-        self.assertFalse(self.action.run(Mock(), argv))
+        self.assertFalse(self.action.run(self.context, argv))
         self.action._run_task.assert_not_called()
         self.action._run_fallback_step.assert_not_called()
 
@@ -531,7 +536,7 @@ class NavigationTests(WithoutExitPopupTests):
         self.prepare_route(None)
         argv = SimpleNamespace(custom_action_param=json.dumps({"target": "主页面", "max_steps": 2}))
         with patch.object(navigation.logger, "warning") as warning:
-            self.assertFalse(self.action.run(Mock(), argv))
+            self.assertFalse(self.action.run(self.context, argv))
         warning.assert_not_called()
         self.assertEqual(self.action._run_fallback_step.call_count, 2)
         for call in self.action._detect_current_page.call_args_list:
@@ -541,7 +546,7 @@ class NavigationTests(WithoutExitPopupTests):
         self.prepare_route(None)
         self.action._run_fallback_step.return_value = False
         argv = SimpleNamespace(custom_action_param=json.dumps({"target": "任务"}))
-        self.assertFalse(self.action.run(Mock(), argv))
+        self.assertFalse(self.action.run(self.context, argv))
         self.action._run_task.assert_not_called()
         self.action._run_fallback_step.assert_called_once()
 
@@ -551,7 +556,7 @@ class NavigationTests(WithoutExitPopupTests):
                 self.prepare_route(None)
                 self.action._detect_current_page.side_effect = [None, "任务"]
                 argv = SimpleNamespace(custom_action_param=json.dumps({"target": "任务", **options}))
-                self.assertTrue(self.action.run(Mock(), argv))
+                self.assertTrue(self.action.run(self.context, argv))
                 self.assertEqual(self.action._detect_current_page.call_args_list[0].kwargs["retry"], expected)
                 self.action._run_fallback_step.assert_called_once()
 
@@ -559,8 +564,8 @@ class NavigationTests(WithoutExitPopupTests):
         self.prepare_route("独自")
         self.action._detect_current_page.side_effect = ["独自", "竞技场"]
         argv = SimpleNamespace(custom_action_param=json.dumps({"target": "竞技场"}))
-        self.assertTrue(self.action.run(Mock(), argv))
-        self.assertTrue(self.action.run(Mock(), argv))
+        self.assertTrue(self.action.run(self.context, argv))
+        self.assertTrue(self.action.run(self.context, argv))
         self.assertEqual(self.action._detect_current_page.call_count, 2)
         self.action._run_task.assert_called_once()
         self.assertEqual(self.action._wait_for_page.call_count, 2)
@@ -569,7 +574,7 @@ class NavigationTests(WithoutExitPopupTests):
         self.prepare_route("独自")
         self.action._run_task.return_value = False
         argv = SimpleNamespace(custom_action_param=json.dumps({"target": "竞技场"}))
-        self.assertFalse(self.action.run(Mock(), argv))
+        self.assertFalse(self.action.run(self.context, argv))
         self.action._wait_for_page.assert_not_called()
         self.action._run_fallback_step.assert_not_called()
 
@@ -692,6 +697,110 @@ class NavigationFallbackTests(WithoutExitPopupTests):
         self.action._run_task.assert_called_once_with(self.context, "点击esc")
 
 
+class NavigationEntryConfirmationTests(unittest.TestCase):
+    def setUp(self):
+        self.now = 0.0
+        self.action = navigation.PageNavigateAction()
+        self.context = Mock()
+        self.context.tasker.stopping = False
+        self.context.run_recognition.side_effect = lambda node, image: SimpleNamespace(hit=image == "popup")
+        self.context.run_action.return_value = SimpleNamespace(success=True)
+        self.action._screencap = Mock()
+        self.action._recognize = Mock(side_effect=self.recognize)
+        self.action._run_task = Mock(return_value=True)
+        self.action._run_fallback_step = Mock()
+        self.argv = SimpleNamespace(custom_action_param=json.dumps({"target": "结伴", "wait_timeout": 1}))
+        for patcher in (
+            patch.object(navigation.time, "monotonic", side_effect=lambda: self.now),
+            patch.object(navigation.time, "sleep", side_effect=self.advance),
+        ):
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def advance(self, seconds):
+        self.now += seconds
+
+    def recognize(self, context, image, node):
+        if node in navigation.DEFAULT_WAIT_RECOGNITIONS:
+            return image == "loading" and node == "在加载页面"
+        return node == "导航在结伴页面" and image == "target"
+
+    def test_ready_entry_uses_two_captures_and_checks_every_guard_once_per_image(self):
+        self.action._screencap.side_effect = ["target", "target"]
+        self.assertTrue(self.action.run(self.context, self.argv))
+        self.assertEqual(self.action._screencap.call_count, 2)
+        self.assertEqual([call.args[2] for call in self.action._recognize.call_args_list],
+                         [*navigation.DEFAULT_WAIT_RECOGNITIONS, "导航在结伴页面"] * 2)
+        self.assertEqual(self.context.run_recognition.call_count, 2)
+        self.assertEqual(self.now, .25)
+        self.action._run_task.assert_not_called()
+        self.action._run_fallback_step.assert_not_called()
+
+    def test_loading_entry_is_not_classified_and_still_needs_two_ready_images(self):
+        self.action._screencap.side_effect = ["loading", "target", "target"]
+        self.assertTrue(self.action.run(self.context, self.argv))
+        self.assertEqual(self.action._screencap.call_count, 3)
+        self.assertFalse(any(call.args[1] == "loading" and call.args[2] == "导航在结伴页面"
+                             for call in self.action._recognize.call_args_list))
+
+    def test_second_frame_popup_resets_seed_and_closes_only_once(self):
+        self.action._screencap.side_effect = ["target", "popup", "target", "target"]
+        self.assertTrue(self.action.run(self.context, self.argv))
+        self.assertEqual(self.action._screencap.call_count, 4)
+        self.context.run_action.assert_called_once_with("点击esc")
+        self.action._run_task.assert_not_called()
+
+    def test_entry_loading_timeout_stops_without_classification_or_fallback(self):
+        self.action._screencap.return_value = "loading"
+        self.assertFalse(self.action.run(self.context, self.argv))
+        self.assertEqual(self.now, 1)
+        self.assertFalse(any(call.args[2] == "导航在结伴页面"
+                             for call in self.action._recognize.call_args_list))
+        self.action._run_task.assert_not_called()
+        self.action._run_fallback_step.assert_not_called()
+
+    def test_slow_target_recognition_cannot_extend_entry_budget(self):
+        self.action._screencap.return_value = "target"
+        def slow_recognize(context, image, node):
+            if node == "导航在结伴页面":
+                self.advance(1)
+            return self.recognize(context, image, node)
+        self.action._recognize.side_effect = slow_recognize
+        self.assertFalse(self.action.run(self.context, self.argv))
+        self.assertEqual(self.action._screencap.call_count, 1)
+        self.action._run_fallback_step.assert_not_called()
+
+    def test_cancellation_before_entry_or_during_second_frame_never_succeeds(self):
+        for cancel_at in (0, 2):
+            with self.subTest(cancel_at=cancel_at):
+                self.context.tasker.stopping = cancel_at == 0
+                self.action._screencap.reset_mock()
+                def capture(context):
+                    if self.action._screencap.call_count == cancel_at:
+                        self.context.tasker.stopping = True
+                    return "target"
+                self.action._screencap.side_effect = capture
+                self.assertFalse(self.action.run(self.context, self.argv))
+                self.assertEqual(self.action._screencap.call_count, cancel_at)
+                self.action._run_task.assert_not_called()
+                self.action._run_fallback_step.assert_not_called()
+
+    def test_actual_route_still_captures_two_new_destination_images(self):
+        self.action._screencap.side_effect = ["source", "target", "target"]
+        self.action._recognize.side_effect = lambda ctx, image, node: (
+            image == "target" if node == "导航在结伴页面" else image == "source" and node == "source"
+        )
+        # Loading guards cannot match this source/target pair.
+        self.argv.custom_action_param = json.dumps({
+            "target": "结伴", "pages": {"来源": ["source"]},
+            "routes": [{"from": "来源", "to": "结伴", "tasks": ["route"]}],
+        })
+        self.assertTrue(self.action.run(self.context, self.argv))
+        self.assertEqual(self.action._screencap.call_count, 3)
+        self.action._run_task.assert_called_once_with(self.context, "route")
+        self.action._run_fallback_step.assert_not_called()
+
+
 class MainStoryReturnTests(WithoutExitPopupTests):
     def simulate(self, destinations):
         now = [0.0]
@@ -767,7 +876,7 @@ class NavigationClickTests(WithoutExitPopupTests):
             return SimpleNamespace(success=True)
         context.run_action_direct.side_effect = click
         def recognize(self, ctx, image, name):
-            return target(now[0]) if name == "target" else source(now[0])
+            return target(now[0]) if name in options["target_nodes"] else source(now[0])
         options = {"source_nodes": ["source"], "target_nodes": ["target"]}
         options.update(params or {})
         argv = SimpleNamespace(node_name="button", custom_action_param=json.dumps(options))
@@ -784,6 +893,35 @@ class NavigationClickTests(WithoutExitPopupTests):
         self.assertTrue(ok)
         self.assertEqual([t for t, _ in clicks], [0, 1.5])
         self.assertNotEqual(clicks[0][1], clicks[1][1])
+
+    def test_activity_return_retries_only_on_exhausted_page_and_stops_at_activity_home(self):
+        nodes = load_jsonc(ROOT / "assets/resource/pipeline/activity copy.json")
+        node = nodes["点击返回活动2页面"]
+        self.assertEqual(node["action"]["param"]["custom_action"], "navigation_click")
+        params = node["action"]["param"]["custom_action_param"]
+        self.assertEqual(params["source_nodes"], ["活动2扫荡次数用尽"])
+        self.assertEqual(params["target_nodes"], ["活动2扫荡结束"])
+        self.assertEqual(node["next"], ["活动2扫荡结束"])
+        scenarios = [
+            ({"target": lambda t: t >= 2}, True, [0, 1.5]),
+            ({"target": lambda t: True}, True, []),
+            ({"target": lambda t: t >= 2, "loading": lambda t: 0 < t < 2}, True, [0]),
+            ({"source": lambda t: False}, False, []),
+            ({"button": lambda t: False}, False, []),
+            ({}, False, [0, 1.5, 3]),
+        ]
+        for kwargs, expected, times in scenarios:
+            with self.subTest(expected=expected, click_times=times):
+                observed = []
+                target = kwargs.get("target", lambda t: False)
+                kwargs = dict(kwargs, target=lambda t: observed.append(t) or target(t))
+                ok, clicks, _ = self.simulate(params=params, **kwargs)
+                self.assertEqual(ok, expected)
+                self.assertEqual([t for t, _ in clicks], times)
+                if len(clicks) > 1:
+                    self.assertNotEqual(clicks[0][1], clicks[1][1])
+                if not expected:
+                    self.assertEqual(observed[-1], 29.75)
 
     def test_three_click_limit_includes_initial_click(self):
         ok, clicks, _ = self.simulate()

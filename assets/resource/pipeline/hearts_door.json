@@ -264,9 +264,6 @@
             }
         },
         "repeat": 2,
-        "repeat_delay": 500,
-        "next": [
-            "点击谜之海-感应第二次-空白"
-        ]
+        "repeat_delay": 500
     }
 }

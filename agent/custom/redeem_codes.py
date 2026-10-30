@@ -101,7 +101,9 @@ class RedeemRunner:
         self.task("兑换码前往名片")
         self.button("兑换码设置入口")
         self.wait(self.settings_ready, "设置页面")
-        self.button("兑换码弹窗入口")
+        x, y, w, h = self.wait(lambda image: self.box("兑换码弹窗入口", image), "兑换码弹窗入口")
+        # 仅点击 OCR 文字框的中心，避免在整个文字框内随机选点。
+        self.click([x + w // 2, y + h // 2, 1, 1])
         self.wait(self.empty_dialog, "空兑换码输入框")
 
     def clear_previous(self):
@@ -197,7 +199,8 @@ class RedeemCodesAction(CustomAction):
             runner.close()
             return all_success
         except Exception as exc:
-            logger.error(f"兑换码任务失败：{exc}")
+            logger.debug(f"兑换码任务失败：{exc}")
+            logger.error("兑换码任务执行异常，请稍后重试")
             report(run_id, "error", message=str(exc))
             return False
         finally:

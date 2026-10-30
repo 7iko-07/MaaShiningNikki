@@ -205,7 +205,7 @@
 			}
 		},
         "focus": {
-			"Node.Action.Starting": "#[color:red][b]体力或金币用尽了[/b][/color]"
+			"Node.Action.Starting": "#[color:red][b]体力或金币不足，任务停止[/b][/color]"
 		},
 		"action": {
 			"type": "Click",

@@ -16,7 +16,8 @@ class MonthlyCardPopupAction(CustomAction):
             # 使用框架解析后的节点配置，不在 Agent 中重复定义默认值。
             node = context.get_node_data(argv.node_name)
             if not node or node["timeout"] <= 0 or node["rate_limit"] <= 0:
-                logger.error("月卡弹窗检查：缺少有限超时或有效识别间隔")
+                logger.debug("月卡弹窗检查：缺少有限超时或有效识别间隔")
+                logger.error("月卡：等待时间配置无效")
                 return False
             interval = node["rate_limit"] / 1000
             deadline = time.monotonic() + node["timeout"] / 1000
@@ -51,7 +52,8 @@ class MonthlyCardPopupAction(CustomAction):
                     if popup.hit and tab.hit:
                         box = tab.box
                         if box is None or box.w <= 0 or box.h <= 0:
-                            logger.error("月卡弹窗检查：月卡标签识别框无效")
+                            logger.debug("月卡弹窗检查：月卡标签识别框无效")
+                            logger.error("月卡：无法定位弹窗")
                             return False
                         if not controller.post_click(
                             int(box.x + box.w / 2), int(box.y + box.h / 2)
@@ -66,7 +68,8 @@ class MonthlyCardPopupAction(CustomAction):
                 if delay:
                     time.sleep(delay)
         except Exception as exc:
-            logger.error(f"月卡弹窗检查失败：{exc}")
+            logger.debug(f"月卡弹窗检查失败：{exc}")
+            logger.error("月卡：关闭弹窗时发生异常")
             return False
 
         logger.error("月卡特惠弹窗关闭失败：等待超时，停止领取")

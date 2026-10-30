@@ -34,7 +34,9 @@ SALE_MODES = {
 
 
 class DreamError(RuntimeError):
-    pass
+    def __init__(self, detail, user_message=None):
+        super().__init__(detail)
+        self.user_message = user_message or detail
 
 
 # 灵感拾趣：棋盘计算和单局状态均在 Agent 中管理。
@@ -281,6 +283,12 @@ def parse_mine_storage(text):
     return (count, capacity) if capacity > 0 and 0 <= count <= capacity else None
 
 
+def parse_acceleration_stones(text):
+    # 只取“拥有”字段，不能把本次“消耗1颗”当成库存。
+    match = re.fullmatch(r"(?:消耗\d+颗)?\(?拥有[:：]?(\d+)颗\)?", normalized(text))
+    return int(match[1]) if match else None
+
+
 def parse_tags(text):
     text = normalized(text).replace("素材标签：", "").replace("素材标签:", "")
     tags = []
@@ -490,7 +498,7 @@ class DreamRunner:
             override = {node: {"recognition": {"param": {"roi": roi}}}}
             result = self.context.run_recognition(node, image, pipeline_override=override)
         if result is None:
-            raise DreamError(f"识别未能启动：{node}")
+            raise DreamError(f"识别未能启动：{node}", "无法识别当前页面")
         return result
 
     def hit(self, node, image, roi=None):
@@ -524,7 +532,7 @@ class DreamRunner:
                 consecutive = 0
             # 仅限识别轮询的节流；实际结束由页面/工位状态决定。
             time.sleep(0.2)
-        raise DreamError(f"等待超时：{description}")
+        raise DreamError(f"等待超时：{description}", "等待页面变化超时，请检查当前页面")
 
     def click(self, box):
         if self.context.tasker.stopping:
@@ -583,12 +591,12 @@ class DreamRunner:
             raise DreamError("任务已取消")
         result = self.context.run_action(node)
         if not result or not result.success:
-            raise DreamError(f"固定位置入口点击失败：{node}")
+            raise DreamError(f"固定位置入口点击失败：{node}", "点击页面入口失败")
 
     def tile_state(self, tile, image, expected=None, *, state_only=False):
         row, col = tile
         if row not in range(3) or col not in range(4):
-            raise DreamError(f"无效工位：{tile}")
+            raise DreamError(f"无效工位：{tile}", "无法确认生产工位")
         x = 640 + col * 141
         choices = (expected,) if isinstance(expected, str) else expected
         if choices is None:
@@ -678,7 +686,8 @@ class DreamRunner:
                 order = batch.order
                 order.harvested += batch.quantity
                 label = "织梦售卖" if isinstance(order, SaleBatch) else "织梦订单"
-                logger.info(f"{label}：已收获 {order.harvested}/{order.quantity} 件，标签 {order.tags}")
+                logger.debug(f"{label}：已收获 {order.harvested}/{order.quantity} 件，标签 {order.tags}")
+                logger.info(f"{label}：已收获 {order.harvested}/{order.quantity} 件")
         return set(clicked)
 
     def progress(self, image):
@@ -735,7 +744,7 @@ class DreamRunner:
             resource = root / "assets/resource"
         missing = [name for name in ORDER_IMAGES if not (resource / "image" / name).is_file()]
         if missing:
-            raise DreamError("订单素材未补齐，请放入 resource/image：" + "、".join(missing))
+            raise DreamError("订单素材未补齐，请放入 resource/image：" + "、".join(missing), "订单识别资源不完整，请检查安装包")
 
     def completed(self, card, image):
         height, width = image.shape[:2]
@@ -783,7 +792,7 @@ class DreamRunner:
             if detail_stars is not None:
                 current = Card(detail_stars, current.box, True)
             else:
-                logger.warning("织梦订单：详情页星级未确认，保留地图结果并继续读取数量及素材")
+                logger.debug("织梦订单：详情页星级未确认，保留地图结果并继续读取数量及素材")
 
             def requirements(image):
                 quantity = parse_quantity(self.text("织梦订单数量", image))
@@ -793,7 +802,8 @@ class DreamRunner:
             quantity, tags = self.wait(requirements, "订单数量及素材标签")
             orders.append(Order(current, quantity, tags))
             star_text = f"{current.stars} 星" if current.stars_confirmed else "星级未确认"
-            logger.info(f"织梦订单：{star_text}，位置 {current.box}，需求 {quantity} 件，标签 {tags}")
+            logger.debug(f"织梦订单：{star_text}，位置 {current.box}，需求 {quantity} 件，标签 {tags}")
+            logger.info(f"织梦订单：{star_text}，需生产 {quantity} 件")
             self.click([250, 70, 100, 60])  # 已确认点击左侧地图空白关闭详情。
             self.wait(self.map_ready, "关闭详情回到订单地图")
         if len(orders) != remaining:
@@ -838,7 +848,7 @@ class DreamRunner:
                 break
             time.sleep(min(0.2, remaining))
             image = self.image()
-        raise DreamError(f"等待超时：生产选项 {target or node} 已选中")
+        raise DreamError(f"等待超时：生产选项 {target or node} 已选中", "选择生产产品超时")
 
     def option_box(self, node, target, image):
         for item in matches(self.reco(node, image)):
@@ -882,7 +892,7 @@ class DreamRunner:
 
     def schedule(self, tile, order, *, deadline=None):
         if tile in self.pending:
-            raise DreamError(f"工位 {tile} 已有生产记录，禁止重复排产")
+            raise DreamError(f"工位 {tile} 已有生产记录，禁止重复排产", "工位已安排生产，停止以避免重复生产")
         local_deadline = time.monotonic() + PRODUCTION_CONFIRM_SECONDS
         deadline = local_deadline if deadline is None else min(deadline, local_deadline)
         self.click(self.wait_tile(tile, "空闲中", deadline=deadline))
@@ -907,9 +917,13 @@ class DreamRunner:
         self.pending[tile] = ProductionBatch(order, quantity)
         order.scheduled += quantity
         label = "织梦售卖" if isinstance(order, SaleBatch) else "织梦订单"
-        logger.info(f"{label}：已开始生产 {order.scheduled}/{order.quantity} 件，工位 {tile}")
+        logger.debug(f"{label}：已开始生产 {order.scheduled}/{order.quantity} 件，工位 {tile}")
+        logger.info(f"{label}：已开始生产 {order.scheduled}/{order.quantity} 件")
 
     def accelerate(self, tile, deadline):
+        production_deadline = deadline
+        # 打开弹窗、按钮点击及结果确认共用短期限，不沿用自然生产的十分钟等待。
+        deadline = min(deadline, time.monotonic() + PRODUCTION_CONFIRM_SECONDS)
         # 调度已确认生产；点击前只需一次新框复核，避免再次卡在连续命中。
         click_deadline = min(deadline, time.monotonic() + PRODUCTION_CONFIRM_SECONDS)
         self.click(self.wait_tile(tile, "生产中", deadline=click_deadline, confirmations=1))
@@ -924,17 +938,85 @@ class DreamRunner:
                 break
             time.sleep(min(0.2, max(0, popup_deadline - time.monotonic())))
         else:
-            if time.monotonic() >= deadline:
+            if time.monotonic() >= production_deadline:
                 raise DreamError("等待超时：生产加速页面")
             if not self.management_ready(self.image(), full=False):
                 raise DreamError("未出现生产加速弹窗，且未确认仍在织梦经营工位页")
             self._stone_exhausted = True
             logger.info("能量石用完了，转为自然等待")
             return None
-        self.button("织梦立即完成按钮", deadline=deadline)
-        # 扣能量石只点一次；动画未完成时继续认结果，不能再次扣除。
-        self.wait_tile(tile, "可收获", deadline=deadline)
+        if not self.complete_acceleration(tile, deadline):
+            return None
         return self.harvest(deadline=deadline, tiles=(tile,))
+
+    def complete_acceleration(self, tile, deadline):
+        node = self.context.get_node_data("织梦立即完成按钮")
+        if not node:
+            raise DreamError("立即完成按钮节点不存在")
+        click_params = node["action"]["param"].get("custom_action_param", {})
+        if isinstance(click_params, str):
+            click_params = json.loads(click_params)
+        attempts = 0
+        next_click = 0.0
+        while time.monotonic() < deadline:
+            image = self.image()
+            popup = self.hit("织梦加速页面", image)
+            if not popup:
+                # 画面变化只是点击反馈；弹窗关闭且目标工位可收获才算加速成功。
+                if (self.management_ready(image, full=True)
+                        and self.tile_state(tile, image, "可收获")):
+                    return True
+            else:
+                stones = parse_acceleration_stones(self.text("织梦加速能量石数量", image))
+                if stones == 0:
+                    if self.context.tasker.stopping:
+                        raise DreamError("任务已取消")
+                    if time.monotonic() >= deadline:
+                        break
+                    result = self.context.run_action("点击esc")
+                    if not result or not result.success:
+                        raise DreamError("能量石耗尽后关闭加速弹窗失败")
+                    self.wait(self.management_ready, "能量石耗尽后关闭加速弹窗并回到工位页",
+                              deadline=deadline, confirmations=1)
+                    self._stone_exhausted = True
+                    logger.info("能量石用完了，转为自然等待")
+                    return False
+                # 数量识别失败先等待新截图，不能按零库存处理，也不能盲点。
+                box = self.box("织梦立即完成按钮", image) if stones is not None else None
+                now = time.monotonic()
+                if box and attempts < 3 and next_click <= now < deadline:
+                    if self.context.tasker.stopping:
+                        raise DreamError("任务已取消")
+                    remaining_ms = max(0, int((deadline - now) * 1000))
+                    attempts += 1
+                    # 每次仅点击一次：下一次必须用新截图复核弹窗和按钮。
+                    # 执行识别+动作节点，保留真实 reco_id，并由动作点击 OCR 框中心。
+                    result = self.context.run_task(
+                        "织梦立即完成按钮",
+                        {"织梦立即完成按钮": {"action": {"param": {
+                            "custom_action_param": {
+                                # 原生框架会整份替换此对象，必须保留比较区域等配置。
+                                **click_params,
+                                "max_retries": 1,
+                                "fail_on_timeout": True,
+                                "timeout": min(1000, max(0, remaining_ms - 300)),
+                                "after_click_delay": min(300, remaining_ms),
+                            },
+                        }}}},
+                    )
+                    if result is None:
+                        raise DreamError("立即完成点击任务未能启动")
+                    if not result.status.succeeded:
+                        logger.debug(f"织梦加速：第 {attempts}/3 次点击未确认画面变化，重新检查弹窗及工位")
+                    # 动画期间不连续扣石；即使变化检测失败，也先核对实际工位结果。
+                    next_click = time.monotonic() + 1
+            remaining = deadline - time.monotonic()
+            if remaining > 0:
+                time.sleep(min(0.2, remaining))
+        raise DreamError(
+            f"等待超时：立即完成后弹窗关闭且工位 {tile} 可收获，已尝试 {attempts}/3 次",
+            "生产加速未能确认完成，请检查当前页面",
+        )
 
     def produce(self, orders, use_stone):
         states = self.wait(self.ready_tiles, "订单生产前的工位状态", confirmations=1)
@@ -1071,7 +1153,8 @@ class DreamRunner:
                 raise DreamError("本轮开始时仍有工位未空闲")
             tiles = tuple(sorted(tile for tile, state in states.items() if state[0] == "空闲中"))
             if not tiles:
-                logger.info(f"织梦售卖：所有已解锁工位已休息，生产结束，实际完成 {number} 轮")
+                logger.debug(f"织梦售卖：所有已解锁工位已休息，生产结束，实际完成 {number} 轮")
+                logger.info(f"织梦售卖：工位已全部休息，共完成 {number} 轮")
                 return number
             batches = []
             deadline = None
@@ -1095,7 +1178,8 @@ class DreamRunner:
             boxes = [valid_box(item.box) for item in matches(self.reco("织梦潮流产品", image))]
             boxes = [box for box in boxes if box]
             if not boxes:
-                logger.info("织梦售卖：列表已无潮流UP产品，售卖结束")
+                logger.debug("织梦售卖：列表已无潮流UP产品，售卖结束")
+                logger.info("织梦售卖：暂无潮流产品可售，售卖结束")
                 return
             x, y, w, h = min(boxes, key=lambda box: (box[1], box[0]))
             target = (x + w // 2 + 70, y + h // 2 + 70, 1, 1)
@@ -1128,7 +1212,8 @@ class DreamRunner:
         initial = self.wait_trend()
         tags = production_tags(mode, initial)
         limit = "不限" if rounds == 0 else str(rounds)
-        logger.info(f"织梦售卖：方案 {SALE_MODES[mode]}，生产标签 {tags}，计划 {limit} 轮")
+        logger.debug(f"织梦售卖：方案 {SALE_MODES[mode]}，生产标签 {tags}，计划 {limit} 轮")
+        logger.info(f"织梦售卖：使用{SALE_MODES[mode]}方案")
         self.button("织梦橱窗返回按钮")
         self.wait(self.management_ready, "橱窗返回织梦经营后生产")
         self.shop_produce(tags, rounds, use_stone)
@@ -1237,7 +1322,7 @@ class DreamRunner:
                 deadline=deadline,
             )
 
-    def seven_candidate(self, image, completed):
+    def seven_candidate(self, image):
         if self.seven_card_complete(image, 0):
             return "全部完成", None, None
         titles = self.seven_titles(image)
@@ -1247,7 +1332,7 @@ class DreamRunner:
                 "分享1次定制成衣": "分享", "进行1次人台换衣": "换衣",
                 "完成1次灵感拾趣": "拾趣", "进行1次灵感讨论": "讨论",
             }.get(text)
-            if kind is None or kind in completed:
+            if kind is None:
                 continue
             if self.seven_card_complete(image, column):
                 continue
@@ -1262,7 +1347,7 @@ class DreamRunner:
     def seven_card_complete(self, image, column):
         return self.hit("七日妙想完成对号", image, [55 + 300 * column, 540, 280, 160])
 
-    def seven_current(self, completed):
+    def seven_current(self):
         previous = None
 
         def settled(image):
@@ -1277,8 +1362,8 @@ class DreamRunner:
             if not titles or titles != previous:
                 previous = titles or None
                 return None
-            # 包装 None，区分“没有要做的任务”和“页面尚未就绪”。
-            return (self.seven_candidate(image, completed),)
+            candidate = self.seven_candidate(image)
+            return (candidate,) if candidate is not None else None
 
         return self.wait(settled, "七日妙想当前卡片就绪")[0]
 
@@ -1322,15 +1407,15 @@ class DreamRunner:
             raise DreamError("任务已取消")
         result = self.context.run_action(node)
         if not result or not result.success:
-            raise DreamError(f"七日制衣动作失败：{node}")
+            raise DreamError(f"七日制衣动作失败：{node}", "七日妙想：制衣操作失败")
 
     def seven_button_center(self, node, *, deadline=None):
         x, y, w, h = self.wait(lambda image: self.box(node, image), node, deadline=deadline)
         self.click((x + w // 2, y + h // 2, 1, 1))
 
-    def seven_back_until_ready(self):
-        deadline = time.monotonic() + 30
-        next_click = 0.0
+    def seven_back_until_ready(self, *, deadline=None):
+        deadline = time.monotonic() + 30 if deadline is None else deadline
+        next_click = time.monotonic() + 0.5
         confirmations = 0
         while time.monotonic() < deadline:
             image = self.image()
@@ -1340,7 +1425,9 @@ class DreamRunner:
                     return
             else:
                 confirmations = 0
-                box = None if self.hit("织梦空间专属加载中", image) else self.box("七日分享返回按钮", image)
+                box = None
+                if not self.hit("织梦空间专属加载中", image):
+                    box = self.box("七日灵感讨论我再想想", image) or self.box("七日分享返回按钮", image)
                 if box and next_click <= time.monotonic() < deadline:
                     x, y, w, h = box
                     self.click((x + w // 2, y + h // 2, 1, 1))
@@ -1352,16 +1439,9 @@ class DreamRunner:
         self.seven_button_center("七日制衣新建")
         self.seven_choose_custom("讨论")
         self.seven_button_center("七日灵感讨论灯泡")
-        self.seven_button_center("七日灵感讨论我再想想")
-        self.seven_back_until_ready()
-
-        def completed(image):
-            if not self.seven_ready(image):
-                return False
-            return any(text == "进行1次灵感讨论" and self.seven_card_complete(image, column)
-                       for column, text in self.seven_titles(image))
-
-        self.wait(completed, "灵感讨论任务完成对号")
+        deadline = time.monotonic() + 30
+        self.seven_button_center("七日灵感讨论我再想想", deadline=deadline)
+        self.seven_back_until_ready(deadline=deadline)
 
     def seven_claim_rewards(self):
         deadline = time.monotonic() + 30
@@ -1487,11 +1567,9 @@ class DreamRunner:
             confirmations = 0
             box = self.box("七日制衣我来定制", image)
             if box and next_click <= time.monotonic() < deadline:
-                if category == "讨论":
-                    x, y, w, h = box
-                    self.click((x + w // 2, y + h // 2, 1, 1))
-                else:
-                    self.click(box)
+                x, y, w, h = box
+                # 固定点击首字“我”的中心附近，避免整句框内随机点击。
+                self.click((x + w // 8, y + h // 2, 1, 1))
                 clicks += 1
                 next_click = time.monotonic() + 0.5
             time.sleep(0.1)
@@ -1505,7 +1583,7 @@ class DreamRunner:
         # 此节点没有后继，只执行一次默认 DirectHit 识别和文本输入。
         result = self.context.run_task(node)
         if not result or not result.status.succeeded:
-            raise DreamError(f"七日制衣动作失败：{node}")
+            raise DreamError(f"七日制衣动作失败：{node}", "七日妙想：制衣操作失败")
 
     def seven_rename(self, *, for_share=False):
         name = "分享成衣" if for_share else "临时"
@@ -1636,12 +1714,13 @@ class DreamRunner:
                 # 结算不依赖胜负标题；先确认真实结果，再退出这一局。
                 if self.inspiration_result(image):
                     if tracker is None:
-                        logger.warning("灵感拾趣：未捕捉到开局倒计时，本局未主动转向")
+                        logger.debug("灵感拾趣：未捕捉到开局倒计时，本局未主动转向")
                     self.wait(self.inspiration_result, "灵感拾趣结算页面", deadline=deadline)
                     return
                 lost_since = sampled_at if lost_since is None else lost_since
                 if tracker and controlled and sampled_at - lost_since > 2:
-                    logger.warning("灵感拾趣：角色持续未识别，停止转向并等待本局结算")
+                    logger.debug("灵感拾趣：角色持续未识别，停止转向并等待本局结算")
+                    logger.warning("灵感拾趣：无法确认角色位置，等待本局结束")
                     controlled = False
                 time.sleep(0.05)
                 continue
@@ -1685,7 +1764,8 @@ class DreamRunner:
                             tracker.request(direction)
                             pending_since = time.monotonic()
             except TrackingError as error:
-                logger.warning(f"灵感拾趣：{error}，停止转向并等待本局结算")
+                logger.debug(f"灵感拾趣：{error}，停止转向并等待本局结算")
+                logger.warning("灵感拾趣：操作异常，等待本局结束")
                 controlled = False
             time.sleep(0.05)
         raise DreamError("灵感拾趣未在限时内出现结算页面（不重复开局）")
@@ -1711,17 +1791,12 @@ class DreamRunner:
 
     def seven(self):
         self.enter_seven()
-        completed = set()  # 只记录本次已执行并返回的任务，不跨任务或账号保存。
         while True:
-            candidate = self.seven_current(completed)
-            if candidate is None:
-                self.seven_claim_rewards()
-                logger.info("七日妙想：当前画面没有待做的制作、分享、人台换衣、灵感拾趣或灵感讨论任务")
-                return
-            category, column, box = candidate
+            category, column, box = self.seven_current()
             if category == "全部完成":
                 self.seven_claim_rewards()
-                logger.info("七日妙想：第一张任务卡出现完成对号，全部任务已完成")
+                logger.debug("七日妙想：第一张任务卡出现完成对号，全部任务已完成")
+                logger.info("七日妙想：任务已全部完成")
                 return
             if category == "换衣":
                 self.seven_change_mannequin()
@@ -1735,7 +1810,6 @@ class DreamRunner:
                     self.seven_discussion()
                 else:
                     self.seven_make(category)
-            completed.add(category)
             outcome = {"分享": "已分享1次定制成衣", "换衣": "已进行1次人台换衣",
                        "拾趣": "已完成1局灵感拾趣", "讨论": "已进行1次灵感讨论"}.get(category, f"已制作1件{category}")
             logger.info(f"七日妙想：{outcome}")
@@ -1951,7 +2025,8 @@ class CleanupRunner:
         self.wait(changed, "清理成衣删除后作品数量减少或自动返回")
         self.deleted += len(clicked)
         deleted_names = tuple(dict.fromkeys(name for name, _ in clicked))
-        logger.info(f"清理成衣：{self.location}，已删除 {len(clicked)} 件成衣作品，名称 {deleted_names!r}")
+        logger.debug(f"清理成衣：{self.location}，已删除 {len(clicked)} 件成衣作品，名称 {deleted_names!r}")
+        logger.info(f"清理成衣：{self.location}，已删除 {len(clicked)} 件作品")
         return True
 
     def garment(self):
@@ -1999,7 +2074,7 @@ class CleanupRunner:
         _, initial = self.stable(reader, "清理成衣记录类别服装列表")
         # 删除后列表可能变化，保留初始名称和总数；点击位置每次重新识别。
         garments = tuple(dict.fromkeys(name for name, _ in initial))
-        logger.info(f"清理成衣：{category}，已记录 {len(garments)} 件可见服装，按顺序检查 {garments!r}")
+        logger.debug(f"清理成衣：{category}，已记录 {len(garments)} 件可见服装，按顺序检查 {garments!r}")
         for index, garment in enumerate(garments, 1):
             if self.r.hit("清理成衣成衣标签", self.r.image()):
                 self.reopen_category(category)
@@ -2007,11 +2082,12 @@ class CleanupRunner:
             boxes = [box for name, box in current if name == garment]
             self.location = f"{category}/{garment}"
             if len(boxes) != 1:
-                logger.warning(f"清理成衣：{self.location}，跳过服装：原名单中的名称无法确认，进度 {index}/{len(garments)}")
+                logger.debug(f"清理成衣：{self.location}，跳过服装：原名单中的名称无法确认，进度 {index}/{len(garments)}")
+                logger.warning(f"清理成衣：无法确认服装名称，已跳过，进度 {index}/{len(garments)}")
                 continue
             self.center(boxes[0])
             self.garment()
-            logger.info(f"清理成衣：{self.location}，已检查 {index}/{len(garments)} 件服装")
+            logger.debug(f"清理成衣：{self.location}，已检查 {index}/{len(garments)} 件服装")
 
         # 最后一件删除后也可能已自动返回类别页，不再点击不存在的“切换部位”。
         if not self.r.hit("清理成衣成衣标签", self.r.image()):
@@ -2077,7 +2153,8 @@ class DreamweaverInputTextAction(CustomAction):
             logger.debug(f"MuMu 实例 {index} 已接收文本输入，等待页面核验")
             return not context.tasker.stopping
         except Exception as error:
-            logger.error(f"文本输入失败：{error}")
+            logger.debug(f"文本输入失败：{error}")
+            logger.error("文本输入失败，请检查模拟器连接和输入设置")
             return False
 
 
@@ -2120,5 +2197,7 @@ class DreamweaverSpaceAction(CustomAction):
                 )
             return True
         except Exception as error:
-            logger.error(f"织梦空间：{error}")
+            logger.debug(f"织梦空间：{error}")
+            reason = error.user_message if isinstance(error, DreamError) else "执行异常，请检查当前页面"
+            logger.error(f"织梦空间：{reason}")
             return False

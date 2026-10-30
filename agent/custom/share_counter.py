@@ -25,12 +25,14 @@ class ShareCounterAction(CustomAction):
             return True
 
         if operation != "count":
-            logger.error(f"share_counter: invalid operation={operation!r}")
+            logger.debug(f"share_counter: invalid operation={operation!r}")
+            logger.error("分享：操作配置无效")
             return False
 
         max_shares = self._as_int(params.get("max_shares"), 0)
         if not 0 <= max_shares <= 5:
-            logger.error(f"share_counter: max_shares must be between 0 and 5, got {max_shares}")
+            logger.debug(f"share_counter: max_shares must be between 0 and 5, got {max_shares}")
+            logger.error("分享：次数须为 0～5，请检查设置")
             return False
 
         if max_shares == 0:
@@ -39,17 +41,20 @@ class ShareCounterAction(CustomAction):
 
         share_count = self._task_share_counts.get(task_id, 0) + 1
         self._task_share_counts[task_id] = share_count
-        logger.info(f"share_counter: share_count={share_count}, max_shares={max_shares}")
+        logger.debug(f"share_counter: share_count={share_count}, max_shares={max_shares}")
+        logger.info(f"分享：已执行 {share_count} 次")
 
         if share_count < max_shares:
             return True
 
         self._task_share_counts.pop(task_id, None)
         if not context.override_next(argv.node_name, ["stop"]):
-            logger.error("share_counter: failed to stop after reaching share limit")
+            logger.debug("share_counter: failed to stop after reaching share limit")
+            logger.error("分享：达到次数上限后未能正常结束")
             return False
 
-        logger.info("share_counter: reached share limit, stopping task")
+        logger.debug("share_counter: reached share limit, stopping task")
+        logger.info("分享：已达到设置次数，任务结束")
         return True
 
     def _as_int(self, value, default):

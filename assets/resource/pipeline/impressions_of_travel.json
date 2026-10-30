@@ -67,8 +67,27 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["点击印象旅航快速组队"],
+		"next": ["设置印象旅航刷取次数"],
 		"timeout": 2000
+    },
+    "设置印象旅航刷取次数": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [487, 1138, 218, 84],
+                "expected": ["快速组队"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "team_battle_set_runs",
+                "custom_action_param": {
+                    "task_name": "印象旅航"
+                }
+            }
+        },
+        "next": ["点击印象旅航快速组队"]
     },
     "点击印象旅航快速组队":{
         "recognition": {

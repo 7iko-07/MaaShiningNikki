@@ -45,7 +45,8 @@ class ClaimVisibleRewardsAction(CustomAction):
             ("swipe_roi", swipe_roi),
         ):
             if not self._valid_roi(roi):
-                logger.error(f"claim_visible_rewards: invalid {name}")
+                logger.debug(f"claim_visible_rewards: invalid {name}")
+                logger.error("领取奖励：点击区域配置无效")
                 return False
 
         controller = context.tasker.controller
@@ -93,7 +94,8 @@ class ClaimVisibleRewardsAction(CustomAction):
                 if not changed:
                     break
 
-        logger.info(f"claim_visible_rewards: finished, claimed={claimed}")
+        logger.debug(f"claim_visible_rewards: finished, claimed={claimed}")
+        logger.info(f"已领取 {claimed} 项奖励")
         return True
 
     def _claim_current_page(

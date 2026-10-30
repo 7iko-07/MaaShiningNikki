@@ -34,8 +34,12 @@ class ClickAndWaitChangeAction(CustomAction):
 
         target = self._get_target(params, argv)
         if target is None:
-            logger.error("click_and_wait_change 缺少 target，且当前识别框无效")
+            logger.debug("click_and_wait_change 缺少 target，且当前识别框无效")
+            logger.error("无法定位点击目标")
             return False
+
+        if params.get("popup_node"):
+            return self._wait_popup(context, params, target)
 
         controller = context.tasker.controller
         before = self._screencap(controller)
@@ -77,12 +81,13 @@ class ClickAndWaitChangeAction(CustomAction):
                 time.sleep(interval / 1000.0)
 
             if retry_index >= max_retries - 1:
-                logger.warning(
+                logger.debug(
                     f"click_and_wait_change 重试 {max_retries} 次后画面仍未变化，变化比例: {last_ratio:.6f}"
                 )
+                logger.warning("多次点击后画面仍未变化")
                 return not fail_on_timeout
 
-            logger.warning(
+            logger.debug(
                 f"click_and_wait_change 等待超时，画面未变化，准备第 {retry_index + 2} 次点击，"
             )
             logger.debug(f"变化比例: {last_ratio:.6f}")
@@ -94,6 +99,50 @@ class ClickAndWaitChangeAction(CustomAction):
             time.sleep(params.get("after_click_delay", 300) / 1000.0)
 
         return not fail_on_timeout
+
+    def _wait_popup(self, context, params, target):
+        controller = context.tasker.controller
+        probe = context.clone()
+        deadline = time.monotonic() + params.get("timeout", 30000) / 1000.0
+        next_click = 0.0
+        click_x, click_y = self._target_center(target)
+        while time.monotonic() < deadline:
+            if context.tasker.stopping:
+                return False
+            capture = controller.post_screencap().wait()
+            image = controller.cached_image if capture.succeeded else None
+            if image is None:
+                logger.error("页面切换：获取画面失败")
+                return False
+            popup = probe.run_recognition(params["popup_node"], image)
+            if popup is None:
+                logger.error("页面切换：无法识别弹窗")
+                return False
+            ready = False
+            if not popup.hit:
+                for node in params["ready_nodes"]:
+                    # 就绪检测不受任务勾选影响，覆盖仅留在识别用的独立 Context。
+                    result = probe.run_recognition(node, image, pipeline_override={node: {"enabled": True}})
+                    if result is None:
+                        logger.error("页面切换：无法识别目标页面")
+                        return False
+                    if result.hit:
+                        ready = True
+                        break
+            if context.tasker.stopping:
+                return False
+            if time.monotonic() >= deadline:
+                break
+            if ready:
+                return True
+            if popup.hit and time.monotonic() >= next_click:
+                if not controller.post_click(click_x, click_y).wait().succeeded:
+                    logger.error("页面切换：点击空白失败")
+                    return False
+                next_click = time.monotonic() + 0.5
+            time.sleep(min(0.2, max(0, deadline - time.monotonic())))
+        logger.error("页面切换：等待无弹窗页面超时")
+        return False
 
     def _before_click(self, context, argv):
         return None
@@ -107,16 +156,18 @@ class ClickAndWaitChangeAction(CustomAction):
             return self._argv_box_target(argv)
 
         if isinstance(target, str):
-            logger.error(
+            logger.debug(
                 "click_and_wait_change: custom_action_param.target 不支持节点名；"
                 "如需引用当前节点或其他节点的识别框，请把 target 写在 Custom action 自身字段中"
             )
+            logger.error("点击目标配置无效")
             return None
 
         if self._valid_target(target):
             return target
 
-        logger.error("click_and_wait_change: target 必须是 true/self、[x, y] 或 [x, y, w, h]")
+        logger.debug("click_and_wait_change: target 必须是 true/self、[x, y] 或 [x, y, w, h]")
+        logger.error("点击目标配置无效")
         return None
 
     def _argv_box_target(self, argv):

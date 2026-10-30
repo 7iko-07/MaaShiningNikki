@@ -94,7 +94,7 @@ class _MainStorylineBase:
                             f"主线：点击后画面已变化，变化比例={ratio:.4f}"
                         )
                     return True
-            logger.warning(
+            logger.debug(
                 f"主线：点击后画面未变化，尝试={click_index + 1}/{max_clicks}"
             )
             before = self._screencap(controller)
@@ -171,7 +171,8 @@ class MainStorylineSelectChapterAction(_MainStorylineBase, CustomAction):
             expected = [expected]
         expected = [self._normalize_text(item) for item in expected if str(item).strip()]
         if not chapter_name or not expected:
-            logger.error("主线章节选择：缺少章节名称或识别关键词")
+            logger.debug("主线章节选择：缺少章节名称或识别关键词")
+            logger.error("主线：章节配置不完整")
             context.override_next(argv.node_name, RETURN_HOME_NEXT)
             return True
 
@@ -207,11 +208,13 @@ class MainStorylineSelectChapterAction(_MainStorylineBase, CustomAction):
                 if attempt < retry - 1:
                     time.sleep(retry_delay)
 
-            logger.error(
+            logger.debug(
                 f"主线章节选择：未找到章节 {chapter_name!r}"
             )
+            logger.error(f"主线：未找到章节「{chapter_name}」")
         except Exception as exc:
-            logger.exception(f"主线章节选择异常：{exc}")
+            debug_exception(f"主线章节选择异常：{exc}")
+            logger.error("主线：选择章节时发生异常")
 
         context.override_next(argv.node_name, RETURN_HOME_NEXT)
         return True
@@ -254,9 +257,10 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
         required_panel_title = str(params.get("required_panel_title", "")).strip()
 
         if not 1 <= chapter_number <= 99 or not 1 <= stage_suffix <= 99:
-            logger.error(
+            logger.debug(
                 f"主线关卡查找：关卡参数无效，章节={chapter_number}，尾号={stage_suffix}"
             )
+            logger.error("主线：关卡设置无效，请检查章节和关卡尾号")
             context.override_next(argv.node_name, RETURN_HOME_NEXT)
             return True
 
@@ -421,11 +425,13 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
                     if not changed:
                         break
 
-            logger.error(
+            logger.debug(
                 f"主线关卡查找：完成 {rounds} 轮复位搜索后仍未找到目标={target}"
             )
+            logger.error(f"主线：未找到关卡 {target}")
         except Exception as exc:
-            logger.exception(f"主线关卡查找异常：{exc}")
+            debug_exception(f"主线关卡查找异常：{exc}")
+            logger.error("主线：查找关卡时发生异常")
 
         context.override_next(argv.node_name, RETURN_HOME_NEXT)
         return True
@@ -501,16 +507,19 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
                     change_threshold,
                 )
                 if not changed:
-                    logger.error(
+                    logger.debug(
                         f"主线关卡查找：关卡列表已到末尾，仍未找到目标={target}、标题={required_panel_title!r}"
                     )
+                    logger.error(f"主线：已到列表末尾，未找到关卡 {target}")
                     return False
 
-            logger.error(
+            logger.debug(
                 f"主线关卡查找：扫描 {max_scan_swipes} 次后仍未找到目标={target}、标题={required_panel_title!r}"
             )
+            logger.error(f"主线：未找到关卡 {target}")
         except Exception as exc:
-            logger.exception(f"主线关卡查找：指定面板扫描异常：{exc}")
+            debug_exception(f"主线关卡查找：指定面板扫描异常：{exc}")
+            logger.error("主线：查找关卡时发生异常")
 
         return False
 
@@ -632,7 +641,8 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
             log_success=False,
         ):
             return True
-        logger.warning(f"主线关卡查找：点击后未打开目标={target}")
+        logger.debug(f"主线关卡查找：点击后未打开目标={target}")
+        logger.warning(f"主线：未能打开关卡 {target}")
         return False
 
     def _is_non_main_panel(
@@ -730,9 +740,10 @@ class MainStorylineChallengeAction(_MainStorylineBase, CustomAction):
         max_rounds = max(1, self._as_int(params.get("max_rounds"), 200))
 
         if max_challenges < 0 or max_challenges > 100:
-            logger.error(
+            logger.debug(
                 f"主线快捷挑战：挑战次数参数无效，最大次数={max_challenges}"
             )
+            logger.error("主线：挑战次数无效，请检查设置")
             return True
 
         if load_delay > 0:
@@ -765,14 +776,15 @@ class MainStorylineChallengeAction(_MainStorylineBase, CustomAction):
                     retry_label="每次消耗体力",
                 )
                 if stamina is None or stamina_cost is None or stamina_cost <= 0:
-                    logger.error(
+                    logger.debug(
                         "主线快捷挑战：未识别到快捷挑战面板，当前关卡可能不支持快捷挑战"
                     )
+                    logger.error("主线：未找到快捷挑战入口，请确认关卡是否支持")
                     return True
 
                 possible_batch = min(max_multi, stamina // stamina_cost)
                 allowance = None if max_challenges == 0 else max_challenges - challenged
-                logger.info(
+                logger.debug(
                     f"主线快捷挑战：轮次={round_index + 1}，体力={stamina}，每次消耗={stamina_cost}，"
                     f"已挑战次数={challenged}，剩余次数上限={allowance if allowance is not None else '不限'}，"
                     f"可批量挑战次数={possible_batch}"
@@ -807,28 +819,33 @@ class MainStorylineChallengeAction(_MainStorylineBase, CustomAction):
 
                 consumed = before_stamina - new_stamina
                 if consumed <= 0:
-                    logger.info(
+                    logger.debug(
                         "主线快捷挑战：体力未减少，停止挑战，不购买体力"
                     )
+                    logger.info("主线：挑战后体力未变化，停止挑战")
                     return True
                 if consumed % stamina_cost != 0:
-                    logger.error(
+                    logger.debug(
                         f"主线快捷挑战：体力扣除异常，挑战前={before_stamina}，挑战后={new_stamina}，每次消耗={stamina_cost}"
                     )
+                    logger.error("主线：体力消耗异常，停止挑战")
                     return True
 
                 actual = consumed // stamina_cost
                 if allowance is not None and actual > allowance:
-                    logger.error(
+                    logger.debug(
                         f"主线快捷挑战：游戏实际执行次数超过设置上限，实际次数={actual}，本轮上限={allowance}"
                     )
+                    logger.error("主线：实际挑战次数超过设置上限，停止挑战")
                     return True
                 challenged += actual
 
-            logger.error(
+            logger.debug(
                 f"主线快捷挑战：已达到最大执行轮次={max_rounds}，停止挑战"
             )
+            logger.error("主线：已达执行上限，停止挑战")
         except Exception as exc:
-            logger.exception(f"主线快捷挑战异常：{exc}")
+            debug_exception(f"主线快捷挑战异常：{exc}")
+            logger.error("主线：快捷挑战执行异常")
 
         return True

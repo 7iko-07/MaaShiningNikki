@@ -56,7 +56,7 @@ try:
     def change_console_level(level="DEBUG"):
         """动态修改控制台日志等级"""
         setup_logger(console_level=level)
-        _logger.info(f"控制台日志等级已更改为: {level}")
+        _logger.debug(f"控制台日志等级已更改为: {level}")
 
 
     logger = setup_logger()
@@ -87,3 +87,11 @@ except ImportError:
     logging.root.addHandler(handler)
     logging.root.setLevel(logging.INFO)
     logger = logging
+
+
+def debug_exception(message):
+    """将当前异常的详情及堆栈留在 DEBUG 日志中。"""
+    if hasattr(logger, "opt"):
+        logger.opt(depth=1, exception=True).debug(message)
+    else:
+        logger.debug(message, exc_info=True)

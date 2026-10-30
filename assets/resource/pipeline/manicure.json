@@ -222,7 +222,7 @@
 			}
         },
 		"focus": {
-			"Node.Action.Starting": "#[color:red][b]美甲资源未下载，请先下载资源，之后再次运行任务[/b][/color]"
+			"Node.Action.Starting": "#[color:red][b]请先下载美甲资源，再运行任务[/b][/color]"
 		},
         "next": ["stop"],
 		"post_delay": 1000,

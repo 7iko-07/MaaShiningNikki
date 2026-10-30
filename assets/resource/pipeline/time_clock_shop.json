@@ -217,8 +217,27 @@
 			"param": {}
 		},
 		"post_delay": 2000,
-		"next": ["点击时光钟表铺快速组队"],
+		"next": ["设置时光钟表铺刷取次数"],
 		"timeout": 2000
+    },
+    "设置时光钟表铺刷取次数": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [487, 1138, 218, 84],
+                "expected": ["快速组队"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "team_battle_set_runs",
+                "custom_action_param": {
+                    "task_name": "时光钟表铺"
+                }
+            }
+        },
+        "next": ["点击时光钟表铺快速组队"]
     },
     "点击时光钟表铺快速组队":{
         "recognition": {

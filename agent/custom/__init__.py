@@ -24,3 +24,5 @@ from . import dreamweaver_space
 from . import memory_stairway
 from . import manicure
 from . import redeem_codes
+from . import story_auto_click
+from . import team_battle_runs

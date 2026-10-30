@@ -315,13 +315,14 @@ class ShareFlowTests(unittest.TestCase):
         self.assertEqual(share["识别到无分享奖励"]["next"], ["stop"])
         node = "心之门点击分享"
         visited = []
-        while node != "stop":
+        while node and node != "stop":
             self.assertNotIn(node, visited)
             visited.append(node)
             self.assertNotIn(node, share)
-            node = heart[node]["next"][0]
+            successors = heart[node].get("next", [])
+            node = successors[0] if successors else None
         self.assertEqual(visited, ["心之门点击分享", "心之门点击qq", "心之门关闭qq",
-                                   "心之门点击分享奖励-空白", "点击谜之海-感应第二次-空白"])
+                                   "心之门点击分享奖励-空白"])
         interface = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-8"))
         cases = interface["option"]["是否在心之门这里分享"]["cases"]
         disabled = next(case for case in cases if case["name"] == "No")

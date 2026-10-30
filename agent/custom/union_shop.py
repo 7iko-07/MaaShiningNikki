@@ -138,7 +138,9 @@ class UnionShopBuy(CustomAction):
                     raise ValueError("购买数量必须为1～3")
                 count, reason = self._buy(context, name, requested)
             except Exception as exc:
-                message = f"联盟商店中止：{name}，{exc}"
+                logger.debug(f"联盟商店中止：{name}，{exc}")
+                reason = str(exc) if isinstance(exc, ValueError) else "操作异常，请检查当前页面"
+                message = f"联盟商店中止：{name}，{reason}"
                 if results:
                     message += "；此前结果：" + "；".join(results)
                 self._report(context, message, True)

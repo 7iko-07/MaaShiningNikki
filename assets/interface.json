@@ -35,121 +35,66 @@
     ],
     "group": [
         {
-            "name": "日常任务"
+            "name": "往期活动"
         },
         {
-            "name": "周常任务"
+            "name": "辅助工具"
         }
     ],
     "task": [
         {
             "name": "启动闪耀暖暖",
+            "label": "🚀 启动前执行",
+            "__mfa_startup": true,
             "entry": "启动账号记录初始化",
             "option": ["切换服务器", "切换账号"],
-            "description": "启动闪耀暖暖app，登录并进入游戏，游戏卡顿会导致持续时间较长。默认启动官服，开启切换服务器后可选择其他服务器。游戏语言需要切换为简体中文。",
-            "group": ["日常任务"]
+            "description": "游戏语言须为简体中文。"
         },
         {
-            "name": "兑换码",
-            "entry": "兑换码任务链入口",
-            "description": "尝试兑换全部当前可用的兑换码，也可在任务设置中单独兑换。仅展示本次结果，不保存账号兑换历史。",
-            "group": ["日常任务"]
+            "name": "关闭闪耀暖暖",
+            "label": "🛑 结束后执行",
+            "__mfa_shutdown": true,
+            "entry": "关闭闪暖",
+            "__mfa_end_action": "Pipeline",
+            "description": "任务自动结束后执行；普通任务出错时按“出错后继续运行”设置处理，手动停止不执行。"
         },
         {
             "name": "好友",
+            "label": "👥 好友",
             "entry": "好友任务链入口",
-            "description": "好友一键送心\n\n联盟一键送心\n\n体力一键领取",
-            "group": ["日常任务"]
+            "description": "为好友和联盟送心，领取体力。"
         },
         {
             "name": "联盟",
+            "label": "🤝 联盟",
             "entry": "联盟任务链入口",
             "option": ["机密任务执行方式"],
-            "description": "机密任务按所选方式执行并完成剩余次数\n\n联盟捐献免费档及金币档\n\n联盟福利一键领取",
-            "group": ["日常任务"]
+            "description": "完成机密任务、免费及金币捐献，领取联盟福利。"
         },
         {
             "name": "邮件",
+            "label": "📬 邮件",
             "entry": "邮件任务链入口",
-            "description": "邮件奖励一键领取",
-            "group": ["日常任务"]
+            "description": "领取邮件奖励。"
         },
         {
             "name": "福利",
+            "label": "🎁 福利",
             "entry": "福利任务链入口",
-            "description": "每日签到\n\n补签领取\n\n免费体力补给领取",
-            "group": ["日常任务"]
-        },
-        {
-            "name": "时光钟表铺",
-            "entry": "时光钟表铺任务链入口",
-            "description": "时光钟表铺",
-            "option": [
-                "时光钟表铺模式"
-            ],
-            "group": ["日常任务"]
-        },
-        {
-            "name": "不落的帷幕",
-            "entry": "不落的帷幕任务链入口",
-            "description": "不落的帷幕",
-            "option": [
-                "不落的帷幕模式"
-            ],
-            "group": ["日常任务"]
-        },
-        {
-            "name": "印象旅航",
-            "entry": "印象旅航任务链入口",
-            "description": "印象旅航",
-            "group": ["日常任务"]
+            "description": "每日签到、补签并领取免费体力。"
         },
         {
             "name": "美甲",
-            "description":  "雇佣免费店员\n\n提取心意币\n\n特约顾客\n\n美甲点赞",
+            "label": "💅 美甲",
+            "description":  "雇佣免费店员、提取心意币，完成特约顾客和美甲点赞。",
             "entry": "美甲任务链入口",
             "option": [
                 "美甲特约顾客任务"
-            ],
-            "group": ["日常任务"]
-        },
-        {
-            "name": "情报屋",
-            "description":  "",
-            "entry": "情报屋任务链入口",
-            "option": [
-                "获取情报对象选择",
-                "情报屋挑战次数"
-            ],
-            "group": ["日常任务"]
-        },
-        {
-            "name": "制作目标服装",
-            "description":  "按时空回廊、心灵迷宫、主线的固定顺序获取制衣引导目标服装的材料，不会点击前往制作。",
-            "entry": "制作目标服装任务链入口",
-            "option": [
-                "制作目标服装材料任务"
-            ],
-            "group": ["日常任务"]
-        },
-        {
-            "name": "主线普通关卡",
-            "description": "选择主线卷与章节，查找指定关卡并按设置次数进行快捷挑战。0次表示尽量耗尽可用体力，不会购买体力。",
-            "entry": "主线故事任务链入口",
-            "option": [
-                "主线挑战卷",
-                "主线挑战次数"
-            ],
-            "group": ["日常任务"]
-        },
-        {
-            "name": "挑战关卡2-1",
-            "description": "挑战关卡2-1执行五次",
-            "entry": "挑战关卡任务链入口",
-            "group": ["日常任务"]
+            ]
         },
         {
             "name": "回家",
+            "label": "🏠 回家",
             "entry": "回家任务链入口",
             "option": [
                 "采购电影票次数",
@@ -159,11 +104,112 @@
                 "自习室是否离开",
                 "是否做自习室好感任务"
             ],
-            "description": "按设置次数采购金币小物和番茄炒蛋，0次跳过对应商品。先采购零食，再依次采购电影票、调色板、晴雨伞，最后按设置执行自习室好感任务。",
-            "group": ["日常任务"]
+            "description": "按设置次数采购零食和金币小物，可继续完成自习室好感任务；0次跳过对应商品。"
+        },
+        {
+            "name": "分享",
+            "label": "📢 分享",
+            "entry": "分享任务链入口",
+            "description": "分享并领取奖励，需在模拟器内安装QQ，无需登录。可设置最多分享次数。",
+            "option": [
+                "分享次数"
+            ]
+        },
+        {
+            "name": "感应谜之海两次",
+            "label": "🔮 感应谜之海两次",
+            "entry": "心之门任务链入口",
+            "option": [
+                "是否在心之门这里分享"
+            ],
+            "description": "感应谜之海两次。请确认免费次数，留意资源消耗。"
+        },
+        {
+            "name": "月卡领取",
+            "label": "🌙 月卡领取",
+            "entry": "月卡任务链入口"
+        },
+        {
+            "name": "特权卡领取",
+            "label": "💎 特权卡领取",
+            "entry": "特权卡任务链入口"
+        },
+        {
+            "name": "一键领取",
+            "label": "🎉 一键领取",
+            "entry": "一键领取任务链入口",
+            "description": "领取活跃任务、时尚任务和时尚提升计划奖励。"
+        },
+        {
+            "name": "织梦空间",
+            "label": "💭 织梦空间",
+            "entry": "织梦空间任务链入口",
+            "option": ["织梦空间子任务"],
+            "description": "按勾选完成七日妙想、签到和织梦经营。七日妙想仅处理当前页面支持的任务；分享需安装QQ且保持未登录。经营每批生产5件，可选择自然等待或使用能量石。"
+        },
+        {
+            "name": "时光钟表铺",
+            "label": "🕰️ 时光钟表铺",
+            "entry": "时光钟表铺任务链入口",
+            "description": "时光钟表铺",
+            "option": [
+                "时光钟表铺模式"
+            ]
+        },
+        {
+            "name": "不落的帷幕",
+            "label": "🎭 不落的帷幕",
+            "entry": "不落的帷幕任务链入口",
+            "description": "不落的帷幕",
+            "option": [
+                "不落的帷幕模式"
+            ]
+        },
+        {
+            "name": "印象旅航",
+            "label": "⛵ 印象旅航",
+            "entry": "印象旅航任务链入口",
+            "description": "印象旅航",
+            "option": ["印象旅航刷取次数"]
+        },
+        {
+            "name": "情报屋",
+            "label": "🔍 情报屋",
+            "description":  "",
+            "entry": "情报屋任务链入口",
+            "option": [
+                "获取情报对象选择",
+                "情报屋挑战次数"
+            ]
+        },
+        {
+            "name": "制作目标服装",
+            "label": "🧵 制作目标服装",
+            "description":  "收集制衣引导目标服装的材料，不自动制作服装。",
+            "entry": "制作目标服装任务链入口",
+            "option": [
+                "制作目标服装材料任务"
+            ]
+        },
+        {
+            "name": "主线普通关卡",
+            "label": "📖 主线普通关卡",
+            "description": "挑战指定主线关卡。0次表示尽量用完可用体力，不购买体力。",
+            "entry": "主线故事任务链入口",
+            "option": [
+                "主线挑战卷",
+                "主线挑战次数"
+            ]
+        },
+        {
+            "name": "挑战关卡2-1",
+            "label": "⚔️ 挑战关卡2-1",
+            "description": "挑战关卡2-1，共5次。",
+            "entry": "挑战关卡任务链入口"
         },
         {
             "name": "竞技场",
+            "label": "🏆 竞技场",
             "entry": "竞技场任务链入口",
             "option": [
                 "竞技场挑战策略",
@@ -171,114 +217,168 @@
                 "竞技场刷新上限后仍挑战",
                 "竞技场是否搭配服装"
             ],
-            "description": "按挑战策略寻找战力低于自己的对手：常规挑战从左到右比较，稳守段位只比较最右侧对手。每次挑战最多点击设定次数的换一批，达到上限仍无弱对手时默认停止；开启“刷新上限后仍挑战”后则挑战最后一批最右选手。",
-            "group": ["日常任务"]
+            "description": "按策略寻找较弱对手。刷新达到上限仍无合适对手时默认停止，可设置继续挑战。"
         },
         {
             "name": "搭配评选赛",
+            "label": "👗 搭配评选赛",
             "entry": "搭配评选赛任务链入口",
-            "description": "搭配评选赛点赞",
-            "group": ["日常任务"]
-        },
-        {
-            "name": "分享",
-            "entry": "分享任务链入口",
-            "description": "必须在模拟器下载QQ，可以不登录但必须要有。默认重复分享直到分享奖励领完，也可设置最多分享次数。",
-            "option": [
-                "分享次数"
-            ],
-            "group": ["日常任务"]
-        },
-        {
-            "name": "感应谜之海两次",
-            "entry": "心之门任务链入口",
-            "option": [
-                "是否在心之门这里分享"
-            ],
-            "description": "###[color:red][b]如果误点击消耗资源概不负责，加了重重防护应该不会出现误点击消耗资源的情况。[/b][/color]",
-            "group": ["日常任务"]
-        },
-        {
-            "name": "月卡领取",
-            "entry": "月卡任务链入口",
-            "group": ["日常任务"]
-        },
-        {
-            "name": "特权卡领取",
-            "entry": "特权卡任务链入口",
-            "group": ["日常任务"]
-        },
-        {
-            "name": "活动：湘间君子女",
-            "entry": "活动任务链入口",
-            "default_check": false,
-            "description": "###[color:red][b]活动剧情默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！复刻活动剧情可能有意想不到的点击，如果卡住了就自己点掉重新开一次该任务吧[/b][/color]",
-            "option": [
-                "活动"
-            ],
-            "group": ["日常任务"]
-        },
-        {
-            "name": "活动：寻阅山河",
-            "entry": "活动2任务链入口",
-            "default_check": false,
-            "description": "###[color:red][b]活动剧情默认关闭，使用时不要随意点击返回！！！！随意点击返回可能会导致消耗粉钻资源！！！！！！复刻活动剧情可能有意想不到的点击，如果卡住了就自己点掉重新开一次该任务吧[/b][/color]",
-            "option": [
-                "活动2"
-            ],
-            "group": ["日常任务"]
-        },
-        {
-            "name": "一键领取",
-            "entry": "一键领取任务链入口",
-            "description": "一键领取活跃任务\n\n一键领取时尚任务\n\n一键领取时尚提升计划",
-            "group": ["日常任务"]
-        },
-        {
-            "name": "回忆小铺",
-            "description": "按选择先处理限时回忆小铺，再处理回忆小铺；两家独立设置。遇到需人工查看的商品暂停整个任务；非免费刷新被禁止或刷新卡耗尽时进入下一家。没有限时店铺时自动跳过。",
-            "entry": "回忆小铺任务链入口",
-            "option": ["回忆小铺店铺选择"],
-            "group": ["日常任务"]
-        },
-        {
-            "name": "织梦空间",
-            "entry": "织梦空间任务链入口",
-            "option": ["织梦空间子任务"],
-            "description": "按勾选执行七日妙想、今日签到、织梦经营，执行顺序与选项从上往下一致。经营子任务也可以多选，依次执行每日能量晶矿、订单驿站、售卖橱窗。每批生产5件，订单与橱窗分别选择自然等待（每轮最多10分钟）或使用能量石。七日妙想支持当前画面中的1件连衣裙、上衣、下装制作、分享1次定制成衣、进行1次人台换衣及完成1次灵感拾趣，不滑动查找其他任务；第一张完整任务卡出现白色大对号时结束全部七日妙想任务。灵感拾趣主动收集小物并避碰，只玩一局，结算后返回七日妙想。分享需出现QQ的新用户及登录页面，识别后关闭QQ并返回游戏。",
-            "group": ["日常任务"]
+            "description": "为搭配评选赛作品点赞。"
         },
         {
             "name": "心阶",
+            "label": "💖 心阶",
             "entry": "心阶任务链入口",
-            "description": "只能起到基本的拿奖励的作用，打不了高分，想要高分自己搭配自己打一次",
-            "group": ["周常任务"]
+            "description": "自动挑战并领取基础奖励；追求高分请手动搭配挑战。"
+        },
+        {
+            "name": "回忆小铺",
+            "label": "🛍️ 回忆小铺",
+            "description": "先处理限时回忆小铺，再处理回忆小铺，两家独立设置。遇到目标商品时暂停供手动处理；刷新受限或刷新卡用完时继续下一家。",
+            "entry": "回忆小铺任务链入口",
+            "option": ["回忆小铺店铺选择"]
         },
         {
             "name": "联盟兑换幻之券",
+            "label": "🎫 联盟兑换幻之券",
             "entry": "联盟兑换幻之券任务链入口",
-            "description": "可多选幻之券、绮之券，各自设置1～3张；库存或联盟币不足时按可买数量购买，并显示结果。",
+            "description": "购买幻之券、绮之券，各可设置1～3张；库存或联盟币不足时按可买数量购买。",
             "option": [
                 "联盟商店"
-            ],
-            "group": ["周常任务"]
+            ]
         },
         {
             "name": "每周礼包",
+            "label": "🎁 每周礼包",
             "entry": "每周礼包任务链入口",
-            "description": "建议周常任务每周比如周日开一次就行了，不然拖慢每日进程",
-            "group": ["周常任务"]
+            "description": "领取每周礼包，建议每周运行一次。"
         },
         {
-            "name": "关闭闪耀暖暖",
-            "entry": "关闭闪暖"
+            "name": "活动：湘间君子女",
+            "label": "🌸 活动：湘间君子女",
+            "entry": "活动任务链入口",
+            "default_check": false,
+            "description": "###[color:red][b]自动完成活动剧情，默认关闭。运行时请勿随意点击返回，以免消耗粉钻；卡住时请手动处理后重试。[/b][/color]",
+            "option": [
+                "活动"
+            ],
+            "group": ["往期活动"]
+        },
+        {
+            "name": "活动：寻阅山河",
+            "label": "🏞️ 活动：寻阅山河",
+            "entry": "活动2任务链入口",
+            "default_check": false,
+            "description": "###[color:red][b]自动完成活动剧情，默认关闭。运行时请勿随意点击返回，以免消耗粉钻；卡住时请手动处理后重试。[/b][/color]",
+            "option": [
+                "活动2"
+            ],
+            "group": ["往期活动"]
+        },
+        {
+            "name": "翻转印象",
+            "label": "🃏 翻转印象",
+            "entry": "翻牌小游戏任务链入口",
+            "default_check": false,
+            "description": "自动进入翻转印象并完成一次大师难度翻牌配对，仅适用于包含该小游戏的活动。",
+            "group": ["往期活动"]
+        },
+        {
+            "name": "兑换码",
+            "label": "🎟️ 兑换码",
+            "entry": "兑换码任务链入口",
+            "description": "兑换当前可用的兑换码，也可在任务设置中单独兑换。仅显示本次结果。",
+            "group": ["辅助工具"]
+        },
+        {
+            "name": "剧情自动点击",
+            "label": "🎬 剧情自动点击",
+            "entry": "剧情自动点击任务链入口",
+            "default_check": false,
+            "description": "###[color:red][b]请先进入剧情页面。非活动场景请勿开启全屏点击，以免误触并消耗资源。[/b][/color]\n\n自动点击剧情，遇到特殊互动或等待结束时提示手动操作，不自动领取奖励。出现右上角“跳过”时结束任务。",
+            "option": ["全屏点击查找剧情章节"],
+            "group": ["辅助工具"]
+        }
+    ],
+    "preset": [
+        {
+            "name": "全部任务",
+            "description": "包含全部可选任务；启动和结束任务置顶展示。活动及剧情工具保留默认勾选状态。",
+            "group": [
+                {"name": "往期活动"},
+                {"name": "辅助工具"}
+            ],
+            "task": [
+                {"name": "启动闪耀暖暖", "enabled": true, "group": []},
+                {"name": "关闭闪耀暖暖", "enabled": true, "group": []},
+                {"name": "好友", "enabled": true, "group": []},
+                {"name": "联盟", "enabled": true, "group": []},
+                {"name": "邮件", "enabled": true, "group": []},
+                {"name": "福利", "enabled": true, "group": []},
+                {"name": "美甲", "enabled": true, "group": []},
+                {"name": "回家", "enabled": true, "group": []},
+                {"name": "分享", "enabled": true, "group": []},
+                {"name": "感应谜之海两次", "enabled": true, "group": []},
+                {"name": "月卡领取", "enabled": true, "group": []},
+                {"name": "特权卡领取", "enabled": true, "group": []},
+                {"name": "一键领取", "enabled": true, "group": []},
+                {"name": "织梦空间", "enabled": true, "group": []},
+                {"name": "时光钟表铺", "enabled": true, "group": []},
+                {"name": "不落的帷幕", "enabled": true, "group": []},
+                {"name": "印象旅航", "enabled": true, "group": []},
+                {"name": "情报屋", "enabled": true, "group": []},
+                {"name": "制作目标服装", "enabled": true, "group": []},
+                {"name": "主线普通关卡", "enabled": true, "group": []},
+                {"name": "挑战关卡2-1", "enabled": true, "group": []},
+                {"name": "竞技场", "enabled": true, "group": []},
+                {"name": "搭配评选赛", "enabled": true, "group": []},
+                {"name": "心阶", "enabled": true, "group": []},
+                {"name": "回忆小铺", "enabled": true, "group": []},
+                {"name": "联盟兑换幻之券", "enabled": true, "group": []},
+                {"name": "每周礼包", "enabled": true, "group": []},
+                {"name": "活动：湘间君子女", "enabled": false, "group": ["往期活动"]},
+                {"name": "活动：寻阅山河", "enabled": false, "group": ["往期活动"]},
+                {"name": "翻转印象", "enabled": false, "group": ["往期活动"]},
+                {"name": "兑换码", "enabled": true, "group": ["辅助工具"]},
+                {"name": "剧情自动点击", "enabled": false, "group": ["辅助工具"]}
+            ]
+        },
+        {
+            "name": "完整日常",
+            "description": "包含完整日常、养成刷取、竞技场与评选赛、回忆小铺和寻阅山河。",
+            "group": [],
+            "task": [
+                {"name": "启动闪耀暖暖", "enabled": true, "group": []},
+                {"name": "关闭闪耀暖暖", "enabled": true, "group": []},
+                {"name": "好友", "enabled": true, "group": []},
+                {"name": "联盟", "enabled": true, "group": []},
+                {"name": "邮件", "enabled": true, "group": []},
+                {"name": "福利", "enabled": true, "group": []},
+                {"name": "感应谜之海两次", "enabled": true, "group": []},
+                {"name": "回家", "enabled": true, "group": []},
+                {"name": "时光钟表铺", "enabled": true, "group": []},
+                {"name": "不落的帷幕", "enabled": true, "group": []},
+                {"name": "印象旅航", "enabled": true, "group": []},
+                {"name": "制作目标服装", "enabled": true, "group": []},
+                {"name": "美甲", "enabled": true, "group": []},
+                {"name": "情报屋", "enabled": true, "group": []},
+                {"name": "竞技场", "enabled": true, "group": []},
+                {"name": "搭配评选赛", "enabled": true, "group": []},
+                {"name": "分享", "enabled": true, "group": []},
+                {"name": "一键领取", "enabled": true, "group": []},
+                {"name": "回忆小铺", "enabled": true, "group": []},
+                {"name": "月卡领取", "enabled": true, "group": []},
+                {"name": "特权卡领取", "enabled": true, "group": []},
+                {"name": "活动：寻阅山河", "enabled": true, "group": []},
+                {"name": "织梦空间", "enabled": true, "group": []}
+            ]
         }
     ],
     "option": {
         "机密任务执行方式": {
             "type": "select",
             "label": "机密任务执行方式",
-            "description": "执行多次会直接批量完成；开始执行会先完整搭配和比拼一次，再批量完成剩余次数。",
+            "description": "“执行多次”直接批量完成；“开始执行”先搭配比拼一次，再完成剩余次数。",
             "default_case": "执行多次",
             "cases": [
                 {
@@ -301,7 +401,7 @@
         },
         "切换服务器": {
             "type": "switch",
-            "description": "默认启动官服，开启后可选择各渠道服、台港澳服或国际服。请先安装对应版本，并将游戏语言切换为简体中文。",
+            "description": "选择渠道服、台港澳服或国际服。请先安装对应版本，并使用简体中文。",
             "cases": [
                 {"name": "No"},
                 {"name": "Yes", "option": ["服务器"]}
@@ -309,7 +409,7 @@
         },
         "服务器": {
             "type": "select",
-            "description": "选择要启动的服务器，默认官服。游戏语言需要切换为简体中文。",
+            "description": "选择要启动的区服，默认官服；游戏语言须为简体中文。",
             "cases": [
                 {
                     "name": "官服",
@@ -364,7 +464,7 @@
         "切换账号": {
             "type": "switch",
             "label": "切换账号",
-            "description": "启动时按手机尾号切换已保存的官服账号。找不到账号或登录后15秒未返回开始页面时，start失败结束。",
+            "description": "启动时切换到已保存的官服账号，请填写手机号后四位。",
             "default_case": "No",
             "cases": [
                 {
@@ -393,7 +493,7 @@
         "登录账号服务器": {
             "type": "select",
             "label": "登录账号服务器",
-            "description": "账号登录后切换账号服务器。只在全部账号服务器名称区域识别，目标名称任意一个字命中即点击。查找或返回开始页面超过15秒时，start失败结束。",
+            "description": "登录后切换到所选的账号服务器。",
             "default_case": "保持当前账号服务器",
             "cases": [
                 {
@@ -445,7 +545,7 @@
                 {
                     "name": "suffix",
                     "label": "手机尾号",
-                    "description": "填写已保存账号的手机号码后4位，保留开头的0。最多上滑查找10次。",
+                    "description": "填写已保存账号的手机号后4位，保留开头的0。",
                     "default": "",
                     "pipeline_type": "string",
                     "verify": "^[0-9]{4}$",
@@ -467,7 +567,7 @@
         "联盟商店": {
             "type": "checkbox",
             "label": "联盟商店",
-            "description": "按幻之券、绮之券顺序购买；库存或联盟币不足时购买可买数量，并提示未买满原因。",
+            "description": "选择要购买的券；库存或联盟币不足时按可买数量购买。",
             "default_case": [
                 "幻之券"
             ],
@@ -542,6 +642,7 @@
             "cases": [
                 {
                     "name": "快速组队（关卡04）",
+                    "option": ["时光钟表铺刷取次数"],
                     "pipeline_override": {}
                 },
                 {
@@ -563,15 +664,44 @@
                 }
             ]
         },
+        "时光钟表铺刷取次数": {
+            "type": "input",
+            "label": "刷取次数",
+            "inputs": [
+                {
+                    "name": "runs",
+                    "label": "刷取次数",
+                    "description": "0沿用原流程，尽量刷完可用次数；1～99指定刷取次数。不足时按可用次数刷取，不购买次数或体力。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^(0|[1-9][0-9]?)$",
+                    "pattern_msg": "请输入0-99之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "设置时光钟表铺刷取次数": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "team_battle_set_runs",
+                            "custom_action_param": {
+                                "task_name": "时光钟表铺",
+                                "runs": "{runs}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "时光钟表铺独自登场次数": {
             "type": "input",
             "label": "独自登场次数",
-            "description": "只能在独自登场必定失败时使用。0表示默认执行3次；1-3表示总执行次数。独自登场后将等待失败结算，单场等待超过180秒时结束任务且不计入次数。",
+            "description": "仅适用于独自登场必定失败的搭配。0表示3次，1～3表示指定次数；结算超时则停止。",
             "inputs": [
                 {
                     "name": "solo_runs",
                     "label": "独自登场次数",
-                    "description": "请输入0-3之间的整数。0表示总共执行3次；1-3表示对应的总执行次数。单场等待失败结算超过180秒时结束任务且不计入次数。",
+                    "description": "填写0～3。0表示3次，1～3表示指定次数。",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^[0-3]$",
@@ -601,6 +731,7 @@
             "cases": [
                 {
                     "name": "快速组队（高难度·第八幕）",
+                    "option": ["不落的帷幕刷取次数"],
                     "pipeline_override": {}
                 },
                 {
@@ -622,15 +753,44 @@
                 }
             ]
         },
+        "不落的帷幕刷取次数": {
+            "type": "input",
+            "label": "刷取次数",
+            "inputs": [
+                {
+                    "name": "runs",
+                    "label": "刷取次数",
+                    "description": "0沿用原流程，尽量刷完可用次数；1～99指定刷取次数。不足时按可用次数刷取，不购买次数或体力。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^(0|[1-9][0-9]?)$",
+                    "pattern_msg": "请输入0-99之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "设置不落的帷幕刷取次数": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "team_battle_set_runs",
+                            "custom_action_param": {
+                                "task_name": "不落的帷幕",
+                                "runs": "{runs}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "不落的帷幕独自登场次数": {
             "type": "input",
             "label": "独自登场次数",
-            "description": "只能在独自登场必定失败时使用。0表示默认执行3次；1-3表示总执行次数。若未识别到失败结算页，将立即结束且不再循环。",
+            "description": "仅适用于独自登场必定失败的搭配。0表示3次，1～3表示指定次数；未能确认失败结算则停止。",
             "inputs": [
                 {
                     "name": "solo_runs",
                     "label": "独自登场次数",
-                    "description": "请输入0-3之间的整数。0表示总共执行3次；1-3表示对应的总执行次数。",
+                    "description": "填写0～3。0表示3次，1～3表示指定次数。",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^[0-3]$",
@@ -652,6 +812,35 @@
                 }
             }
         },
+        "印象旅航刷取次数": {
+            "type": "input",
+            "label": "刷取次数",
+            "inputs": [
+                {
+                    "name": "runs",
+                    "label": "刷取次数",
+                    "description": "0沿用原流程，尽量刷完可用次数；1～99指定刷取次数。不足时按可用次数刷取，不购买次数或体力。",
+                    "default": "0",
+                    "pipeline_type": "int",
+                    "verify": "^(0|[1-9][0-9]?)$",
+                    "pattern_msg": "请输入0-99之间的整数"
+                }
+            ],
+            "pipeline_override": {
+                "设置印象旅航刷取次数": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "team_battle_set_runs",
+                            "custom_action_param": {
+                                "task_name": "印象旅航",
+                                "runs": "{runs}"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "分享次数": {
             "type": "input",
             "label": "分享次数",
@@ -659,7 +848,7 @@
                 {
                     "name": "max_shares",
                     "label": "分享次数",
-                    "description": "请输入0-5之间的整数。0表示重复分享直到分享奖励领完；1-5表示最多分享指定次数，若提前没有奖励则提前停止。",
+                    "description": "填写0～5。0表示分享至奖励领完，1～5表示最多分享次数。",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^[0-5]$",
@@ -712,7 +901,7 @@
                 },
                 {
                     "name": "清理成衣作品",
-                    "description": "仅处理当前可见类别、服装及作品，不上下滑动；删除名称完全相等且不在审核中的成衣作品，审核状态不明时跳过。建议每周执行一次，频繁执行容易遇到审核中作品。",
+                    "description": "删除当前可见服装中名称完全相同且不在审核中的成衣作品。状态不明时跳过，建议每周运行一次。",
                     "option": ["清理成衣作品名称"],
                     "pipeline_override": {
                         "织梦选择清理成衣": {
@@ -725,7 +914,7 @@
         "清理成衣作品名称": {
             "type": "input",
             "label": "要删除的成衣作品名称",
-            "description": "多个完整名称用中文或英文逗号分隔，例如：临时，分享成衣。匹配其中任意一个完整名称，不按包含关系或正则匹配。建议每周执行一次。",
+            "description": "填写要删除作品的完整名称，多个名称用逗号分隔，例如：临时，分享成衣。仅删除同名作品，建议每周运行一次。",
             "inputs": [
                 {
                     "name": "cleanup_name",
@@ -801,7 +990,7 @@
         "织梦售卖方案": {
             "type": "select",
             "label": "售卖方案",
-            "description": "先完成全部生产并收获，再售卖。日期按北京时间每天05:00切换；1.5倍以黑板显示价格上涨50%为准。",
+            "description": "生产并收获后售卖。日期按北京时间每天05:00切换；1.5倍指价格上涨50%。",
             "cases": [
                 {
                     "name": "攒1.5倍",
@@ -844,7 +1033,7 @@
         "织梦售卖工位循环次数": {
             "type": "input",
             "label": "工位循环次数",
-            "description": "每轮所有可用工位各生产5件，全部收获后计1次。0表示循环直到所有已解锁工位休息；正整数表示指定轮数，若工位提前全部休息则提前结束。进入时已有生产不计次数。",
+            "description": "每轮每个可用工位生产并收获5件。0表示持续生产至工位全部休息；正整数为最多轮数，不计入进入时已有的生产。",
             "inputs": [
                 {
                     "name": "sale_rounds",
@@ -892,7 +1081,7 @@
         "制作目标服装材料任务": {
             "type": "checkbox",
             "label": "制作目标服装材料任务",
-            "description": "选择需要执行的材料来源。无论勾选顺序如何，都会按时空回廊、心灵迷宫、主线的顺序执行。",
+            "description": "选择材料来源，将依次处理时空回廊、心灵迷宫、主线。",
             "default_case": ["时空回廊获取材料"],
             "cases": [
                 {
@@ -934,7 +1123,7 @@
                 {
                     "name": "max_challenges",
                     "label": "心灵迷宫最大挑战次数",
-                    "description": "输入0表示不设置挑战次数上限；输入正整数表示整个心灵迷宫阶段的挑战次数硬上限。只点击“挑战多次”，次数按整个心灵迷宫材料阶段累计。",
+                    "description": "0表示不限次数；正整数为本次心灵迷宫材料任务的累计挑战上限。",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^(0|[1-9][0-9]?|100)$",
@@ -979,7 +1168,7 @@
                 {
                     "name": "max_challenges",
                     "label": "主线最大挑战次数",
-                    "description": "输入0表示尽量耗尽剩余体力；输入正整数表示实际挑战次数的硬上限。只点击“挑战多次”，在无法安全凑足时可能少于设置值。",
+                    "description": "0表示尽量用完剩余体力；正整数为挑战上限，实际次数可能较少。",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^(0|[1-9][0-9]{0,2})$",
@@ -1019,7 +1208,7 @@
         "主线挑战卷": {
             "type": "select",
             "label": "主线卷",
-            "description": "选择主线所在卷。首版仅开放已配置章节名的卷 I。",
+            "description": "选择主线卷，目前支持卷 I。",
             "default_case": "卷 I",
             "cases": [
                 {
@@ -1048,7 +1237,7 @@
         "主线挑战卷I章节": {
             "type": "select",
             "label": "卷 I 章节",
-            "description": "按章节序号选择；定位时只识别章节名和人工筛选的安全关键词。",
+            "description": "选择要挑战的章节。",
             "default_case": "第一章：启程",
             "cases": [
                 {
@@ -1132,7 +1321,7 @@
                 {
                     "name": "stage_suffix",
                     "label": "关卡尾号",
-                    "description": "请输入1-99之间的整数，只填写连字符后的数字，不要填写章节前缀和连字符。例如选择第二章并填写3，程序会查找2-3。",
+                    "description": "填写关卡最后的数字，范围1～99。例如第二章的2-3填3。",
                     "default": "1",
                     "pipeline_type": "int",
                     "verify": "^([1-9]|[1-9][0-9])$",
@@ -1185,7 +1374,7 @@
                 {
                     "name": "main_storyline_challenges",
                     "label": "主线挑战次数",
-                    "description": "请输入0-100之间的整数。0表示尽量耗尽当前可用体力；1-100表示实际挑战次数的严格上限，不会购买体力。",
+                    "description": "填写0～100。0表示尽量用完可用体力，正整数为挑战上限；不购买体力。",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^(0|[1-9][0-9]?|100)$",
@@ -1261,9 +1450,45 @@
                 }
             ]
         },
+        "全屏点击查找剧情章节": {
+            "type": "switch",
+            "default_case": "No",
+            "description": "###[color:red][b]非活动场景请勿开启，以免误触并消耗资源。[/b][/color]\n\n开启后通过全屏点击寻找活动剧情入口；关闭时请手动进入剧情。出现右上角“跳过”时结束任务。",
+            "__mfa_confirm_on_enable": "非活动场景请勿开启全屏点击，否则可能误触并消耗资源！",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "剧情自动点击任务链入口": {
+                            "action": {
+                                "type": "Custom",
+                                "param": {
+                                    "custom_action": "story_auto_click",
+                                    "custom_action_param": {"search_chapters": true}
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "剧情自动点击任务链入口": {
+                            "action": {
+                                "type": "Custom",
+                                "param": {
+                                    "custom_action": "story_auto_click",
+                                    "custom_action_param": {"search_chapters": false}
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
         "美甲特约顾客任务":{
             "type": "switch",
-            "description": "开启时美甲任务必须也开启，完成特约顾客三个手指，\n\n###**如果三个手指加起来达不到完美就会死循环，建议有一定美甲积累再做**",
+            "description": "需同时开启美甲任务，完成特约顾客的三个手指。搭配须达到完美，否则可能反复尝试；建议积累足够美甲后使用。",
             "default_case": "No",
             "cases": [
                 {
@@ -1283,7 +1508,7 @@
         "竞技场挑战策略": {
             "type": "select",
             "label": "挑战策略",
-            "description": "常规挑战从左到右寻找弱对手；稳守段位只比较最右侧对手，战力低于自己才挑战，否则刷新。",
+            "description": "常规挑战从左到右寻找较弱对手；稳守段位只比较最右侧对手。",
             "default_case": "常规挑战",
             "cases": [
                 {
@@ -1315,7 +1540,7 @@
                 {
                     "name": "max_rounds",
                     "label": "最大刷新次数",
-                    "description": "填写N即最多点击换一批N次，每次挑战重新计算。例如填写5，最多刷新5次。常规挑战比较3人，稳守段位只比较最右侧对手。",
+                    "description": "每次挑战最多刷新对手的次数。例如填写5，最多刷新5次。",
                     "default": "5",
                     "pipeline_type": "int",
                     "verify": "^[1-9]$|^[1-9][0-9]$$",
@@ -1366,7 +1591,7 @@
         "竞技场刷新上限后仍挑战": {
             "type": "switch",
             "label": "刷新上限后仍挑战",
-            "description": "默认关闭。开启后，两种策略均在达到最大刷新次数仍无较弱对手时，挑战最后一批最右选手，战力相等或高于自己也挑战。每次挑战重新计算刷新次数。",
+            "description": "默认关闭。开启后，刷新达到上限仍无较弱对手时，将挑战最后一批最右侧对手，可能遇到战力更高的对手。",
             "default_case": "No",
             "cases": [
                 {
@@ -1396,7 +1621,7 @@
         "竞技场是否搭配服装":{
             "type": "select",
             "label": "搭配方式",
-            "description": "所有模式均在北京时间周六21:00至周日12:00跳过竞技场。每周一次以周日12:00为新周期，完整搭配成功后才保存记录。运行start并成功确认多账号尾号和区服时使用对应账号记录；本次没有运行start时使用本安装目录的默认账号记录，多个未运行start的账号共用该记录，手动切号无法区分。start失败或账号身份不完整时照常搭配但不读写周记录。",
+            "description": "周六21:00至周日12:00为结算期，跳过竞技场。每周搭配以周日12:00为新周期。多账号请先运行启动任务以区分记录；未运行启动任务时共用本安装目录的默认记录，手动切号无法区分。账号未确认时照常搭配，不保存记录。",
             "default_case": "No",
             "cases": [
                 {
@@ -1430,7 +1655,7 @@
         },
         "是否在心之门这里分享":{
             "type": "switch",
-            "description": "在这里只能分享一次",
+            "description": "在心之门仅分享一次。",
             "default_case": "Yes",
             "cases": [
                 {
@@ -1572,7 +1797,7 @@
         },
         "是否做自习室好感任务":{
             "type": "switch",
-            "description": "选择是会在采购流程结束后继续自习室任务；选择否则在采购流程结束后停止。采购次数均为0时不购买商品。",
+            "description": "开启后在采购结束时继续完成自习室任务；采购次数全为0时只做自习室任务。",
             "default_case": "Yes",
             "cases": [
                 {
@@ -1591,7 +1816,7 @@
         },
         "自习室是否离开":{
             "type": "select",
-            "description": "今日是否永久离开，不想关自习室陪伴的暖妈一定要选只是暂时离开",
+            "description": "如需保留自习室陪伴，请选择“只是暂时离开”。",
             "default_case": "只是暂时离开",
             "cases": [
                 {
@@ -1609,7 +1834,7 @@
         },
         "获取情报对象选择":{
             "type": "select",
-            "description": "自定义次数",
+            "description": "选择调查对象和挑战次数。",
             "default_case": "左一",
             "cases": [
                 {
@@ -1633,7 +1858,7 @@
         "回忆小铺店铺选择": {
             "type": "checkbox",
             "label": "店铺选择",
-            "description": "先限时回忆小铺，后回忆小铺；各自使用对应设置，未勾选的店铺不处理。",
+            "description": "先处理限时回忆小铺，再处理回忆小铺；各自使用独立设置。",
             "default_case": [
                 "回忆小铺"
             ],
@@ -1679,7 +1904,7 @@
                 {
                     "name": "auto_buy_gold",
                     "label": "限时自动购买金币商品",
-                    "description": "开启后发现金币商品会自动点击购买并确认；关闭时发现金币商品会暂停。",
+                    "description": "开启后自动购买金币商品；关闭时遇到金币商品暂停，供手动处理。",
                     "default": "false",
                     "pipeline_type": "bool",
                     "verify": "^(true|false)$",
@@ -1701,7 +1926,7 @@
                 {
                     "name": "diamond_discount_threshold",
                     "label": "限时钻石暂停折扣",
-                    "description": "请输入1-9之间的整数，例如4表示4折及以下暂停。\n\n出现低于此折扣的钻石商品时不再刷新。\n\n输入1时不因折扣暂停。",
+                    "description": "填写1～9，例如4表示遇到4折及以下钻石商品时暂停；1表示不按折扣暂停。",
                     "default": "4",
                     "pipeline_type": "int",
                     "verify": "^[1-9]$",
@@ -1723,7 +1948,7 @@
                 {
                     "name": "diamond_price_threshold",
                     "label": "限时钻石暂停价格",
-                    "description": "不包括排除商品。存在实际价格低于该值的钻石商品时暂停，优先级高于折扣判断。\n\n输入0表示不按价格暂停。",
+                    "description": "钻石商品价格低于此值时暂停，排除商品除外；优先于折扣设置。0表示不按价格暂停。",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^\\d+$",
@@ -1745,7 +1970,7 @@
                 {
                     "name": "continue_refresh_when_not_free",
                     "label": "限时非免费继续刷新",
-                    "description": "开启后“换一批”不是免费刷新时仍继续点击；关闭时结束当前店铺，继续下一家已选店铺。",
+                    "description": "开启后允许使用刷新卡；关闭时免费刷新用完即继续下一家。刷新卡用完仍会停止当前店铺。",
                     "default": "false",
                     "pipeline_type": "bool",
                     "verify": "^(true|false)$",
@@ -1767,7 +1992,7 @@
                 {
                     "name": "auto_buy_gold",
                     "label": "自动购买金币商品",
-                    "description": "开启后发现金币商品会自动点击购买并确认；关闭时发现金币商品会暂停。",
+                    "description": "开启后自动购买金币商品；关闭时遇到金币商品暂停，供手动处理。",
                     "default": "false",
                     "pipeline_type": "bool",
                     "verify": "^(true|false)$",
@@ -1789,7 +2014,7 @@
                 {
                     "name": "diamond_discount_threshold",
                     "label": "钻石暂停折扣",
-                    "description": "请输入1-9之间的整数，例如4表示4折及以下暂停。\n\n出现低于此折扣的钻石商品时不再刷新。\n\n输入1时不因折扣暂停。",
+                    "description": "填写1～9，例如4表示遇到4折及以下钻石商品时暂停；1表示不按折扣暂停。",
                     "default": "4",
                     "pipeline_type": "int",
                     "verify": "^[1-9]$",
@@ -1811,7 +2036,7 @@
                 {
                     "name": "diamond_price_threshold",
                     "label": "钻石暂停价格",
-                    "description": "不包括排除商品。存在实际价格低于该值的钻石商品时暂停，优先级高于折扣判断。\n\n输入0表示不按价格暂停。",
+                    "description": "钻石商品价格低于此值时暂停，排除商品除外；优先于折扣设置。0表示不按价格暂停。",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^\\d+$",
@@ -1833,7 +2058,7 @@
                 {
                     "name": "continue_refresh_when_not_free",
                     "label": "非免费继续刷新",
-                    "description": "开启后“换一批”不是免费刷新时仍继续点击；关闭时结束当前店铺，继续下一家已选店铺。",
+                    "description": "开启后允许使用刷新卡；关闭时免费刷新用完即继续下一家。刷新卡用完仍会停止当前店铺。",
                     "default": "false",
                     "pipeline_type": "bool",
                     "verify": "^(true|false)$",
@@ -1855,7 +2080,7 @@
                 {
                     "name": "challenge_times",
                     "label": "挑战次数",
-                    "description": "请输入0或2-10之间的整数。0表示按体力自动挑战最大次数；情报屋默认初始为2次，每增加1次会点击一次加号。",
+                    "description": "填写0或2～10。0表示按可用体力尽量多挑战。",
                     "default": "0",
                     "pipeline_type": "int",
                     "verify": "^(0|[2-9]|10)$",

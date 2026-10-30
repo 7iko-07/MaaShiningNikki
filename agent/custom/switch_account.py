@@ -131,12 +131,14 @@ class SwitchAccount(CustomAction):
                 start = context.run_recognition("点击开始", image)
                 if not modal and start and start.hit:
                     set_login_suffix(context, suffix)
-                    logger.info(f"已登录尾号 {suffix} 的账号，继续服务器选择流程")
+                    logger.debug(f"已登录尾号 {suffix} 的账号，继续服务器选择流程")
+                    logger.info(f"已登录尾号 {suffix} 的账号")
                     return True
                 time.sleep(0.3)
             raise ValueError("登录失败：15 秒内未返回点击开始页面，请检查登录失效或验证码")
         except Exception as exc:
-            logger.error(f"切换账号失败：{exc}")
+            logger.debug(f"切换账号失败：{exc}")
+            logger.error("切换账号失败，请检查登录页面和账号设置")
             return False
 
 
@@ -168,7 +170,8 @@ class SwitchServer(SwitchAccount):
                 try:
                     self._record_current_server(context, self._image(context))
                 except Exception as exc:
-                    logger.warning(f"当前服务器识别失败，继续登录但不记录竞技场搭配：{exc}")
+                    logger.debug(f"当前服务器识别失败，继续登录但不记录竞技场搭配：{exc}")
+                    logger.warning("无法确认当前服务器，本次不保存竞技场搭配记录")
                 return True
             if server not in self.SERVERS:
                 raise ValueError(f"不支持的服务器：{server}")
@@ -179,7 +182,7 @@ class SwitchServer(SwitchAccount):
             while time.monotonic() < deadline:
                 image = self._image(context)
                 if self._ocr(context, image, self.SERVER_TITLE, [r"更换服务器"]):
-                    logger.info("已确认更换服务器窗口打开，开始查找服务器")
+                    logger.debug("已确认更换服务器窗口打开，开始查找服务器")
                     break
                 change = self._ocr(context, image, self.CHANGE_SERVER, [r"点击换区"])
                 if change and time.monotonic() >= next_click:
@@ -215,10 +218,12 @@ class SwitchServer(SwitchAccount):
                 start = context.run_recognition("点击开始", image)
                 if change and not dialog and start and start.hit:
                     self._record_current_server(context, image, server)
-                    logger.info(f"已选择服务器 {server}，继续点击开始")
+                    logger.debug(f"已选择服务器 {server}，继续点击开始")
+                    logger.info(f"已选择服务器「{server}」")
                     return True
                 time.sleep(0.3)
             raise ValueError("选择服务器后 15 秒内未返回开始页面")
         except Exception as exc:
-            logger.error(f"切换服务器失败：{exc}")
+            logger.debug(f"切换服务器失败：{exc}")
+            logger.error("切换服务器失败，请检查登录页面和区服设置")
             return False

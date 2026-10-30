@@ -506,7 +506,7 @@
 			}
 		},
 		"focus": {
-			"Node.Action.Starting": "#[color:blue][b]剧情过完了[/b][/color]"
+			"Node.Action.Starting": "#[color:blue][b]剧情已结束[/b][/color]"
 		},
 		"next": ["stop"]
 	}

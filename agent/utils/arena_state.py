@@ -93,7 +93,8 @@ def begin_login(context, task_id, multi):
     try:
         StateStore().set_mode(device, multi)
     except (OSError, sqlite3.Error) as exc:
-        logger.warning(f"竞技场账号模式保存失败：{exc}")
+        logger.debug(f"竞技场账号模式保存失败：{exc}")
+        logger.warning("竞技场：账号设置保存失败")
 
 
 def set_login_suffix(context, suffix):

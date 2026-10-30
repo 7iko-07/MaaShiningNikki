@@ -67,12 +67,13 @@ class MemoryStairwayNextStepAction(CustomAction):
                 image = controller.cached_image
                 ready = context.run_recognition(ready_node, image)
                 if ready is None:
-                    logger.error(f"心阶下一步：识别未返回结果：{ready_node}")
+                    logger.debug(f"心阶下一步：识别未返回结果：{ready_node}")
+                    logger.error("心阶：无法确认装备印象页面")
                     return False
                 if context.tasker.stopping or time.monotonic() >= deadline:
                     break
                 if ready.hit:
-                    logger.info(f"心阶下一步：已确认装备印象，点击{clicks}次")
+                    logger.debug(f"心阶下一步：已确认装备印象，点击{clicks}次")
                     return True
 
                 loading = context.run_recognition("在加载页面", image)
@@ -93,7 +94,8 @@ class MemoryStairwayNextStepAction(CustomAction):
                         else:
                             x, y, w, h = box.x, box.y, box.w, box.h
                         if w <= 0 or h <= 0:
-                            logger.error("心阶下一步：按钮识别框无效")
+                            logger.debug("心阶下一步：按钮识别框无效")
+                            logger.error("心阶：无法定位下一步按钮")
                             return False
                         action = context.run_action_direct(
                             "Click", JClick(target=(int(x + w / 2), int(y + h / 2), 1, 1)))
@@ -104,9 +106,11 @@ class MemoryStairwayNextStepAction(CustomAction):
                         next_click = time.monotonic() + 1
                 time.sleep(min(.5, max(0, deadline - time.monotonic())))
         except Exception as exc:
-            logger.error(f"心阶下一步失败：{exc}")
+            logger.debug(f"心阶下一步失败：{exc}")
+            logger.error("心阶：前往装备印象页面失败")
             return False
-        logger.error(f"心阶下一步未完成：任务停止或10秒期限已到，未确认装备印象，点击{clicks}次")
+        logger.debug(f"心阶下一步未完成：任务停止或10秒期限已到，未确认装备印象，点击{clicks}次")
+        logger.error("心阶：未能及时进入装备印象页面，任务已停止")
         return False
 
 
@@ -139,7 +143,8 @@ class MemoryStairwayPopupsAction(CustomAction):
                         break
                     result = context.run_recognition(node, image)
                     if result is None:
-                        logger.error(f"心阶弹窗处理：识别未返回结果：{node}")
+                        logger.debug(f"心阶弹窗处理：识别未返回结果：{node}")
+                        logger.error("心阶：无法识别当前弹窗")
                         return False
                     hits[node] = result.hit
                 if context.tasker.stopping or time.monotonic() >= deadline:
@@ -164,11 +169,13 @@ class MemoryStairwayPopupsAction(CustomAction):
                 else:
                     clear_frames += 1
                     if clear_frames >= 2:
-                        logger.info(f"心阶弹窗检查完成，空白点击{clicks}次")
+                        logger.debug(f"心阶弹窗检查完成，空白点击{clicks}次")
                         return True
                 time.sleep(min(.25, max(0, deadline - time.monotonic())))
         except Exception as exc:
-            logger.error(f"心阶弹窗处理失败：{exc}")
+            logger.debug(f"心阶弹窗处理失败：{exc}")
+            logger.error("心阶：处理弹窗时发生异常")
             return False
-        logger.error(f"心阶弹窗处理未完成：任务停止或{timeout:g}秒期限已到，{last_state}，空白点击{clicks}次")
+        logger.debug(f"心阶弹窗处理未完成：任务停止或{timeout:g}秒期限已到，{last_state}，空白点击{clicks}次")
+        logger.error("心阶：未能及时关闭弹窗，任务已停止")
         return False

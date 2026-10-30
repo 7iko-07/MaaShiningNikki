@@ -319,6 +319,11 @@
                             "const": "switch",
                             "description": "选择框，Yes or No"
                         },
+                        "__mfa_confirm_on_enable": {
+                            "$ref": "#/definitions/i18nString",
+                            "title": "开启确认提示（MFA 扩展）",
+                            "description": "MFA 客户端在开关从关闭切换到开启时显示确认弹窗，确认后才保存开启状态"
+                        },
                         "label": {
                             "$ref": "#/definitions/i18nString",
                             "title": "显示标签",
@@ -732,6 +737,23 @@
             "type": "object",
             "title": "任务配置",
             "properties": {
+                "__mfa_startup": {
+                    "type": "boolean",
+                    "description": "MFAAvalonia 扩展：合并启动任务，提供模拟器和游戏启动开关，固定置顶。"
+                },
+                "__mfa_shutdown": {
+                    "type": "boolean",
+                    "description": "MFAAvalonia 扩展：合并结束任务，提供游戏、模拟器和程序关闭开关，固定显示在启动任务下方。"
+                },
+                "__mfa_end_action": {
+                    "type": "string",
+                    "enum": ["Pipeline", "CloseEmulator", "CloseMFA"],
+                    "description": "MFAAvalonia 扩展：任务自动结束后按该配置的出错后继续运行设置决定是否执行的关闭动作；不由 Agent 或 Pipeline 解释。"
+                },
+                "exclude_from_select_all": {
+                    "type": "boolean",
+                    "description": "MFAAvalonia 扩展：全选时不自动勾选，仍可手动勾选。"
+                },
                 "name": {
                     "type": "string",
                     "title": "任务唯一标识符",
@@ -1049,6 +1071,14 @@
                         "title": "图标路径",
                         "description": "预设图标文件路径，相对于项目根目录"
                     },
+                    "group": {
+                        "type": "array",
+                        "title": "预设任务分组（MFA 扩展）",
+                        "description": "可选。仅在此预设中使用的分组声明；省略时继承顶层 group，空数组表示不声明分组",
+                        "items": {
+                            "$ref": "#/definitions/groupItem"
+                        }
+                    },
                     "task": {
                         "type": "array",
                         "title": "预设任务配置",
@@ -1061,6 +1091,14 @@
                                     "type": "string",
                                     "title": "任务名称",
                                     "description": "必须。与顶层 task[].name 对应的任务名称"
+                                },
+                                "group": {
+                                    "type": "array",
+                                    "title": "预设任务所属分组（MFA 扩展）",
+                                    "description": "可选。覆盖此预设中该任务的分组；省略时继承任务原分组，空数组表示独立任务",
+                                    "items": {
+                                        "type": "string"
+                                    }
                                 },
                                 "enabled": {
                                     "type": "boolean",

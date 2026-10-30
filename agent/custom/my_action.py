@@ -1,6 +1,7 @@
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
+from utils import logger
 
 
 @AgentServer.custom_action("my_action_111")
@@ -12,6 +13,6 @@ class MyCustomAction(CustomAction):
         argv: CustomAction.RunArg,
     ) -> bool:
 
-        print("my_action_111 is running!")
+        logger.debug("my_action_111 is running!")
 
         return True

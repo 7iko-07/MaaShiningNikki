@@ -1,0 +1,70 @@
+{
+    "剧情自动点击任务链入口": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "story_auto_click",
+                "custom_action_param": {
+                    "search_chapters": false
+                }
+            }
+        },
+        "focus": {
+            "Node.Action.Starting": "剧情自动点击：请自行进入剧情页面；遇到特殊互动将停止。",
+            "Node.Action.Succeeded": {
+                "content": "[size:14][color:#A16207][b]剧情点击结束，需要手动操作。[/b][/color][/size]",
+                "display": "log"
+            },
+            "Node.Action.Failed": "[color:red]剧情点击执行异常，请检查设备连接及运行日志。[/color]"
+        },
+        "next": []
+    },
+    "剧情自动点击控制器异常": {
+        "recognition": {
+            "type": "Custom",
+            "param": {"custom_recognition": "story_auto_click_controller_failed"}
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "story_auto_click_controller_guard"}
+        },
+        "next": []
+    },
+    "剧情自动点击特殊互动识别": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [
+                    0,
+                    200,
+                    720,
+                    1080
+                ],
+                "expected": [
+                    "请选择",
+                    "选择.{0,6}(回答|选项|答案)",
+                    "开始推演真相",
+                    "求助暖暖",
+                    "听暖暖的",
+                    "推理真相",
+                    "提交答案",
+                    "开始答题",
+                    "确认答案",
+                    "推荐搭配",
+                    "开始挑战",
+                    "确认购买",
+                    "确认兑换",
+                    "是否消耗"
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "story_auto_click_manual_stop"
+            }
+        },
+        "next": []
+    }
+}

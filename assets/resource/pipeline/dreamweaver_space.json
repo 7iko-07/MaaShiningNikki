@@ -604,12 +604,36 @@
             }
         }
     },
+    "织梦加速能量石数量": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [520, 438, 250, 38],
+                "expected": ["拥有"]
+            }
+        }
+    },
     "织梦立即完成按钮": {
         "recognition": {
             "type": "OCR",
             "param": {
                 "roi": [459, 473, 361, 87],
                 "expected": ["立即完成"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "max_retries": 1,
+                    "fail_on_timeout": true,
+                    "compare_roi": [450, 100, 380, 470],
+                    "change_threshold": 0.15,
+                    "timeout": 1000,
+                    "interval": 100,
+                    "after_click_delay": 300
+                }
             }
         }
     },

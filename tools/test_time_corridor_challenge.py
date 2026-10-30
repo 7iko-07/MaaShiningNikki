@@ -219,13 +219,16 @@ class BatchChallengeResultTests(unittest.TestCase):
                 with patch.object(action, "_read_round_values", return_value=(100, 5, 30)), \
                      patch.object(action, "_click_roi") as click, \
                      patch.object(action, "_has_sufficient_quantity") as quantity, \
-                     patch.object(module.logger, "exception") as error:
+                     patch.object(module, "debug_exception") as detail, \
+                     patch.object(module.logger, "error") as error:
                     self.assertFalse(action.run(context, argv))
                 click.assert_called_once_with(context.tasker.controller, params["multi_button"])
                 context.run_task.assert_called_once_with("等待制衣挑战结果")
                 quantity.assert_not_called()
                 context.override_next.assert_not_called()
+                detail.assert_called_once()
                 error.assert_called_once()
+                self.assertNotIn("result recognition failed", error.call_args.args[0])
 
 
 if __name__ == "__main__":

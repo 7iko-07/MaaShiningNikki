@@ -47,54 +47,53 @@ class SevenTests(unittest.TestCase):
         ])
         runner.box = Mock(return_value=(505, 642, 101, 32))
         frame = object()
-        self.assertEqual(runner.seven_candidate(frame, set()),
+        self.assertEqual(runner.seven_candidate(frame),
                          ("上衣", 1, (505, 642, 101, 32)))
         runner.box.assert_called_once_with("七日妙想前往完成", frame, [355, 631, 260, 67])
 
     def test_completed_unknown_quantity_and_missing_button_are_not_clicked(self):
         runner = self.runner()
         runner.seven_titles = Mock(return_value=[
-            (0, "制作1件连衣裙"), (1, "制作2件上衣"), (2, "制作1件外套"), (3, "制作1件下装"),
+            (0, "制作2件上衣"), (1, "制作1件外套"), (2, "制作1件连衣裙"), (3, "制作1件下装"),
         ])
+        runner.seven_card_complete = Mock(side_effect=lambda image, column: column == 2)
         runner.box = Mock(return_value=None)
-        self.assertIsNone(runner.seven_candidate(object(), {"连衣裙"}))
+        self.assertIsNone(runner.seven_candidate(object()))
         self.assertEqual(runner.box.call_count, 1)
 
-    def test_share_candidate_uses_current_column_and_is_not_repeated(self):
+    def test_share_candidate_uses_current_column_and_supported_quantity(self):
         runner = self.runner()
         runner.seven_titles = Mock(return_value=[(2, "分享1次定制成衣")])
         runner.box = Mock(return_value=(808, 645, 100, 30))
         frame = object()
-        self.assertEqual(runner.seven_candidate(frame, set()), ("分享", 2, (808, 645, 100, 30)))
+        self.assertEqual(runner.seven_candidate(frame), ("分享", 2, (808, 645, 100, 30)))
         runner.box.assert_called_once_with("七日妙想前往完成", frame, [655, 631, 260, 67])
-        self.assertIsNone(runner.seven_candidate(frame, {"分享"}))
         runner.seven_titles.return_value = [(2, "分享2次定制成衣")]
-        self.assertIsNone(runner.seven_candidate(frame, set()))
+        self.assertIsNone(runner.seven_candidate(frame))
 
     def test_first_complete_card_ends_all_tasks_before_reading_other_cards(self):
         runner = self.runner()
         runner.seven_card_complete = Mock(return_value=True)
         runner.seven_titles = Mock()
         runner.box = Mock()
-        self.assertEqual(runner.seven_candidate(object(), set()), ("全部完成", None, None))
+        self.assertEqual(runner.seven_candidate(object()), ("全部完成", None, None))
         runner.seven_card_complete.assert_called_once()
         self.assertEqual(runner.seven_card_complete.call_args.args[1], 0)
         runner.seven_titles.assert_not_called()
         runner.box.assert_not_called()
 
-    def test_discussion_candidate_requires_its_own_button_and_is_not_repeated(self):
+    def test_discussion_candidate_requires_its_own_button(self):
         runner = self.runner()
         runner.seven_card_complete = Mock(return_value=False)
         runner.seven_titles = Mock(return_value=[(1, "进行1次灵感讨论")])
         runner.box = Mock(return_value=(508, 642, 96, 32))
         frame = object()
-        self.assertEqual(runner.seven_candidate(frame, set()), ("讨论", 1, (508, 642, 96, 32)))
+        self.assertEqual(runner.seven_candidate(frame), ("讨论", 1, (508, 642, 96, 32)))
         runner.box.assert_called_once_with("七日妙想前往完成", frame, [355, 631, 260, 67])
-        self.assertIsNone(runner.seven_candidate(frame, {"讨论"}))
         runner.box.return_value = None
-        self.assertIsNone(runner.seven_candidate(frame, set()))
+        self.assertIsNone(runner.seven_candidate(frame))
 
-    def test_discussion_uses_lamp_after_custom_then_back_and_completion_check(self):
+    def test_discussion_returns_without_waiting_for_the_old_task_card(self):
         runner = self.runner()
         trace = Mock()
         for method in ("seven_button_center", "seven_choose_custom", "seven_back_until_ready", "wait"):
@@ -103,18 +102,11 @@ class SevenTests(unittest.TestCase):
         runner.seven_discussion()
         self.assertEqual([call[0] for call in trace.method_calls],
                          ["seven_button_center", "seven_choose_custom", "seven_button_center",
-                          "seven_button_center", "seven_back_until_ready", "wait"])
+                          "seven_button_center", "seven_back_until_ready"])
         self.assertEqual([call.args[0] for call in runner.seven_button_center.call_args_list],
                          ["七日制衣新建", "七日灵感讨论灯泡", "七日灵感讨论我再想想"])
         runner.seven_choose_custom.assert_called_once_with("讨论")
-        complete = runner.wait.call_args.args[0]
-        runner.seven_ready = Mock(return_value=True)
-        runner.seven_titles = Mock(return_value=[(3, "进行1次灵感讨论")])
-        runner.seven_card_complete = Mock(return_value=False)
-        self.assertFalse(complete(object()))
-        runner.seven_card_complete.return_value = True
-        self.assertTrue(complete(object()))
-        self.assertEqual(runner.seven_card_complete.call_args.args[1], 3)
+        runner.wait.assert_not_called()
 
     def test_discussion_waits_for_lamp_after_actual_custom_click(self):
         runner = self.runner()
@@ -127,7 +119,7 @@ class SevenTests(unittest.TestCase):
         time_patch, sleep_patch = self.clock(now)
         with time_patch, sleep_patch:
             runner.seven_choose_custom("讨论")
-        runner.click.assert_called_once_with((1134, 362, 1, 1))
+        runner.click.assert_called_once_with((1097, 362, 1, 1))
         self.assertGreaterEqual(runner.image.call_count, 3)
 
     def test_discussion_back_uses_fresh_arrows_and_stops_on_seven_page(self):
@@ -137,7 +129,7 @@ class SevenTests(unittest.TestCase):
         runner.image = Mock(side_effect=lambda: page[0])
         runner.seven_ready = Mock(side_effect=lambda image: image == 2)
         runner.hit = Mock(return_value=False)
-        runner.box = Mock(side_effect=lambda node, image: boxes[image])
+        runner.box = Mock(side_effect=lambda node, image: boxes[image] if node == "七日分享返回按钮" else None)
         runner.click = Mock(side_effect=lambda box: page.__setitem__(0, page[0] + 1))
         now = [0.0]
         time_patch, sleep_patch = self.clock(now)
@@ -145,6 +137,78 @@ class SevenTests(unittest.TestCase):
             runner.seven_back_until_ready()
         self.assertEqual([call.args[0] for call in runner.click.call_args_list], [(55, 60, 1, 1), (58, 63, 1, 1)])
         self.assertNotIn(2, [call.args[1] for call in runner.box.call_args_list])
+
+    def test_discussion_retries_ignored_dismissal_with_fresh_text_centers_before_back(self):
+        runner = self.runner()
+        now = [0.0]
+        phase = ["dialog"]
+        clicks = []
+        runner.image = Mock(side_effect=lambda: (phase[0], runner.image.call_count))
+        runner.seven_ready = Mock(side_effect=lambda image: image[0] == "seven")
+        runner.hit = Mock(return_value=False)
+
+        def box(node, image):
+            page, frame = image
+            if page == "dialog" and node == "七日灵感讨论我再想想":
+                return (1070 + frame, 504, 90, 28)
+            if page == "gallery" and node == "七日分享返回按钮":
+                return (30, 31, 50, 58)
+            return None
+
+        def click(target):
+            clicks.append((now[0], target))
+            if len(clicks) == 2:
+                phase[0] = "gallery"
+            elif len(clicks) == 3:
+                phase[0] = "seven"
+
+        runner.box = Mock(side_effect=box)
+        runner.click = Mock(side_effect=click)
+        with self.clock(now)[0], self.clock(now)[1]:
+            runner.seven_back_until_ready()
+        self.assertEqual([target for _, target in clicks],
+                         [(1119, 518, 1, 1), (1122, 518, 1, 1), (55, 60, 1, 1)])
+        self.assertGreaterEqual(clicks[0][0], 0.5)
+        self.assertTrue(all(b[0] - a[0] >= 0.5 for a, b in zip(clicks, clicks[1:])))
+        self.assertFalse(any(node == "七日分享返回按钮" and image[0] == "dialog"
+                             for node, image in (call.args for call in runner.box.call_args_list)))
+
+    def test_discussion_dismissal_disappearing_during_transition_is_not_clicked_again(self):
+        runner = self.runner()
+        now = [0.0]
+        clicked = [False]
+        runner.image = Mock(side_effect=lambda: "seven" if now[0] >= 1 else
+                            "transition" if clicked[0] else "dialog")
+        runner.seven_ready = Mock(side_effect=lambda image: image == "seven")
+        runner.hit = Mock(return_value=False)
+        runner.box = Mock(side_effect=lambda node, image:
+                          (1073, 504, 90, 28) if image == "dialog"
+                          and node == "七日灵感讨论我再想想" else None)
+        runner.click = Mock(side_effect=lambda target: clicked.__setitem__(0, True))
+        with self.clock(now)[0], self.clock(now)[1]:
+            runner.seven_back_until_ready()
+        runner.click.assert_called_once_with((1118, 518, 1, 1))
+        self.assertLess(now[0], 1.5)
+
+    def test_discussion_dismissal_wait_and_return_share_one_deadline(self):
+        runner = self.runner()
+        now = [0.0]
+        runner.seven_choose_custom = Mock()
+
+        def button(node, **kwargs):
+            if node == "七日灵感讨论我再想想":
+                now[0] += 29
+
+        runner.seven_button_center = Mock(side_effect=button)
+        runner.image = Mock(return_value=object())
+        runner.seven_ready = Mock(return_value=False)
+        runner.hit = Mock(return_value=False)
+        runner.box = Mock(return_value=None)
+        runner.click = Mock()
+        with self.clock(now)[0], self.clock(now)[1], self.assertRaises(dream.DreamError):
+            runner.seven_discussion()
+        self.assertLess(now[0], 30.3)
+        runner.click.assert_not_called()
 
     def test_discussion_back_missing_arrow_has_one_deadline_and_does_not_blind_click(self):
         runner = self.runner()
@@ -160,27 +224,25 @@ class SevenTests(unittest.TestCase):
         self.assertLess(now[0], 30.3)
         runner.click.assert_not_called()
 
-    def test_finished_seven_checks_rewards_with_or_without_discussion(self):
-        for candidate in (None, ("全部完成", None, None)):
-            runner = self.runner()
-            runner.enter_seven = Mock()
-            runner.seven_current = Mock(return_value=candidate)
-            runner.seven_claim_rewards = Mock()
-            runner.seven()
-            runner.seven_claim_rewards.assert_called_once_with()
+    def test_first_card_completion_claims_rewards(self):
+        runner = self.runner()
+        runner.enter_seven = Mock()
+        runner.seven_current = Mock(return_value=("全部完成", None, None))
+        runner.seven_claim_rewards = Mock()
+        runner.seven()
+        runner.seven_claim_rewards.assert_called_once_with()
 
-    def test_discussion_is_recorded_only_after_return_and_completion_check(self):
+    def test_discussion_return_resumes_current_card_recognition(self):
         runner = self.runner()
         runner.enter_seven = Mock()
         runner.seven_open_task = Mock()
         runner.seven_discussion = Mock()
         runner.seven_make = Mock()
         runner.seven_claim_rewards = Mock()
-        observed = []
-        candidates = iter([("讨论", 0, (208, 642, 96, 32)), ("全部完成", None, None)])
-        runner.seven_current = Mock(side_effect=lambda done: observed.append(set(done)) or next(candidates))
+        runner.seven_current = Mock(side_effect=[("讨论", 0, (208, 642, 96, 32)),
+                                                ("全部完成", None, None)])
         runner.seven()
-        self.assertEqual(observed, [set(), {"讨论"}])
+        self.assertEqual(runner.seven_current.call_count, 2)
         runner.seven_discussion.assert_called_once_with()
         runner.seven_make.assert_not_called()
         runner.seven_claim_rewards.assert_called_once_with()
@@ -235,19 +297,19 @@ class SevenTests(unittest.TestCase):
         now = [0.0]
         time_patch, sleep_patch = self.clock(now)
         with time_patch, sleep_patch:
-            self.assertEqual(runner.seven_current(set()), ("全部完成", None, None))
+            self.assertEqual(runner.seven_current(), ("全部完成", None, None))
         self.assertEqual(runner.seven_card_complete.call_count, 2)
         runner.seven_titles.assert_not_called()
 
-    def test_later_complete_card_does_not_end_all_tasks_or_repeat_mannequin(self):
+    def test_later_complete_card_does_not_end_all_tasks(self):
         runner = self.runner()
         runner.seven_titles = Mock(return_value=[(0, "完成1次灵感拾趣"), (3, "进行1次人台换衣")])
         runner.seven_card_complete = Mock(side_effect=lambda image, column: column == 3)
-        self.assertEqual(runner.seven_candidate(object(), set()), ("拾趣", 0, None))
+        self.assertEqual(runner.seven_candidate(object()), ("拾趣", 0, None))
         runner.seven_card_complete.return_value = False
         runner.seven_card_complete.side_effect = None
-        self.assertEqual(runner.seven_candidate(object(), {"拾趣"}), ("换衣", 3, None))
-        self.assertIsNone(runner.seven_candidate(object(), {"换衣", "拾趣"}))
+        runner.seven_titles.return_value = [(0, "未知任务"), (3, "进行1次人台换衣")]
+        self.assertEqual(runner.seven_candidate(object()), ("换衣", 3, None))
 
     def test_mannequin_first_name_is_required_without_binding_clothes_name(self):
         runner = self.runner()
@@ -349,17 +411,18 @@ class SevenTests(unittest.TestCase):
         runner.seven_share.assert_not_called()
         self.assertEqual(runner.seven_current.call_count, 2)
 
-    def test_card_animation_must_settle_before_deciding_no_task(self):
+    def test_card_animation_must_settle_before_selecting_task(self):
         runner = self.runner()
         runner.image = Mock(return_value=object())
         runner.seven_ready = Mock(return_value=True)
         runner.seven_titles = Mock(side_effect=[[], [(0, "分享1次定制成衣")],
                                                [(0, "分享1次定制成衣")], [(0, "分享1次定制成衣")]])
-        runner.seven_candidate = Mock(return_value=None)
+        candidate = ("分享", 0, (205, 642, 102, 34))
+        runner.seven_candidate = Mock(return_value=candidate)
         now = [0.0]
         time_patch, sleep_patch = self.clock(now)
         with time_patch, sleep_patch:
-            self.assertIsNone(runner.seven_current(set()))
+            self.assertEqual(runner.seven_current(), candidate)
         self.assertEqual(runner.image.call_count, 4)
         runner.context.run_action_direct.assert_not_called()
 
@@ -371,9 +434,37 @@ class SevenTests(unittest.TestCase):
         now = [0.0]
         time_patch, sleep_patch = self.clock(now)
         with time_patch, sleep_patch, self.assertRaises(dream.DreamError):
-            runner.seven_current(set())
+            runner.seven_current()
         runner.context.run_action_direct.assert_not_called()
         self.assertLess(now[0], 30.3)
+
+    def test_unhandled_cards_without_first_checkmark_do_not_finish_or_claim_rewards(self):
+        runner = self.runner()
+        runner.enter_seven = Mock()
+        runner.seven_claim_rewards = Mock()
+        runner.image = Mock(return_value=object())
+        runner.seven_ready = Mock(return_value=True)
+        runner.seven_card_complete = Mock(return_value=False)
+        runner.seven_titles = Mock(return_value=[(0, "未知任务")])
+        now = [0.0]
+        with self.clock(now)[0], self.clock(now)[1], self.assertRaises(dream.DreamError):
+            runner.seven()
+        runner.seven_claim_rewards.assert_not_called()
+        runner.context.run_action_direct.assert_not_called()
+        self.assertLess(now[0], 30.3)
+
+    def test_missing_candidate_retries_until_a_current_task_is_recognized(self):
+        runner = self.runner()
+        runner.image = Mock(return_value=object())
+        runner.seven_ready = Mock(return_value=True)
+        runner.seven_card_complete = Mock(return_value=False)
+        runner.seven_titles = Mock(return_value=[(0, "分享1次定制成衣")])
+        candidate = ("分享", 0, (205, 642, 102, 34))
+        runner.seven_candidate = Mock(side_effect=[None, candidate, candidate])
+        now = [0.0]
+        with self.clock(now)[0], self.clock(now)[1]:
+            self.assertEqual(runner.seven_current(), candidate)
+        self.assertEqual(runner.seven_candidate.call_count, 3)
 
     def test_open_task_retries_only_while_same_task_is_visible(self):
         runner = self.runner()
@@ -499,7 +590,7 @@ class SevenTests(unittest.TestCase):
         runner.click = Mock()
         with self.clock(now)[0], self.clock(now)[1]:
             runner.seven_choose_custom("连衣裙")
-        runner.click.assert_called_once_with((1085, 350, 97, 24))
+        runner.click.assert_called_once_with((1097, 362, 1, 1))
         self.assertEqual(runner.image.call_count, 6)
 
     def test_destination_requires_consecutive_frames_and_no_gallery(self):
@@ -523,7 +614,7 @@ class SevenTests(unittest.TestCase):
         runner.click = Mock()
         with self.clock(now)[0], self.clock(now)[1]:
             runner.seven_choose_custom("上衣")
-        runner.click.assert_called_once_with((1085, 350, 97, 24))
+        runner.click.assert_called_once_with((1097, 362, 1, 1))
 
     def test_custom_slow_recognition_cannot_click_after_deadline(self):
         runner = self.runner()
@@ -713,23 +804,35 @@ class SevenTests(unittest.TestCase):
             self.assertEqual(context.run_action_direct.call_args.args[0], "InputText")
             self.assertEqual(context.run_action_direct.call_args.args[1].input_text, "临时")
 
-    def test_each_return_refreshes_card_positions_and_none_ends_without_swipe(self):
+    def test_each_return_uses_visible_cards_in_any_order_including_repeated_categories(self):
         runner = self.runner()
         runner.enter_seven = Mock()
         runner.seven_claim_rewards = Mock()
-        runner.seven_current = Mock(side_effect=[
-            ("连衣裙", 0, (205, 642, 102, 34)),
-            ("上衣", 0, (205, 642, 102, 34)),
-            ("下装", 0, (205, 642, 102, 34)), None,
-        ])
-        observations = []
-        results = iter(runner.seven_current.side_effect)
-        runner.seven_current.side_effect = lambda completed: observations.append(set(completed)) or next(results)
+        titles = ["进行1次灵感讨论", "分享1次定制成衣", "进行1次人台换衣", "制作1件上衣",
+                  "进行1次灵感讨论", "完成1次灵感拾趣", "制作1件下装", "制作1件连衣裙"]
+        page = [0]
+        observed = []
+        runner.image = Mock(side_effect=lambda: page[0])
+        runner.seven_ready = Mock(return_value=True)
+        runner.seven_card_complete = Mock(side_effect=lambda image, column: image == len(titles) and column == 0)
+        runner.seven_titles = Mock(side_effect=lambda image: [(image % 4, titles[image])])
+        runner.box = Mock(return_value=(205, 642, 102, 34))
         runner.seven_open_task = Mock()
-        runner.seven_make = Mock()
-        runner.seven()
-        self.assertEqual(observations, [set(), {"连衣裙"}, {"连衣裙", "上衣"}, {"连衣裙", "上衣", "下装"}])
-        self.assertEqual([call.args[0] for call in runner.seven_make.call_args_list], ["连衣裙", "上衣", "下装"])
+
+        def advance(category):
+            observed.append(category)
+            page[0] += 1
+
+        runner.seven_make = Mock(side_effect=advance)
+        runner.seven_discussion = Mock(side_effect=lambda: advance("讨论"))
+        runner.seven_share = Mock(side_effect=lambda: advance("分享"))
+        runner.seven_change_mannequin = Mock(side_effect=lambda: advance("换衣"))
+        runner.seven_inspiration = Mock(side_effect=lambda: advance("拾趣"))
+        now = [0.0]
+        with self.clock(now)[0], self.clock(now)[1]:
+            runner.seven()
+        self.assertEqual(observed, ["讨论", "分享", "换衣", "上衣", "讨论", "拾趣", "下装", "连衣裙"])
+        runner.seven_claim_rewards.assert_called_once_with()
         runner.context.run_action_direct.assert_not_called()
 
     def test_creation_failure_stops_before_next_task(self):
@@ -903,7 +1006,7 @@ class SevenTests(unittest.TestCase):
         runner.enter_seven = Mock()
         runner.seven_claim_rewards = Mock()
         runner.seven_current = Mock(side_effect=[("分享", 0, (205, 642, 102, 34)),
-                                                ("下装", 0, (205, 642, 102, 34)), None])
+                                                ("下装", 0, (205, 642, 102, 34)), ("全部完成", None, None)])
         runner.seven_open_task = Mock()
         runner.seven_share = Mock()
         runner.seven_make = Mock()

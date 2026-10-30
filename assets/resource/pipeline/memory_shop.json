@@ -89,13 +89,7 @@
         "post_delay": 1000
     },
     "商城检查限时回忆小铺商品": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [0, 448, 720, 790],
-                "expected": ["回忆小铺", "刷新卡", "换一批", "剩余"]
-            }
-        },
+        "recognition": "DirectHit",
         "action": {
             "type": "Custom",
             "param": {
@@ -115,13 +109,7 @@
         "next": ["商城检查限时回忆小铺商品"]
     },
     "商城检查回忆小铺商品": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [0, 448, 720, 790],
-                "expected": ["回忆小铺", "刷新卡", "换一批", "剩余"]
-            }
-        },
+        "recognition": "DirectHit",
         "action": {
             "type": "Custom",
             "param": {

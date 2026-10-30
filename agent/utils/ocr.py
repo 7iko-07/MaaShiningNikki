@@ -84,7 +84,7 @@ def read_ocr_text(context, image, node_name, roi, expected, log_prefix="ocr"):
         )
         return extract_ocr_text(result)
     except Exception as e:
-        logger.warning(f"{log_prefix}: OCR error: {e}")
+        logger.debug(f"{log_prefix}: OCR error: {e}")
         return ""
 
 
@@ -128,7 +128,7 @@ def read_number_from_controller(
             return number
 
         if attempt < retry - 1:
-            logger.warning(
+            logger.debug(
                 f"{log_prefix}: failed to OCR {retry_label} on "
                 f"attempt {attempt + 1}/{retry}"
             )

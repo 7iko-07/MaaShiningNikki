@@ -39,7 +39,8 @@ class ArenaReturnToCompareAction(CustomAction):
                         return False
                     detail = context.run_recognition(node, image)
                     if detail is None:
-                        logger.error(f"竞技场返回：识别失败：{node}")
+                        logger.debug(f"竞技场返回：识别失败：{node}")
+                        logger.error("竞技场：无法确认返回页面")
                         return False
                     if context.tasker.stopping or time.monotonic() >= deadline:
                         return False
@@ -51,20 +52,24 @@ class ArenaReturnToCompareAction(CustomAction):
                     if time.monotonic() >= next_click:
                         box = detail.box
                         if box is None or box.w <= 0 or box.h <= 0:
-                            logger.error(f"竞技场返回：点击框无效：{node}")
+                            logger.debug(f"竞技场返回：点击框无效：{node}")
+                            logger.error("竞技场：无法定位返回按钮")
                             return False
                         if not controller.post_click(
                             int(box.x + box.w / 2), int(box.y + box.h / 2)
                         ).wait().succeeded:
-                            logger.error(f"竞技场返回：点击失败：{node}")
+                            logger.debug(f"竞技场返回：点击失败：{node}")
+                            logger.error("竞技场：点击返回按钮失败")
                             return False
                         next_click = time.monotonic() + 1
                     break
                 time.sleep(min(0.3, max(0, deadline - time.monotonic())))
         except Exception as exc:
-            logger.error(f"竞技场返回失败：{exc}")
+            logger.debug(f"竞技场返回失败：{exc}")
+            logger.error("竞技场：返回搭配页面失败")
             return False
-        logger.error("竞技场返回未完成：任务停止或 30 秒内未识别到我的搭配")
+        logger.debug("竞技场返回未完成：任务停止或 30 秒内未识别到我的搭配")
+        logger.error("竞技场：未能及时返回搭配页面，任务已停止")
         return False
 
 
@@ -85,7 +90,8 @@ class ArenaCloseRankPopupAction(CustomAction):
         deadline = min(total_deadline, started + timeout)
         current_node = argv.node_name
         if current_node not in self.POPUP_NODES:
-            logger.error(f"arena_close_rank_popup: unknown popup {current_node}")
+            logger.debug(f"arena_close_rank_popup: unknown popup {current_node}")
+            logger.error("竞技场：无法确认排名弹窗")
             return False
         next_click = 0.0
         clicks = dict.fromkeys(self.POPUP_NODES, 0)
@@ -95,13 +101,15 @@ class ArenaCloseRankPopupAction(CustomAction):
                 if context.tasker.stopping:
                     return False
                 if not controller.post_screencap().wait().succeeded:
-                    logger.error("arena_close_rank_popup: screenshot failed")
+                    logger.debug("arena_close_rank_popup: screenshot failed")
+                    logger.error("竞技场：获取画面失败")
                     return False
                 image = controller.cached_image
                 # Recognition only: never recursively execute this action/next.
                 detail = context.run_recognition(current_node, image)
                 if detail is None:
-                    logger.error("arena_close_rank_popup: recognition failed to start")
+                    logger.debug("arena_close_rank_popup: recognition failed to start")
+                    logger.error("竞技场：无法识别排名弹窗")
                     return False
                 if context.tasker.stopping or time.monotonic() >= deadline:
                     return False
@@ -110,12 +118,14 @@ class ArenaCloseRankPopupAction(CustomAction):
                     if clicks[current_node] < max_clicks and time.monotonic() >= next_click:
                         box = detail.box
                         if box is None or box.w <= 0 or box.h <= 0:
-                            logger.error("arena_close_rank_popup: invalid text box")
+                            logger.debug("arena_close_rank_popup: invalid text box")
+                            logger.error("竞技场：无法定位弹窗按钮")
                             return False
                         if not controller.post_click(
                             int(box.x + box.w / 2), int(box.y + box.h / 2)
                         ).wait().succeeded:
-                            logger.error("arena_close_rank_popup: click failed")
+                            logger.debug("arena_close_rank_popup: click failed")
+                            logger.error("竞技场：关闭排名弹窗失败")
                             return False
                         clicks[current_node] += 1
                         next_click = time.monotonic() + 1.0
@@ -126,7 +136,8 @@ class ArenaCloseRankPopupAction(CustomAction):
                         other_node = next(node for node in self.POPUP_NODES if node != current_node)
                         other = context.run_recognition(other_node, image)
                         if other is None:
-                            logger.error(f"arena_close_rank_popup: recognition failed to start: {other_node}")
+                            logger.debug(f"arena_close_rank_popup: recognition failed to start: {other_node}")
+                            logger.error("竞技场：无法识别排名弹窗")
                             return False
                         if context.tasker.stopping or time.monotonic() >= deadline:
                             return False
@@ -142,7 +153,8 @@ class ArenaCloseRankPopupAction(CustomAction):
                         for exit_node in ("竞技场挑战奖励页面", "竞技场挑战返回页面"):
                             ready = context.run_recognition(exit_node, image)
                             if ready is None:
-                                logger.error(f"arena_close_rank_popup: recognition failed to start: {exit_node}")
+                                logger.debug(f"arena_close_rank_popup: recognition failed to start: {exit_node}")
+                                logger.error("竞技场：无法确认弹窗已关闭")
                                 return False
                             if context.tasker.stopping or time.monotonic() >= deadline:
                                 return False
@@ -152,9 +164,11 @@ class ArenaCloseRankPopupAction(CustomAction):
                 # Exhausting clicks does not end the wait: the animation can finish itself.
                 time.sleep(min(0.3, max(0, deadline - time.monotonic())))
         except Exception as exc:
-            logger.error(f"arena_close_rank_popup: failed: {exc}")
+            logger.debug(f"arena_close_rank_popup: failed: {exc}")
+            logger.error("竞技场：关闭排名弹窗失败")
             return False
-        logger.error(f"arena_close_rank_popup: timeout, clicks={clicks}, absent_count={absent_count}")
+        logger.debug(f"arena_close_rank_popup: timeout, clicks={clicks}, absent_count={absent_count}")
+        logger.error("竞技场：关闭排名弹窗超时")
         return False
 
 
@@ -170,7 +184,8 @@ class ArenaCompareAction(CustomAction):
         try:
             return self._run(context, argv, counts)
         except Exception as exc:
-            logger.error(f"arena_compare: failed: {exc}")
+            logger.debug(f"arena_compare: failed: {exc}")
+            logger.error("竞技场：挑战执行异常")
             return False
         finally:
             logger.info(
@@ -207,26 +222,32 @@ class ArenaCompareAction(CustomAction):
         )
 
         if not area_a or not area_b_list or not refresh_roi:
-            logger.error("arena_compare: missing required params (area_a, area_b, refresh)")
+            logger.debug("arena_compare: missing required params (area_a, area_b, refresh)")
+            logger.error("竞技场：挑战配置不完整")
             return False
         if not self._valid_roi(area_a):
-            logger.error("arena_compare: invalid area_a")
+            logger.debug("arena_compare: invalid area_a")
+            logger.error("竞技场：自身战力识别区域配置无效")
             return False
         if not self._valid_roi(refresh_roi):
-            logger.error("arena_compare: invalid refresh")
+            logger.debug("arena_compare: invalid refresh")
+            logger.error("竞技场：刷新按钮配置无效")
             return False
         if not self._valid_roi_list(area_b_list):
-            logger.error("arena_compare: invalid area_b")
+            logger.debug("arena_compare: invalid area_b")
+            logger.error("竞技场：对手识别区域配置无效")
             return False
         if not self._valid_roi(remaining_count_roi):
-            logger.error("arena_compare: invalid remaining_count_roi")
+            logger.debug("arena_compare: invalid remaining_count_roi")
+            logger.error("竞技场：剩余次数识别区域配置无效")
             return False
         controller = context.tasker.controller
         challenge_times = self._read_challenge_times(context, controller, remaining_count_roi)
         if challenge_times is None:
             return False
         if challenge_times <= 0:
-            logger.info(f"arena_compare: no remaining challenge times, challenge_times={challenge_times}")
+            logger.debug(f"arena_compare: no remaining challenge times, challenge_times={challenge_times}")
+            logger.info("本次挑战次数已用完")
             return context.override_next(argv.node_name, [])
 
         for _ in range(challenge_times):
@@ -253,7 +274,8 @@ class ArenaCompareAction(CustomAction):
                 return False
 
             if not self._run_result_flow(context, result_node):
-                logger.warning(f"arena_compare: challenge result flow {result_node!r} failed")
+                logger.debug(f"arena_compare: challenge result flow {result_node!r} failed")
+                logger.warning("竞技场：未能确认挑战结果")
                 return False
 
         return context.override_next(argv.node_name, [])
@@ -266,7 +288,8 @@ class ArenaCompareAction(CustomAction):
             if context.tasker.stopping:
                 return None
             if not controller.post_screencap().wait().succeeded:
-                logger.error("arena_compare: remaining count screenshot failed")
+                logger.debug("arena_compare: remaining count screenshot failed")
+                logger.error("竞技场：获取画面失败")
                 return None
             remaining = read_ocr_number(
                 context, controller.cached_image, "_arena_ocr_remaining_count",
@@ -277,7 +300,8 @@ class ArenaCompareAction(CustomAction):
                 return remaining
             if attempt < 2:
                 time.sleep(1)
-        logger.error("arena_compare: remaining count OCR failed after 3 attempts")
+        logger.debug("arena_compare: remaining count OCR failed after 3 attempts")
+        logger.error("竞技场：无法识别剩余挑战次数")
         return None
 
     def _challenge_once(
@@ -316,14 +340,16 @@ class ArenaCompareAction(CustomAction):
                 player_power_retry_delay,
             )
             if player_power is None:
-                logger.warning("arena_compare: failed to OCR player power after retries")
+                logger.debug("arena_compare: failed to OCR player power after retries")
+                logger.warning("竞技场：无法识别自身战力")
                 return ChallengeOutcome.FAILED
 
             ok_handled = False
             for i, area_b in enumerate(area_b_list):
                 opp_power = self._read_opponent_power(context, controller, img, area_b)
                 if opp_power is None:
-                    logger.error(f"arena_compare: opponent {i} OCR failed after retries")
+                    logger.debug(f"arena_compare: opponent {i} OCR failed after retries")
+                    logger.error("竞技场：无法识别对手战力")
                     return ChallengeOutcome.FAILED
                 force_rightmost = (
                     challenge_after_refresh_limit
@@ -337,7 +363,8 @@ class ArenaCompareAction(CustomAction):
                         logger.info("竞技场已进入结算期，不再发起挑战")
                         return ChallengeOutcome.STOPPED
                     if not self._click_opponent(controller, area_b):
-                        logger.error("arena_compare: opponent click failed")
+                        logger.debug("arena_compare: opponent click failed")
+                        logger.error("竞技场：选择对手失败")
                         return ChallengeOutcome.FAILED
                     popup = self._handle_optional_ok_popup(context, controller, ok_node, post_challenge_delay)
                     if popup is PopupOutcome.FAILED:
@@ -346,9 +373,10 @@ class ArenaCompareAction(CustomAction):
                         ok_retry_count += 1
                         ok_handled = True
                         if ok_retry_count > ok_retry_limit:
-                            logger.warning(
+                            logger.debug(
                                 f"arena_compare: OK popup appeared more than {ok_retry_limit} times"
                             )
+                            logger.warning("竞技场：提示弹窗反复出现，停止挑战")
                             return ChallengeOutcome.FAILED
                         time.sleep(player_power_retry_delay)
                         break
@@ -369,12 +397,14 @@ class ArenaCompareAction(CustomAction):
                     logger.info("竞技场已进入结算期，不再刷新对手")
                     return ChallengeOutcome.STOPPED
                 if not self._click_roi(controller, refresh_roi):
-                    logger.error("arena_compare: refresh click failed")
+                    logger.debug("arena_compare: refresh click failed")
+                    logger.error("竞技场：刷新对手失败")
                     return ChallengeOutcome.FAILED
                 refresh_count += 1
                 time.sleep(3)
             else:
-                logger.warning(f"arena_compare: no weaker opponent after {refresh_count} refreshes")
+                logger.debug(f"arena_compare: no weaker opponent after {refresh_count} refreshes")
+                logger.warning(f"竞技场：已刷新 {refresh_count} 次，仍未找到较弱对手")
                 return ChallengeOutcome.STOPPED
 
         return ChallengeOutcome.FAILED
@@ -409,7 +439,8 @@ class ArenaCompareAction(CustomAction):
             if context.tasker.stopping:
                 return None, last_img
             if not controller.post_screencap().wait().succeeded:
-                logger.error("arena_compare: player power screenshot failed")
+                logger.debug("arena_compare: player power screenshot failed")
+                logger.error("竞技场：获取画面失败")
                 return None, last_img
             last_img = controller.cached_image
 
@@ -425,7 +456,7 @@ class ArenaCompareAction(CustomAction):
                 return player_power, last_img
 
             if attempt < retry - 1:
-                logger.warning(
+                logger.debug(
                     f"arena_compare: failed to OCR player power on "
                     f"attempt {attempt + 1}/{retry}"
                 )
@@ -446,12 +477,14 @@ class ArenaCompareAction(CustomAction):
 
             result = context.run_task(ok_node)
             if not (result and result.status.succeeded):
-                logger.error(f"arena_compare: popup task {ok_node!r} failed")
+                logger.debug(f"arena_compare: popup task {ok_node!r} failed")
+                logger.error("竞技场：关闭提示弹窗失败")
                 return PopupOutcome.FAILED
             logger.debug(f"arena_compare: handled popup by task {ok_node!r}")
             return PopupOutcome.HANDLED
         except Exception as e:
-            logger.warning(f"arena_compare: optional OK popup task {ok_node!r} failed: {e}")
+            logger.debug(f"arena_compare: optional OK popup task {ok_node!r} failed: {e}")
+            logger.warning("竞技场：关闭提示弹窗异常")
             return PopupOutcome.FAILED
 
     def _run_result_flow(self, context, result_node):
@@ -459,7 +492,8 @@ class ArenaCompareAction(CustomAction):
             result = context.run_task(result_node)
             return bool(result and result.status.succeeded)
         except Exception as e:
-            logger.warning(f"arena_compare: result flow {result_node!r} failed: {e}")
+            logger.debug(f"arena_compare: result flow {result_node!r} failed: {e}")
+            logger.warning("竞技场：确认挑战结果时发生异常")
             return False
 
     def _click_opponent(self, controller, roi):
