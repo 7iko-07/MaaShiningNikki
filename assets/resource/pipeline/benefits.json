@@ -48,9 +48,28 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_wait_freezes": 500,
-		"next": ["点击感叹号所在位置", "点击活跃度感叹号所在位置", "退出签到"],
+		"next": ["等待签到页面就绪"],
 		"timeout": 2000
+    },
+    "等待签到页面就绪": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "benefits_wait_ready"
+            }
+        },
+        "rate_limit": 300,
+        "timeout": 30000,
+        "next": ["点击感叹号所在位置", "点击活跃度感叹号所在位置", "退出签到"]
+    },
+    "签到页面就绪": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 590, 550, 690],
+                "expected": ["月卡", "特权卡"]
+            }
+        }
     },
     "点击感叹号所在位置": {
         "recognition": {

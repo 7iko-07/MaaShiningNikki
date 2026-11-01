@@ -37,36 +37,41 @@ class RotationGuardTests(WithoutExitPopupTests):
         self.context.run_action.side_effect = query
         with patch.object(navigation.time, "monotonic", side_effect=lambda: self.now), \
              patch.object(navigation.time, "sleep", side_effect=self.advance):
-            result = self.action._wait_landscape(self.context, deadline)
+            result = self.action._wait_screen_direction(self.context, deadline)
         self.context.tasker.controller.post_screencap.assert_not_called()
         self.context.tasker.controller.post_connection.assert_not_called()
         self.context.run_action_direct.assert_not_called()
         return result
 
     def test_waits_for_one_landscape_orientation_half_second(self):
-        self.assertTrue(self.run_guard([0, 0, 1]))
+        self.assertEqual(self.run_guard([0, 0, 1]), 1)
         self.assertGreaterEqual(self.now, 0.85)
         self.assertLess(self.now, 1)
 
     def test_portrait_resets_stability(self):
-        self.assertTrue(self.run_guard([1, 1, 1, 0, 1]))
+        self.assertEqual(self.run_guard([1, 1, 1, 0, 1]), 1)
         self.assertGreaterEqual(self.now, 1.15)
 
     def test_change_between_landscape_directions_resets_stability(self):
-        self.assertTrue(self.run_guard([1, 1, 1, 3]))
+        self.assertEqual(self.run_guard([1, 1, 1, 3]), 3)
         self.assertGreaterEqual(self.now, 1)
 
-    def test_portrait_times_out_without_resuming_capture(self):
-        self.assertFalse(self.run_guard([0]))
+    def test_stable_portrait_allows_fresh_homepage_check(self):
+        self.assertEqual(self.run_guard([0]), 0)
+        self.assertGreaterEqual(self.now, .5)
+        self.assertLess(self.now, 1)
+
+    def test_unstable_direction_times_out_without_resuming_capture(self):
+        self.assertIsNone(self.run_guard([0, 1] * 60))
         self.assertLessEqual(self.now, 12.05)
 
     def test_click_deadline_is_shared_and_cannot_return_late_success(self):
-        self.assertFalse(self.run_guard([1], deadline=0.45))
+        self.assertIsNone(self.run_guard([1], deadline=0.45))
         self.assertLessEqual(self.now, 0.5)
 
     def test_cancellation_does_not_query(self):
         self.context.tasker.stopping = True
-        self.assertFalse(self.action._wait_landscape(self.context, 15))
+        self.assertIsNone(self.action._wait_screen_direction(self.context, 15))
         self.context.run_action.assert_not_called()
 
     def test_failed_missing_ambiguous_and_exception_query_stop(self):
@@ -76,11 +81,82 @@ class RotationGuardTests(WithoutExitPopupTests):
         for result in cases:
             with self.subTest(result=result):
                 self.context.run_action.return_value = result
-                self.assertFalse(self.action._wait_landscape(self.context, navigation.time.monotonic() + 15))
+                self.assertIsNone(self.action._wait_screen_direction(self.context, navigation.time.monotonic() + 15))
         self.context.run_action.side_effect = RuntimeError("shell failed")
-        self.assertFalse(self.action._wait_landscape(self.context, navigation.time.monotonic() + 15))
+        self.assertIsNone(self.action._wait_screen_direction(self.context, navigation.time.monotonic() + 15))
 
-    def test_guard_runs_after_click_and_before_next_capture(self):
+    def simulate_entry(self, arrive_after=None, source=lambda t: True,
+                       button=lambda t: True, loading=lambda t: False):
+        clicks, captures = [], []
+        controller = self.context.tasker.controller
+        controller.post_connection.return_value.wait.return_value = SimpleNamespace(succeeded=True)
+        controller.post_screencap.return_value.wait.return_value = SimpleNamespace(succeeded=True)
+        controller.cached_image = SimpleNamespace(shape=(720, 1280, 3))
+        self.context.run_action.side_effect = lambda *a, **kw: self.shell(
+            1 if arrive_after is not None and len(clicks) >= arrive_after else 0)
+        self.context.run_recognition.side_effect = lambda name, image: SimpleNamespace(
+            hit=button(image), box=SimpleNamespace(x=int(image * 100), y=20, w=30, h=40))
+
+        def capture(ctx):
+            captures.append(self.now)
+            return self.now
+
+        def click(kind, params):
+            clicks.append((self.now, params.target))
+            return SimpleNamespace(success=True)
+
+        def recognize(ctx, image, node):
+            return controller.post_connection.called if node == "dream" else source(image)
+
+        self.context.run_action_direct.side_effect = click
+        with patch.object(navigation.time, "monotonic", side_effect=lambda: self.now), \
+             patch.object(navigation.time, "sleep", side_effect=self.advance), \
+             patch.object(navigation.PageNavigateAction, "_screencap", side_effect=capture), \
+             patch.object(navigation.PageNavigateAction, "_recognize", side_effect=recognize), \
+             patch.object(navigation.PageNavigateAction, "_intermediate_reason",
+                          side_effect=lambda ctx, image, nodes: "loading" if loading(image) else ""):
+            ok = self.action.run(self.context, SimpleNamespace(
+                node_name="entry", custom_action_param=json.dumps({
+                    "source_nodes": ["home"], "target_nodes": ["dream"], "wait_landscape": True})))
+        return ok, clicks, captures
+
+    def test_failed_first_entry_retries_each_second_with_fresh_box(self):
+        ok, clicks, captures = self.simulate_entry(arrive_after=2)
+        self.assertTrue(ok)
+        self.assertEqual(len(clicks), 2)
+        self.assertAlmostEqual(clicks[1][0] - clicks[0][0], 1)
+        self.assertNotEqual(clicks[0][1], clicks[1][1])
+        self.assertEqual(len(captures), 3)
+        self.assertLess(self.now, 15)
+        self.context.tasker.controller.post_connection.assert_called_once()
+
+    def test_unchanged_home_has_three_clicks_and_one_fifteen_second_budget(self):
+        ok, clicks, captures = self.simulate_entry()
+        self.assertFalse(ok)
+        self.assertEqual(len(clicks), 3)
+        for i in range(1, 3):
+            self.assertAlmostEqual(clicks[i][0] - clicks[i - 1][0], 1)
+        self.assertEqual(len(captures), 15)
+        self.assertEqual(self.now, 15)
+        self.context.tasker.controller.post_connection.assert_not_called()
+
+    def test_loading_prevents_retry(self):
+        ok, clicks, _ = self.simulate_entry(loading=lambda t: t >= 1)
+        self.assertFalse(ok)
+        self.assertEqual(len(clicks), 1)
+        self.assertEqual(self.now, 15)
+
+    def test_leaving_homepage_prevents_retry(self):
+        ok, clicks, _ = self.simulate_entry(source=lambda t: t < 1)
+        self.assertFalse(ok)
+        self.assertEqual(len(clicks), 1)
+
+    def test_missing_entry_prevents_retry(self):
+        ok, clicks, _ = self.simulate_entry(button=lambda t: t < 1)
+        self.assertFalse(ok)
+        self.assertEqual(len(clicks), 1)
+
+    def test_direction_guard_precedes_capture_and_landscape_reconnect(self):
         events = []
         argv = SimpleNamespace(node_name="entry", custom_action_param=json.dumps({
             "source_nodes": ["home"], "target_nodes": ["dream"], "wait_landscape": True}))
@@ -89,7 +165,7 @@ class RotationGuardTests(WithoutExitPopupTests):
 
         def screenshot(*args):
             events.append("capture")
-            return "dream" if "guard" in events else "home"
+            return "dream" if "refresh" in events else "home"
 
         def click(*args):
             events.append("click")
@@ -97,7 +173,7 @@ class RotationGuardTests(WithoutExitPopupTests):
 
         def guard(*args):
             events.append("guard")
-            return True
+            return 1 if "click" in events else 0
 
         def refresh(*args):
             events.append("refresh")
@@ -107,10 +183,10 @@ class RotationGuardTests(WithoutExitPopupTests):
         with patch.object(navigation.PageNavigateAction, "_screencap", side_effect=screenshot), \
              patch.object(navigation.PageNavigateAction, "_recognize", side_effect=lambda ctx, image, node: image == node), \
              patch.object(navigation.PageNavigateAction, "_intermediate_reason", return_value=""), \
-             patch.object(self.action, "_wait_landscape", side_effect=guard), \
+             patch.object(self.action, "_wait_screen_direction", side_effect=guard), \
              patch.object(self.action, "_refresh_landscape", side_effect=refresh):
             self.assertTrue(self.action.run(self.context, argv))
-        self.assertEqual(events, ["capture", "click", "guard", "refresh", "capture"])
+        self.assertEqual(events, ["guard", "capture", "click", "guard", "refresh", "capture"])
 
     def test_refresh_reconnects_before_capturing_new_dimensions(self):
         events = []
@@ -129,7 +205,7 @@ class RotationGuardTests(WithoutExitPopupTests):
         self.assertFalse(self.action._refresh_landscape(self.context, navigation.time.monotonic() + 15))
         controller.post_screencap.assert_not_called()
 
-    def test_entry_retry_does_not_repeat_landscape_reconnect(self):
+    def test_landscape_arrival_does_not_repeat_entry_or_reconnect(self):
         argv = SimpleNamespace(node_name="entry", custom_action_param=json.dumps({
             "source_nodes": ["home"], "target_nodes": ["dream"], "wait_landscape": True}))
         self.context.run_recognition.return_value = SimpleNamespace(
@@ -140,11 +216,11 @@ class RotationGuardTests(WithoutExitPopupTests):
              patch.object(navigation.PageNavigateAction, "_screencap", return_value=object()), \
              patch.object(navigation.PageNavigateAction, "_recognize", side_effect=lambda ctx, image, node: node == "home" or self.now >= 2), \
              patch.object(navigation.PageNavigateAction, "_intermediate_reason", return_value=""), \
-             patch.object(self.action, "_wait_landscape", return_value=True) as guard, \
+             patch.object(self.action, "_wait_screen_direction", side_effect=[0, 1]) as guard, \
              patch.object(self.action, "_refresh_landscape", return_value=True) as refresh:
             self.assertTrue(self.action.run(self.context, argv))
-        self.assertEqual(self.context.run_action_direct.call_count, 2)
-        guard.assert_called_once()
+        self.assertEqual(self.context.run_action_direct.call_count, 1)
+        self.assertEqual(guard.call_count, 2)
         refresh.assert_called_once()
 
     def test_failed_or_portrait_capture_cannot_pass_refresh(self):
@@ -189,7 +265,7 @@ class RotationGuardTests(WithoutExitPopupTests):
         with patch.object(navigation.PageNavigateAction, "_screencap", return_value="home") as cap, \
              patch.object(navigation.PageNavigateAction, "_recognize", side_effect=lambda ctx, image, node: node == "home"), \
              patch.object(navigation.PageNavigateAction, "_intermediate_reason", return_value=""), \
-             patch.object(self.action, "_wait_landscape", return_value=False):
+             patch.object(self.action, "_wait_screen_direction", side_effect=[0, None]):
             self.assertFalse(self.action.run(self.context, argv))
         cap.assert_called_once()
         self.context.run_action_direct.assert_called_once()

@@ -101,12 +101,17 @@ DEFAULT_ALIASES = {
 }
 
 DEFAULT_WAIT_RECOGNITIONS = ["在加载页面", "在接受投稿页面", "导航在空白页面"]
-DEFAULT_FALLBACK_STEPS = ["点击返回", "点击体力用尽确定", "主页点击esc", "点击OK-竞技场", "点击esc"]
+PLAYER_CARD_NODE = "玩家名片页面点击空白"
+DEFAULT_FALLBACK_STEPS = [PLAYER_CARD_NODE, "点击返回", "点击体力用尽确定", "主页点击esc", "点击OK-竞技场", "点击esc"]
 DEFAULT_DETECTION_HUBS = ["主页面", "独自", "设计中心", "结伴"]
 EXIT_CONFIRM_NODE = "关闭退出游戏确认弹窗"
 
 
 class ExitConfirmError(RuntimeError):
+    pass
+
+
+class PlayerCardRecoveryError(RuntimeError):
     pass
 
 
@@ -119,7 +124,7 @@ class PageNavigateAction(CustomAction):
     ) -> bool:
         try:
             return self._navigate(context, argv)
-        except ExitConfirmError as exc:
+        except (ExitConfirmError, PlayerCardRecoveryError) as exc:
             logger.debug(f"page_navigate: {exc}")
             logger.error("页面切换失败")
             return False
@@ -315,6 +320,8 @@ class PageNavigateAction(CustomAction):
         for task_name in fallback_steps:
             if context.tasker.stopping:
                 return False
+            if task_name == PLAYER_CARD_NODE and "导航在名片页面" in (target_nodes or []):
+                continue
             if task_name == "点击返回":
                 result = context.run_recognition(task_name, image)
                 if result is None or not result.hit:
@@ -351,6 +358,8 @@ class PageNavigateAction(CustomAction):
             logger.debug(f"page_navigate: running fallback step {task_name!r}")
             if self._run_task(context, task_name):
                 return True
+            if task_name == PLAYER_CARD_NODE:
+                return False
             logger.debug(f"page_navigate: fallback step failed: {task_name!r}")
             logger.warning("页面切换：返回操作失败")
         return False
@@ -428,6 +437,15 @@ class PageNavigateAction(CustomAction):
                 if time.monotonic() >= deadline:
                     raise TimeoutError("入口页面检查超时")
                 if not reason:
+                    # An accidental avatar click can expose the card during a
+                    # return. Close it before scanning unrelated page candidates.
+                    if (target_page != "名片" and "主页面" in ordered_pages
+                            and self._recognize(context, image, PLAYER_CARD_NODE)):
+                        if context.tasker.stopping or time.monotonic() >= deadline:
+                            raise PlayerCardRecoveryError("名片恢复已取消或超时")
+                        if not self._run_task(context, PLAYER_CARD_NODE):
+                            raise PlayerCardRecoveryError("关闭名片或确认主页失败")
+                        return "主页面"
                     break
                 logger.debug(f"page_navigate: waiting intermediate page: {reason}")
                 time.sleep(min(max(.1, interval), max(0, deadline - time.monotonic())))
@@ -680,14 +698,15 @@ class DismissExitConfirmAction(CustomAction):
 class NavigationClickAction(CustomAction):
     """Retry only a recognised button on the original, non-loading page."""
 
-    def _wait_landscape(self, context, deadline):
+    def _wait_screen_direction(self, context, deadline):
         # A screencap during MuMu's rotation can enter its long failure backoff.
-        # Query only the display direction until one landscape direction is stable.
+        # Stable portrait permits another guarded entry check; landscape needs
+        # a reconnect before capturing with the new dimensions.
         deadline = min(deadline, time.monotonic() + 12)
         orientation, since = None, None
         while time.monotonic() < deadline:
             if context.tasker.stopping:
-                return False
+                return None
             remaining_ms = max(1, int((deadline - time.monotonic()) * 1000))
             try:
                 action = context.run_action("导航查询屏幕方向", pipeline_override={
@@ -699,32 +718,31 @@ class NavigationClickAction(CustomAction):
                 if not result or not result.success:
                     logger.debug("navigation_click: display direction query failed")
                     logger.error("页面切换：无法确认屏幕方向")
-                    return False
+                    return None
                 values = set(re.findall(r"SurfaceOrientation:\s*([0-3])\b", result.output))
                 if len(values) != 1:
                     logger.debug("navigation_click: display direction missing or ambiguous")
                     logger.error("页面切换：无法确认屏幕方向")
-                    return False
+                    return None
                 value = int(values.pop())
             except Exception as exc:
                 logger.debug(f"navigation_click: display direction query raised: {exc}")
                 logger.error("页面切换：读取屏幕方向失败")
-                return False
+                return None
             now = time.monotonic()
-            if context.tasker.stopping or now >= deadline:
-                return False
-            if value in (1, 3):
-                if value != orientation:
-                    orientation, since = value, now
-                if now - since >= 0.5:
-                    logger.debug("navigation_click: landscape stable; resuming screencap")
-                    return True
-            else:
-                orientation, since = None, None
+            if context.tasker.stopping:
+                return None
+            if now >= deadline:
+                break
+            if value != orientation:
+                orientation, since = value, now
+            if now - since >= 0.5:
+                logger.debug(f"navigation_click: screen direction stable: {value}")
+                return value
             time.sleep(min(0.1, max(0, deadline - now)))
-        logger.debug("navigation_click: landscape stability timeout")
-        logger.error("页面切换：等待横屏超时")
-        return False
+        logger.debug("navigation_click: screen direction stability timeout")
+        logger.error("页面切换：等待屏幕方向稳定超时")
+        return None
 
     def _refresh_landscape(self, context, deadline):
         # MuMu retains the portrait capture dimensions after rotation. Reconnect
@@ -779,11 +797,23 @@ class NavigationClickAction(CustomAction):
         clicks = 0
         target_seen = False
         landscape_refreshed = False
+        wait_landscape = params.get("wait_landscape")
         while True:
             if time.monotonic() >= deadline:
                 logger.debug(f"navigation_click: timeout node={argv.node_name}, clicks={clicks}, target_seen={target_seen}")
                 logger.error("页面切换：点击后未能及时进入目标页面")
                 return False
+            checked_at = time.monotonic()
+            if context.tasker.stopping:
+                return False
+            if wait_landscape and not landscape_refreshed:
+                direction = self._wait_screen_direction(context, deadline)
+                if direction is None:
+                    return False
+                if direction in (1, 3):
+                    if not self._refresh_landscape(context, deadline):
+                        return False
+                    landscape_refreshed = True
             image = navigation._screencap(context)
             image, _ = navigation._dismiss_exit_confirm(context, image, deadline)
             if time.monotonic() >= deadline:
@@ -800,7 +830,8 @@ class NavigationClickAction(CustomAction):
             if target_seen and not loading:
                 logger.debug(f"navigation_click: arrived node={argv.node_name}, clicks={clicks}, elapsed={time.monotonic() - started:.3f}s")
                 return True
-            if not loading and not target_seen and clicks < 3 and time.monotonic() >= next_click:
+            if (not loading and not target_seen and not landscape_refreshed
+                    and clicks < 3 and time.monotonic() >= next_click):
                 on_source = any(navigation._recognize(context, image, node) for node in sources)
                 if on_source:
                     result = context.run_recognition(argv.node_name, image)
@@ -815,14 +846,10 @@ class NavigationClickAction(CustomAction):
                             target = [box.x, box.y, box.w, box.h]
                         action = context.run_action_direct("Click", JClick(target=target))
                         clicks += 1
-                        next_click = time.monotonic() + 1.5
+                        next_click = checked_at + 1 if wait_landscape else time.monotonic() + 1.5
                         logger.debug(f"navigation_click: node={argv.node_name}, click={clicks}/3, target={target}, success={bool(action and action.success)}")
                         if not action or not action.success:
                             return False
-                        if params.get("wait_landscape") and not landscape_refreshed:
-                            if not self._wait_landscape(context, deadline):
-                                return False
-                            if not self._refresh_landscape(context, deadline):
-                                return False
-                            landscape_refreshed = True
-            time.sleep(min(0.25, max(0, deadline - time.monotonic())))
+            now = time.monotonic()
+            delay = max(0, checked_at + 1 - now) if wait_landscape else 0.25
+            time.sleep(min(delay, max(0, deadline - now)))

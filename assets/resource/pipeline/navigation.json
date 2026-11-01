@@ -4,7 +4,11 @@
             "type": "And",
             "param": {
                 "all_of": [
-                    "玩家名片页面点击esc",
+                    "玩家名片页面点击空白",
+                    {"recognition": {"type": "OCR", "param": {
+                        "roi": [0, 1180, 720, 100],
+                        "expected": ["道具", "复制编号"]
+                    }}},
                     {"recognition": {"type": "OCR", "param": {
                         "roi": [53, 135, 618, 901],
                         "expected": ["收集度"]

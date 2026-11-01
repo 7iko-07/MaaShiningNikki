@@ -6,7 +6,7 @@ import numpy as np
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
-from maa.pipeline import JRecognitionType, JOCR, JTemplateMatch
+from maa.pipeline import JRecognitionType, JOCR, JTemplateMatch, JWaitFreezes
 from utils import logger
 
 
@@ -111,7 +111,6 @@ class MemoryShopCheckAction(CustomAction):
         gold_template = params.get("gold_template", "回忆小铺-金币.png")
         diamond_template = params.get("diamond_template", "回忆小铺-钻石.png")
         post_buy_delay = self._as_float(params.get("post_buy_delay"), 1.0)
-        post_refresh_delay = self._as_float(params.get("post_refresh_delay"), 2.0)
         purchase_recovery_attempts = self._as_int(params.get("purchase_recovery_attempts"), 8)
         purchase_recovery_delay = self._as_float(params.get("purchase_recovery_delay"), 0.8)
         purchase_close_clicks = self._as_int(params.get("purchase_close_clicks"), 3)
@@ -141,12 +140,32 @@ class MemoryShopCheckAction(CustomAction):
             return False
 
         controller = context.tasker.controller
-        ready = self._wait_shop_ready(context, controller)
-        if not ready:
-            logger.debug(f"memory_shop_check: {shop} page is not ready")
-            logger.error(f"{shop}：页面未就绪")
+        if context.tasker.stopping:
             return False
-        image, page_result = ready
+        stable = context.wait_freezes(wait_freezes_param=JWaitFreezes(
+            time=200, target=(0, 500, 720, 580), rate_limit=100, timeout=10000,
+        ))
+        if context.tasker.stopping:
+            return False
+        if not stable:
+            logger.error(f"{shop}：等待商品画面稳定超时")
+            return False
+        image = self._screencap(controller)
+        if self._is_refresh_exhausted_popup(
+            context, image, refresh_exhausted_roi, ocr_threshold,
+        ):
+            if context.tasker.stopping or not self._click_roi(controller, back_roi):
+                return False
+            logger.info(f"{shop}：刷新卡不足，结束本店刷新")
+            return self._route(context, argv.node_name, finish_next)
+        page_result = context.run_recognition_direct(
+            JRecognitionType.OCR, JOCR(roi=tuple(shop_page_roi), threshold=ocr_threshold), image,
+        )
+        if context.tasker.stopping:
+            return False
+        if page_result is None or not page_result.hit:
+            logger.error(f"{shop}：无法识别商品")
+            return False
         gold_products = []
         diamond_price_pause_products = []
         diamond_pause_products = []
@@ -263,23 +282,6 @@ class MemoryShopCheckAction(CustomAction):
         )
         if context.tasker.stopping or not self._click_roi(controller, refresh_roi):
             return False
-        time.sleep(post_refresh_delay)
-        image = self._screencap(controller)
-        if self._is_refresh_exhausted_popup(
-            context,
-            image,
-            refresh_exhausted_roi,
-            ocr_threshold,
-        ):
-            logger.debug(f"memory_shop_check: {shop} refresh cards exhausted, closing popup")
-            if not self._click_roi(controller, back_roi):
-                return False
-            if not self._wait_shop_ready(context, controller):
-                logger.debug("memory_shop_check: refresh popup did not close")
-                logger.error("回忆小铺：刷新弹窗未能关闭")
-                return False
-            return self._route(context, argv.node_name, finish_next)
-
         return self._route(context, argv.node_name, refresh_next)
 
     def _route(self, context, node_name, next_nodes):

@@ -201,7 +201,7 @@ class NavigationTests(WithoutExitPopupTests):
 
     def test_detection_keeps_target_ahead_of_parent_and_hubs(self):
         self.action._screencap = Mock(return_value=object())
-        self.action._recognize = Mock(return_value=True)
+        self.action._recognize = Mock(side_effect=lambda ctx, image, node: node != navigation.PLAYER_CARD_NODE)
         page = self.action._detect_current_page(
             None, navigation.DEFAULT_PAGES, 3, 1,
             ordered_pages=self.action._build_detection_order(
@@ -209,7 +209,7 @@ class NavigationTests(WithoutExitPopupTests):
             ), target_page="美甲",
         )
         self.assertEqual(page, "美甲")
-        self.assertEqual(self.action._recognize.call_count, 1)
+        self.assertEqual(self.action._recognize.call_count, 2)
         self.assertEqual(self.action._recognize.call_args.args[2], "导航在美甲页面")
 
     def test_custom_route_source_is_recognized_before_hubs(self):
@@ -244,7 +244,8 @@ class NavigationTests(WithoutExitPopupTests):
                 self.assertEqual(self.action._detect_current_page(
                     None, pages, 1, 1, ordered_pages=ordered_pages, target_page="目标",
                 ), expected)
-                self.assertEqual([call.args[2] for call in self.action._recognize.call_args_list], checks)
+                self.assertEqual([call.args[2] for call in self.action._recognize.call_args_list],
+                                 [navigation.PLAYER_CARD_NODE, *checks])
 
     def test_detection_retries_use_fresh_images_and_deduplicate_only_per_image(self):
         pages = {"目标": ["shared", "shared"], "其他页面": ["shared", "other"]}
@@ -479,8 +480,13 @@ class NavigationTests(WithoutExitPopupTests):
         self.action._build_detection_order.assert_called_once()
         self.assertEqual(context.run_task.call_count, 2)
         self.assertEqual([(call.args[1], call.args[2]) for call in self.action._recognize.call_args_list], [
+            ("first_detail", navigation.PLAYER_CARD_NODE),
             ("first_detail", "是否是主页面"), ("first_detail", "是否是主页面"),
+            ("first_detail", navigation.PLAYER_CARD_NODE),
+            ("second_detail", navigation.PLAYER_CARD_NODE),
             ("second_detail", "是否是主页面"), ("second_detail", "是否是主页面"),
+            ("second_detail", navigation.PLAYER_CARD_NODE),
+            ("home", navigation.PLAYER_CARD_NODE),
             ("home", "是否是主页面"), ("home", "是否是主页面"),
         ])
 
@@ -495,7 +501,7 @@ class NavigationTests(WithoutExitPopupTests):
         def recognize(ctx, image, node):
             # First scan misses its snapshot; the following fallback snapshot is home.
             state[0] = "home"
-            return image == "home"
+            return image == "home" and node != navigation.PLAYER_CARD_NODE
 
         self.action._recognize = Mock(side_effect=recognize)
         argv = SimpleNamespace(custom_action_param=json.dumps({"target": "主页面", "max_steps": 2}))
@@ -514,7 +520,8 @@ class NavigationTests(WithoutExitPopupTests):
                 self.action._screencap = Mock(side_effect=screens)
                 self.action._intermediate_reason = Mock(side_effect=lambda ctx, image, nodes:
                                                         "在加载页面" if image == "loading" else "")
-                self.action._recognize = Mock(side_effect=lambda ctx, image, node: image == "home")
+                self.action._recognize = Mock(side_effect=lambda ctx, image, node:
+                                              image == "home" and node != navigation.PLAYER_CARD_NODE)
                 self.action._run_task = Mock()
                 self.action._run_fallback_step = Mock()
                 argv = SimpleNamespace(custom_action_param=json.dumps({"target": "主页面", "max_steps": 1}))
@@ -697,6 +704,115 @@ class NavigationFallbackTests(WithoutExitPopupTests):
         self.action._run_task.assert_called_once_with(self.context, "点击esc")
 
 
+class PlayerCardRecoveryTests(WithoutExitPopupTests):
+    def setUp(self):
+        super().setUp()
+        self.action = navigation.PageNavigateAction()
+        self.action._screencap = Mock(return_value="card")
+        self.action._intermediate_reason = Mock(return_value="")
+        self.action._recognize = Mock(side_effect=lambda ctx, image, node:
+                                      image == "card" and node == navigation.PLAYER_CARD_NODE)
+        self.context = Mock()
+        self.context.tasker.stopping = False
+        self.context.run_task.return_value = SimpleNamespace(status=SimpleNamespace(succeeded=True))
+
+    def detect(self, target="回家", timeout=15):
+        return self.action._detect_current_page(
+            self.context, navigation.DEFAULT_PAGES, 1, 0,
+            self.action._build_detection_order(navigation.DEFAULT_PAGES, navigation.DEFAULT_ROUTES, target),
+            target, timeout=timeout,
+        )
+
+    def test_card_recovery_confirms_home_without_scanning_other_pages(self):
+        self.assertEqual(self.detect(), "主页面")
+        self.action._recognize.assert_called_once_with(self.context, "card", navigation.PLAYER_CARD_NODE)
+        self.context.run_task.assert_called_once_with(navigation.PLAYER_CARD_NODE)
+        self.context.run_action.assert_not_called()
+
+    def test_recovery_failure_stops_before_other_clicks_or_fallback(self):
+        for result in (None, SimpleNamespace(status=SimpleNamespace(succeeded=False))):
+            with self.subTest(result=result):
+                self.context.run_task.return_value = result
+                self.action._run_fallback_step = Mock()
+                self.assertFalse(self.action.run(self.context, SimpleNamespace(
+                    custom_action_param=json.dumps({"target": "回家"}))))
+                self.action._run_fallback_step.assert_not_called()
+
+    def test_intended_card_destination_keeps_strict_recognition_and_stays_open(self):
+        self.action._recognize.side_effect = lambda ctx, image, node: node == "导航在名片页面"
+        self.assertEqual(self.detect("名片"), "名片")
+        self.action._recognize.assert_called_once_with(self.context, "card", "导航在名片页面")
+        self.context.run_task.assert_not_called()
+
+    def test_loading_finishes_before_card_recovery(self):
+        self.action._screencap.side_effect = ["loading", "card"]
+        self.action._intermediate_reason.side_effect = ["在加载页面", ""]
+        with patch.object(navigation.time, "sleep"):
+            self.assertEqual(self.detect(), "主页面")
+        self.action._recognize.assert_called_once_with(self.context, "card", navigation.PLAYER_CARD_NODE)
+
+    def test_deadline_and_cancellation_after_recognition_prevent_click(self):
+        for cancel in (True, False):
+            with self.subTest(cancel=cancel):
+                now = [0.0]
+                self.context.tasker.stopping = False
+                def recognize(ctx, image, node):
+                    self.context.tasker.stopping = cancel
+                    now[0] = 0 if cancel else 1
+                    return True
+                self.action._recognize.side_effect = recognize
+                with patch.object(navigation.time, "monotonic", side_effect=lambda: now[0]):
+                    with self.assertRaises(navigation.PlayerCardRecoveryError):
+                        self.detect(timeout=1)
+                self.context.run_task.assert_not_called()
+
+    def test_fresh_fallback_card_is_closed_before_return_or_esc(self):
+        self.assertTrue(self.action._run_fallback_step(
+            self.context, navigation.DEFAULT_FALLBACK_STEPS, target_nodes=["导航在回家页面"]))
+        self.context.run_task.assert_called_once_with(navigation.PLAYER_CARD_NODE)
+        self.context.run_recognition.assert_not_called()
+        self.context.run_action.assert_not_called()
+
+    def test_failed_fallback_recovery_does_not_try_return_or_esc(self):
+        self.context.run_task.return_value = SimpleNamespace(status=SimpleNamespace(succeeded=False))
+        self.assertFalse(self.action._run_fallback_step(
+            self.context, navigation.DEFAULT_FALLBACK_STEPS, target_nodes=["导航在回家页面"]))
+        self.context.run_task.assert_called_once_with(navigation.PLAYER_CARD_NODE)
+        self.context.run_recognition.assert_not_called()
+        self.context.run_action.assert_not_called()
+
+    def test_fallback_does_not_close_intended_card_with_popup(self):
+        self.assertFalse(self.action._run_fallback_step(
+            self.context, [navigation.PLAYER_CARD_NODE], target_nodes=["导航在名片页面"]))
+        self.context.run_task.assert_not_called()
+
+    def test_card_pipeline_clicks_once_then_only_waits_for_home(self):
+        nodes = load_jsonc(ROOT / "assets/resource/pipeline/back_to_homepage.json")
+        node = nodes[navigation.PLAYER_CARD_NODE]
+        self.assertEqual(node["recognition"], {"type": "OCR", "param": {
+            "roi": [254, 1119, 466, 50], "expected": ["玩家编号", "版本号"],
+        }})
+        self.assertEqual(node["action"], {"type": "Click", "param": {"target": [337, 86, 13, 7]}})
+        self.assertEqual(node["next"], ["是否是主页面"])
+        self.assertEqual(node["timeout"], 15000)
+        self.assertEqual(node["post_delay"], 0)
+        self.assertEqual(node["rate_limit"], 250)
+        self.assertEqual(nodes["是否是主页面"]["next"], [])
+        self.assertNotIn("on_error", node)
+        self.assertNotIn("玩家名片页面点击esc", nodes)
+        self.assertIn("[JumpBack]" + navigation.PLAYER_CARD_NODE, nodes["返回主页面"]["next"])
+        strict = load_jsonc(ROOT / "assets/resource/pipeline/navigation.json")["导航在名片页面"]
+        self.assertEqual(strict["recognition"]["param"]["all_of"], [
+            navigation.PLAYER_CARD_NODE,
+            {"recognition": {"type": "OCR", "param": {
+                "roi": [0, 1180, 720, 100], "expected": ["道具", "复制编号"],
+            }}},
+            {"recognition": {"type": "OCR", "param": {
+                "roi": [53, 135, 618, 901], "expected": ["收集度"],
+            }}},
+        ])
+
+
 class NavigationEntryConfirmationTests(unittest.TestCase):
     def setUp(self):
         self.now = 0.0
@@ -730,7 +846,8 @@ class NavigationEntryConfirmationTests(unittest.TestCase):
         self.assertTrue(self.action.run(self.context, self.argv))
         self.assertEqual(self.action._screencap.call_count, 2)
         self.assertEqual([call.args[2] for call in self.action._recognize.call_args_list],
-                         [*navigation.DEFAULT_WAIT_RECOGNITIONS, "导航在结伴页面"] * 2)
+                         [*navigation.DEFAULT_WAIT_RECOGNITIONS, navigation.PLAYER_CARD_NODE, "导航在结伴页面",
+                          *navigation.DEFAULT_WAIT_RECOGNITIONS, "导航在结伴页面"])
         self.assertEqual(self.context.run_recognition.call_count, 2)
         self.assertEqual(self.now, .25)
         self.action._run_task.assert_not_called()
@@ -809,6 +926,7 @@ class MainStoryReturnTests(WithoutExitPopupTests):
         clicks = []
         params = [{}]
         context = Mock()
+        context.tasker.stopping = False
         context.clone.return_value = context
 
         def screenshot(*args):
@@ -869,6 +987,7 @@ class NavigationClickTests(WithoutExitPopupTests):
         now = [0.0]
         clicks = []
         context = Mock()
+        context.tasker.stopping = False
         context.run_recognition.side_effect = lambda name, image: SimpleNamespace(
             hit=button(now[0]), box=SimpleNamespace(x=int(now[0] * 10), y=20, w=30, h=40))
         def click(kind, params):
@@ -947,6 +1066,9 @@ class NavigationClickTests(WithoutExitPopupTests):
             with self.subTest(target_seen_while_loading=target_seen_while_loading):
                 now = [0.0]
                 context = Mock()
+                context.tasker.stopping = False
+                context.run_action.return_value = SimpleNamespace(success=True, result=SimpleNamespace(
+                    success=True, output="SurfaceOrientation: 0"))
                 def recognize(self, ctx, image, name):
                     if name == loader:
                         return now[0] < 2
@@ -960,7 +1082,8 @@ class NavigationClickTests(WithoutExitPopupTests):
                     ok = navigation.NavigationClickAction().run(context, SimpleNamespace(
                         node_name="导航识别并点击织梦空间", custom_action_param=json.dumps(click_params)))
                 self.assertTrue(ok)
-                self.assertEqual(now[0], 2)
+                self.assertGreaterEqual(now[0], 2)
+                self.assertLess(now[0], 3)
                 context.run_action_direct.assert_not_called()
 
     def test_friend_allows_slow_loading_without_extra_clicks(self):

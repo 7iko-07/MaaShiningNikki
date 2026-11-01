@@ -326,7 +326,7 @@ class ShareFlowTests(unittest.TestCase):
         interface = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-8"))
         cases = interface["option"]["是否在心之门这里分享"]["cases"]
         disabled = next(case for case in cases if case["name"] == "No")
-        self.assertNotIn("心之门点击分享", disabled["pipeline_override"]["点击谜之海-感应第二次"]["next"])
+        self.assertFalse(disabled["pipeline_override"]["心之门点击分享"]["enabled"])
 
 
 class FractionTests(unittest.TestCase):

@@ -347,7 +347,6 @@
 				}
 			}
 		},
-		"post_wait_freezes": 500,
 		"next": ["在活动剧情页面"],
 		"timeout": 2000,
         "anchor": "点击活动剧情"
@@ -358,7 +357,6 @@
 			"type": "DoNothing",
 			"param": {}
 		},
-		"post_wait_freezes": 500,
 		"next": ["识别剧情过完了并停止任务", "[JumpBack]开始推演真相", "[JumpBack]点击聊天框", "[JumpBack]点击剧情叉号","[Anchor]点击活动剧情"],
 		"timeout": 2000
     },

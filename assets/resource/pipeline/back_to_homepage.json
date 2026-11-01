@@ -31,48 +31,56 @@
         },
         "next": []
     },
-    "玩家名片页面点击esc": {
+    "玩家名片页面点击空白": {
         "recognition": {
-            "type": "And",
+            "type": "OCR",
             "param": {
-                "all_of": [
-                    {"recognition": {
-                        "type": "OCR",
-                        "param": {
-                            "roi": [0, 1180, 720, 100],
-                            "expected": ["道具", "复制编号"]
-                        }
-                    }},
-                    {"recognition": {
-                        "type": "OCR",
-                        "param": {
-                            "roi": [254, 1119, 466, 50],
-                            "expected": ["玩家编号", "版本号"]
-                        }
-                    }}
-                ]
+                "roi": [254, 1119, 466, 50],
+                "expected": ["玩家编号", "版本号"]
             }
         },
-        "action": "DoNothing",
-        "next": ["点击esc"]
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [337, 86, 13, 7]
+            }
+        },
+        "post_delay": 0,
+        "next": ["是否是主页面"],
+        "timeout": 15000,
+        "rate_limit": 250
     },
     "主页点击esc":{
         "recognition": {
-            "type": "Or",
+            "type": "And",
             "param":{
-                "any_of": [
+                "all_of": [
                     {"recognition": {
-                        "type": "TemplateMatch",
+                        "type": "Or",
                         "param": {
-                            "template": "主页音乐图标-关.png",
-                            "roi": [86, 0, 108, 173]
+                            "any_of": [
+                                {"recognition": {
+                                    "type": "TemplateMatch",
+                                    "param": {
+                                        "template": "主页音乐图标-关.png",
+                                        "roi": [86, 0, 108, 173]
+                                    }
+                                }},
+                                {"recognition": {
+                                    "type": "TemplateMatch",
+                                    "param": {
+                                        "template": "主页音乐图标-开.png",
+                                        "roi": [86, 0, 108, 173]
+                                    }
+                                }}
+                            ]
                         }
                     }},
                     {"recognition": {
-                        "type": "TemplateMatch",
+                        "type": "OCR",
                         "param": {
-                            "template": "主页音乐图标-开.png",
-                            "roi": [86, 0, 108, 173]
+                            "roi": [490, 1000, 230, 80],
+                            "expected": ["提示"]
                         }
                     }}
                 ]
@@ -88,6 +96,7 @@
         "recognition": {
             "type": "OCR",
             "param": {
+                "roi": [104, 509, 517, 161],
                 "expected": ["确定退出游戏吗[？?]?"]
             }
         },
@@ -153,7 +162,7 @@
         "action": "DoNothing",
         "next": [
 			"[JumpBack]关闭退出游戏确认弹窗",
-			"[JumpBack]玩家名片页面点击esc",
+			"[JumpBack]玩家名片页面点击空白",
 			"是否是主页面",
 			"[JumpBack]点击返回",
             "[JumpBack]点击体力用尽确定",

@@ -116,13 +116,13 @@
             ]
         },
         {
-            "name": "感应谜之海两次",
-            "label": "🔮 感应谜之海两次",
+            "name": "心之门",
+            "label": "🔮 心之门",
             "entry": "心之门任务链入口",
             "option": [
-                "是否在心之门这里分享"
+                "免费感应", "谜海感应", "是否在心之门这里分享"
             ],
-            "description": "感应谜之海两次。请确认免费次数，留意资源消耗。"
+            "description": "最多成功感应两次。"
         },
         {
             "name": "月卡领取",
@@ -291,6 +291,15 @@
             "group": ["辅助工具"]
         },
         {
+            "name": "活动商店",
+            "label": "🛒 活动商店",
+            "entry": "活动商店任务链入口",
+            "default_check": false,
+            "option": ["仔细看任务说明了吗"],
+            "description": "请先手动打开活动商店页面。仅购买左侧第一格的橙色按钮商品，每次按 MAX 消耗活动货币。识别到货币不足时结束；识别超时或点击失败会中止。",
+            "group": ["辅助工具"]
+        },
+        {
             "name": "剧情自动点击",
             "label": "🎬 剧情自动点击",
             "entry": "剧情自动点击任务链入口",
@@ -318,7 +327,7 @@
                 {"name": "美甲", "enabled": true, "group": []},
                 {"name": "回家", "enabled": true, "group": []},
                 {"name": "分享", "enabled": true, "group": []},
-                {"name": "感应谜之海两次", "enabled": true, "group": []},
+                {"name": "心之门", "enabled": true, "group": []},
                 {"name": "月卡领取", "enabled": true, "group": []},
                 {"name": "特权卡领取", "enabled": true, "group": []},
                 {"name": "一键领取", "enabled": true, "group": []},
@@ -340,6 +349,7 @@
                 {"name": "活动：寻阅山河", "enabled": false, "group": ["往期活动"]},
                 {"name": "翻转印象", "enabled": false, "group": ["往期活动"]},
                 {"name": "兑换码", "enabled": true, "group": ["辅助工具"]},
+                {"name": "活动商店", "enabled": false, "group": ["辅助工具"]},
                 {"name": "剧情自动点击", "enabled": false, "group": ["辅助工具"]}
             ]
         },
@@ -354,7 +364,7 @@
                 {"name": "联盟", "enabled": true, "group": []},
                 {"name": "邮件", "enabled": true, "group": []},
                 {"name": "福利", "enabled": true, "group": []},
-                {"name": "感应谜之海两次", "enabled": true, "group": []},
+                {"name": "心之门", "enabled": true, "group": []},
                 {"name": "回家", "enabled": true, "group": []},
                 {"name": "时光钟表铺", "enabled": true, "group": []},
                 {"name": "不落的帷幕", "enabled": true, "group": []},
@@ -1450,6 +1460,15 @@
                 }
             ]
         },
+        "仔细看任务说明了吗": {
+            "type": "switch",
+            "default_case": "No",
+            "__mfa_confirm_on_enable": "必须打开活动商店再用！！！",
+            "cases": [
+                {"name": "Yes"},
+                {"name": "No"}
+            ]
+        },
         "全屏点击查找剧情章节": {
             "type": "switch",
             "default_case": "No",
@@ -1653,21 +1672,38 @@
                 }
             ]
         },
+        "免费感应": {
+            "type": "switch",
+            "default_case": "No",
+            "description": "依次检查绮海、幻海的免费次数，各尝试一次。",
+            "__mfa_confirm_on_enable": "可能会误用资源，谨慎开启",
+            "cases": [
+                {"name": "Yes", "pipeline_override": {"心之门免费按钮": {"enabled": true}}},
+                {"name": "No", "pipeline_override": {"心之门免费按钮": {"enabled": false}}}
+            ]
+        },
+        "谜海感应": {
+            "type": "switch",
+            "default_case": "Yes",
+            "description": "用谜海补足本次剩余感应次数，请留意资源消耗。",
+            "cases": [
+                {"name": "Yes", "pipeline_override": {"点击谜之海": {"enabled": true}}},
+                {"name": "No", "pipeline_override": {"点击谜之海": {"enabled": false}}}
+            ]
+        },
         "是否在心之门这里分享":{
             "type": "switch",
-            "description": "在心之门仅分享一次。",
+            "description": "本轮第一次成功感应时分享一次。",
             "default_case": "Yes",
             "cases": [
                 {
                     "name": "Yes",
-                    "pipeline_override": {}
+                    "pipeline_override": {"心之门点击分享": {"enabled": true}}
                 },
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "点击谜之海-感应第二次":{
-                            "next": ["点击谜之海-感应第二次-空白","点击体力用尽确定","[JumpBack]嗯等"]
-                        }
+                        "心之门点击分享": {"enabled": false}
                     }
                 }
             ]

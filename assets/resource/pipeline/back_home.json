@@ -430,8 +430,9 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_delay": 3000,
-		"timeout": 2000
+		"post_delay": 0,
+		"next": ["stop"],
+		"timeout": 15000
 	},
 	"点击结束今日行程": {
         "recognition": {
@@ -445,9 +446,9 @@
 			"type": "Click",
 			"param": {}
 		},
-		"post_delay": 10000,
-		"next": ["[JumpBack]在加载页面", "点击离开"],
-		"timeout": 2000
+		"post_delay": 0,
+		"next": ["点击离开"],
+		"timeout": 15000
     },
 	"点击离开": {
         "recognition": {

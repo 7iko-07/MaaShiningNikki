@@ -1,0 +1,107 @@
+{
+    "活动商店任务链入口": {
+        "next": ["活动商店点击橙色按钮"],
+        "timeout": 10000
+    },
+    "活动商店点击橙色按钮": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [14, 534, 353, 202],
+                "method": 40,
+                "lower": [10, 60, 170],
+                "upper": [24, 160, 255],
+                "count": 1200,
+                "connected": true
+            }
+        },
+        "action": "Click",
+        "next": ["活动商店点击MAX"],
+        "timeout": 10000
+    },
+    "活动商店点击MAX": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [407, 614, 260, 96],
+                "expected": ["MAX"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
+        },
+        "post_delay": 500,
+        "next": ["活动商店点击立即购买"],
+        "timeout": 10000
+    },
+    "活动商店点击立即购买": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [167, 716, 391, 57],
+                "expected": ["立即购买"]
+            }
+        },
+        "action": "Click",
+        "post_delay": 0,
+        "next": ["活动商店货币不足", "活动商店关闭奖励弹窗"],
+        "rate_limit": 100,
+        "timeout": 10000
+    },
+    "活动商店货币不足": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [130, 610, 460, 55],
+                "expected": ["不足"]
+            }
+        },
+        "focus": {
+            "Node.Action.Starting": "活动货币不足，活动商店结束"
+        }
+    },
+    "活动商店关闭奖励弹窗": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [200, 400, 330, 95],
+                "expected": ["恭喜获得"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {"target": [342, 296, 25, 19]}
+        },
+        "post_delay": 500,
+        "next": ["活动商店关闭购买弹窗"],
+        "timeout": 10000
+    },
+    "活动商店关闭购买弹窗": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [407, 614, 260, 96],
+                "expected": ["MAX"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {"target": [342, 296, 25, 19]}
+        },
+        "next": ["活动商店等待购买弹窗关闭"],
+        "timeout": 10000
+    },
+    "活动商店等待购买弹窗关闭": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [167, 716, 391, 57],
+                "expected": ["立即购买"]
+            }
+        },
+        "inverse": true,
+        "next": ["活动商店点击橙色按钮"],
+        "timeout": 10000
+    }
+}

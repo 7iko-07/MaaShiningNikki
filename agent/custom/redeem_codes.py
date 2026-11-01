@@ -159,7 +159,7 @@ class RedeemRunner:
         self.click([343, 85, 37, 20])
         self.wait(lambda image: self.hit("导航在名片页面", image), "返回名片页面")
         self.click([343, 85, 37, 20])
-        self.wait(lambda image: not self.hit("玩家名片页面点击esc", image)
+        self.wait(lambda image: not self.hit("玩家名片页面点击空白", image)
                   and self.hit("是否是主页面", image), "返回主页面")
 
 

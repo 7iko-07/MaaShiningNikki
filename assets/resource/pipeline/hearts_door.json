@@ -15,8 +15,40 @@
             }
         },
         "post_delay": 1000,
-        "next": ["点击谜之海","左划心之门的阁"],
+        "next": ["心之门感应调度"],
         "timeout": 30000
+    },
+    "心之门感应调度": {
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "hearts_door"}
+        }
+    },
+    "心之门阁名": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [0, 109, 720, 83], "expected": ["绮海"]}
+        },
+        "action": "Click"
+    },
+    "心之门免费按钮": {
+        "enabled": false,
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [0, 1060, 336, 128], "expected": ["免费"]}
+        }
+    },
+    "心之门感应按钮就绪": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [0, 1029, 720, 149], "expected": ["感应.*次"]}
+        }
+    },
+    "心之门品质展示": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [270, 170, 180, 90], "expected": ["非凡", "稀有", "闪耀"]}
+        }
     },
 	"左划心之门的阁": {
         "recognition": {

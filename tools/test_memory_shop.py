@@ -149,7 +149,9 @@ class ShopTests(unittest.TestCase):
         action = shop.MemoryShopCheckAction()
         context = self.context()
         context.get_node_data.return_value = {}
-        action._wait_shop_ready = Mock(return_value=(None, ocr_result()))
+        context.wait_freezes.return_value = True
+        context.run_recognition_direct.return_value = ocr_result()
+        action._wait_shop_ready = Mock()
         action._screencap = Mock(return_value=None)
         action._read_product = Mock(return_value={
             "currency": currency, "name": "测试服装", "discount": discount, "price": price,
@@ -203,18 +205,46 @@ class ShopTests(unittest.TestCase):
             context.override_next.assert_called_once_with(argv.node_name, expected)
             self.assertEqual(action._click_roi.call_count, int(name == "回忆小铺"))
 
-    @patch.object(shop.time, "sleep")
-    def test_exhausted_refresh_cards_close_before_advancing(self, _sleep):
-        for recovered in (True, False):
-            action, context, argv = self.checker()
-            action._is_refresh_exhausted_popup.return_value = True
-            action._wait_shop_ready.side_effect = [(None, ocr_result()), recovered]
-            self.assertEqual(action.run(context, argv), recovered)
-            self.assertEqual(action._click_roi.call_args.args[1], [0, 36, 100, 64])
-            if recovered:
-                context.override_next.assert_called_once_with(argv.node_name, ["商城选择回忆小铺"])
-            else:
-                context.override_next.assert_not_called()
+    def test_refresh_loop_checks_only_exhausted_popup_before_reading_stable_frame(self):
+        action, context, argv = self.checker()
+        action._has_blocking_popup = Mock()
+        action._read_shop_page = Mock()
+        image = object()
+        action._screencap.return_value = image
+        events = []
+        context.wait_freezes.side_effect = lambda **kwargs: events.append("stable") or True
+        action._is_refresh_exhausted_popup.side_effect = lambda *args: events.append("exhausted") or False
+        context.run_recognition_direct.side_effect = lambda *args: events.append("read") or ocr_result()
+        action._click_roi.side_effect = lambda *args: events.append("refresh") or True
+        self.assertTrue(action.run(context, argv))
+        self.assertEqual(events, ["stable", "exhausted", "read", "refresh"])
+        self.assertIs(context.run_recognition_direct.call_args.args[2], image)
+        context.run_recognition_direct.assert_called_once()
+        context.run_recognition.assert_not_called()
+        action._wait_shop_ready.assert_not_called()
+        action._read_shop_page.assert_not_called()
+        action._has_blocking_popup.assert_not_called()
+        action._is_refresh_exhausted_popup.assert_called_once()
+
+    def test_exhausted_refresh_cards_close_and_finish_current_shop_without_refresh(self):
+        for name, following in (
+            ("限时回忆小铺", ["商城选择回忆小铺"]), ("回忆小铺", ["stop"]),
+        ):
+            for closed in (True, False):
+                with self.subTest(shop=name, closed=closed):
+                    action, context, argv = self.checker(name)
+                    action._is_refresh_exhausted_popup.return_value = True
+                    action._click_roi.return_value = closed
+                    self.assertEqual(action.run(context, argv), closed)
+                    action._click_roi.assert_called_once_with(context.tasker.controller, [0, 36, 100, 64])
+                    context.run_recognition_direct.assert_not_called()
+                    action._read_product.assert_not_called()
+                    action._is_refresh_free.assert_not_called()
+                    action._wait_shop_ready.assert_not_called()
+                    if closed:
+                        context.override_next.assert_called_once_with(argv.node_name, following)
+                    else:
+                        context.override_next.assert_not_called()
 
     @patch.object(shop.time, "sleep")
     def test_purchase_recovery_and_route_failures_propagate(self, _sleep):
@@ -258,6 +288,31 @@ class ShopTests(unittest.TestCase):
                 self.assertEqual(action._wait_shop_ready(context, context.tasker.controller), expected)
             self.assertEqual(now[0], elapsed)
 
+    def test_unstable_products_or_cancellation_never_read_or_refresh(self):
+        for cancel in (False, True):
+            action, context, argv = self.checker()
+
+            def stabilize(**kwargs):
+                context.tasker.stopping = cancel
+                return cancel
+
+            context.wait_freezes.side_effect = stabilize
+            self.assertFalse(action.run(context, argv))
+            context.run_recognition_direct.assert_not_called()
+            action._screencap.assert_not_called()
+            action._read_product.assert_not_called()
+            action._click_roi.assert_not_called()
+            context.override_next.assert_not_called()
+
+    def test_failed_product_ocr_never_refreshes(self):
+        for result in (None, SimpleNamespace(hit=False)):
+            action, context, argv = self.checker()
+            context.run_recognition_direct.return_value = result
+            self.assertFalse(action.run(context, argv))
+            action._read_product.assert_not_called()
+            action._click_roi.assert_not_called()
+            context.override_next.assert_not_called()
+
     def test_bulk_results_assign_repeated_names_and_discounts_to_their_slots(self):
         action = shop.MemoryShopCheckAction()
         items = []
@@ -294,20 +349,23 @@ class ShopTests(unittest.TestCase):
                 action._read_text.assert_called_once_with(None, None, slot["price_roi"], 0.3)
 
     @patch.object(shop.time, "sleep")
-    def test_excluded_batch_reuses_page_text_and_only_waits_after_refresh(self, sleep):
+    def test_excluded_batch_reuses_page_text_and_waits_once_per_round(self, sleep):
         action, context, argv = self.checker()
         del action._read_product, action._is_refresh_free
         items = [("免费", [542, 1176, 51, 27]), ("换一批", [601, 1175, 78, 29])]
         names = ("记忆钥匙·稀有", "记忆之轨", "记忆钥匙·普通", "时间之诗", "体力", "印象碎片·非凡")
         for name, slot in zip(names, shop.DEFAULT_SLOTS):
             items.extend(((name, slot["name_roi"]), ("2折", slot["discount_roi"])))
-        action._wait_shop_ready.return_value = (None, ocr_result(*items))
+        context.run_recognition_direct.return_value = ocr_result(*items)
         action._detect_currency = Mock(return_value="diamond")
         action._read_text = Mock()
         self.assertTrue(action.run(context, argv))
         action._read_text.assert_not_called()
-        self.assertEqual(action._screencap.call_count, 1)  # Only the post-refresh popup check.
-        sleep.assert_called_once_with(2.0)
+        action._screencap.assert_called_once()
+        context.wait_freezes.assert_called_once()
+        context.run_recognition_direct.assert_called_once()
+        action._wait_shop_ready.assert_not_called()
+        sleep.assert_not_called()
         context.override_next.assert_called_once_with(argv.node_name, [argv.node_name])
 
     def test_recovery_slow_recognition_cannot_click_after_deadline(self):
