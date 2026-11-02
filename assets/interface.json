@@ -6,7 +6,7 @@
     "license": "MIT",
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "v0.0.15-nightly.20261023",
+    "version": "v0.0.16-nightly.20261102.2",
     "title": "闪现吧暖暖v0.0.16#11.02 - 寻阅山河#10.22",
     "icon": "logo.ico",
     "mirrorchyan_rid": "MaaShiningNikki",
@@ -86,10 +86,11 @@
         {
             "name": "美甲",
             "label": "💅 美甲",
-            "description":  "雇佣免费店员、提取心意币、领取周好评、完成特约顾客、美甲点赞和领取话题任务。",
+            "description":  "雇佣免费店员、提取心意币、领取周好评、完成特约顾客。",
             "entry": "美甲任务链入口",
             "option": [
-                "美甲特约顾客任务"
+                "美甲特约顾客任务",
+                "美甲点赞"
             ]
         },
         {
@@ -1536,6 +1537,26 @@
                     "pipeline_override": {
                         "点击我的店铺空白2": {
                             "next": ["查找周好评礼包", "点击返回美甲页面"]
+                        }
+                    }
+                }
+            ]
+        },
+        "美甲点赞": {
+            "type": "switch",
+            "label": "点赞",
+            "description": "开启后完成5次点赞并领取话题任务奖励。",
+            "default_case": "Yes",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {}
+                },
+                {
+                    "name": "No",
+                    "pipeline_override": {
+                        "点击返回美甲页面": {
+                            "next": []
                         }
                     }
                 }
