@@ -10,7 +10,7 @@
                 }
             }
         },
-		"next": ["点击左一", "[JumpBack]上滑情报屋"],
+		"next": ["查找情报屋关卡"],
 		"timeout": 30000
     },
     "上滑情报屋":{
@@ -26,37 +26,31 @@
         "timeout": 2000,
         "post_delay": 500
     },
-    "点击秦衣·上": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["秦衣·上", "夜阑月"],
-				"roi": [346, 236, 186, 1044]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 2000,
-		"next": ["点击托管调查", "点击调查中"],
-		"timeout": 2000
+    "查找情报屋关卡": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "information_house_find"
+            }
+        },
+        "post_delay": 2000,
+        "next": ["点击托管调查", "点击调查中"],
+        "timeout": 2000
     },
-    "点击左一": {
+    "点击情报屋关卡": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["左一", "喋血", "女王"],
-				"roi": [346, 236, 186, 1044]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 2000,
-		"next": ["点击托管调查", "点击调查中"],
-		"timeout": 2000
+            "type": "OCR",
+            "param": {
+                "expected": ["^左一?$"],
+                "roi": [340, 205, 380, 1075],
+                "replace": [["[\\s·・•.．]", ""]]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        }
     },
     "点击调查中":{
         "recognition": {

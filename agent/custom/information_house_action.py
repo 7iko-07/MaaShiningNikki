@@ -4,7 +4,86 @@ import time
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
-from utils import logger, read_number_from_controller
+from maa.pipeline import JWaitFreezes
+from utils import debug_exception, logger, read_number_from_controller
+
+from .click_and_wait_change import ClickAndWaitChangeAction
+
+
+@AgentServer.custom_action("information_house_find")
+class InformationHouseFindAction(CustomAction):
+    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        try:
+            return self._find(context)
+        except Exception:
+            debug_exception("情报屋查找关卡异常")
+            logger.error("情报屋：查找关卡失败")
+            return False
+
+    def _find(self, context):
+        controller = context.tasker.controller
+        compare_roi = (0, 198, 295, 1082)
+        deadline = time.monotonic() + 30
+        before = None
+        comparer = ClickAndWaitChangeAction()
+
+        def active():
+            return not context.tasker.stopping and time.monotonic() < deadline
+
+        while active():
+            stable = context.wait_freezes(wait_freezes_param=JWaitFreezes(
+                time=200, target=compare_roi, rate_limit=100,
+                timeout=min(3000, max(1, int((deadline - time.monotonic()) * 1000))),
+            ))
+            if not active():
+                break
+            if not stable:
+                logger.error("情报屋：等待列表稳定超时")
+                return False
+            capture = controller.post_screencap().wait()
+            image = controller.cached_image if capture.succeeded else None
+            if image is None or image.size == 0:
+                logger.error("情报屋：获取画面失败")
+                return False
+            image = image.copy()
+            if not active():
+                break
+            result = context.run_recognition("点击情报屋关卡", image)
+            if not active():
+                break
+            if result is None:
+                logger.error("情报屋：无法识别所选关卡")
+                return False
+            # 先检查滑动后的目标，再判断到底，确保最后一屏也能进入。
+            if result.hit:
+                if result.box.w <= 0 or result.box.h <= 0:
+                    logger.error("情报屋：无法定位所选关卡")
+                    return False
+                clicked = context.run_action("点击情报屋关卡", box=result.box)
+                if not clicked or not clicked.success:
+                    logger.error("情报屋：点击所选关卡失败")
+                    return False
+                return not context.tasker.stopping
+            if before is not None:
+                changed, ratio = comparer._image_changed(
+                    before, image, compare_roi, 30, 0.01,
+                )
+                logger.debug(f"情报屋上划后画面变化比例：{ratio:.6f}")
+                if not changed:
+                    logger.error("情报屋：未找到所选关卡")
+                    return False
+            before = image
+            if not active():
+                break
+            swipe = context.run_task("上滑情报屋")
+            if not swipe or not swipe.status.succeeded:
+                if not context.tasker.stopping:
+                    logger.error("情报屋：上划失败")
+                return False
+
+        if not context.tasker.stopping:
+            logger.error("情报屋：查找所选关卡超时")
+        return False
 
 
 @AgentServer.custom_action("information_house_auto_investigate")

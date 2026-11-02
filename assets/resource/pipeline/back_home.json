@@ -39,105 +39,112 @@
     },
 	"点击前往采购小物": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["前往"],
-				"roi": [99, 568, 526, 276]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 2000,
-		"next": ["采购番茄炒蛋分流"],
-		"timeout": 2000
-    },
-	"点击日常采购": {
-        "recognition": {
-			"type": "OCR",
-			"param": {
-				"expected": ["日常采购", "采购"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 2000,
-		"next": ["采购番茄炒蛋分流"],
-		"timeout": 2000
-    },
-    "采购番茄炒蛋分流": {
+            "type": "OCR",
+            "param": {
+                "expected": ["前往"],
+                "roi": [99, 568, 526, 276]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
         "next": ["点击采购零食"],
         "timeout": 2000
     },
+	"点击日常采购": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["日常采购", "采购"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "next": ["点击采购零食"],
+        "timeout": 2000
+    },
+    "采购番茄炒蛋分流": {
+        "next": ["采购草莓刨冰分流"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
     "点击采购零食": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [370, 261, 136, 69],
-				"expected": ["零食", "食", "零"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 2000,
-		"next": ["点击番茄炒蛋","[JumpBack]上划日常采购"],
-		"timeout": 2000
+            "type": "OCR",
+            "param": {
+                "roi": [370, 261, 136, 69],
+                "expected": ["零食"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "next": ["采购流心奶黄月饼分流"],
+        "timeout": 2000
     },
     "点击番茄炒蛋":{
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [0, 555, 720, 360],
-				"expected": ["番茄炒蛋", "炒蛋"]
-			}
-		},
-		"action": {
-			"type": "Custom",
-			"param": {
-                "custom_action": "click_center"
+            "type": "OCR",
+            "param": {
+                "roi": [0, 555, 720, 360],
+                "expected": ["^番茄炒蛋$"]
             }
-		},
-		"next": ["点击购买番茄炒蛋"],
-		"timeout": 2000
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
+        },
+        "next": ["点击购买番茄炒蛋"],
+        "timeout": 2000
     },
     "点击购买番茄炒蛋": {
-		"recognition": {
-			"type": "TemplateMatch",
-			"param": {
-				"template": "home_gold_corn.png",
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "home_gold_corn.png",
                 "roi": [351, 936, 369, 145]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
         "repeat": 3,
         "repeat_delay": 500,
-		"post_delay": 1000,
-		"next": ["[JumpBack]点击体力用尽确定","点击采购小物"],
-		"timeout": 2000
+        "post_delay": 1000,
+        "next": [
+            "[JumpBack]点击确定活力不足",
+            "[JumpBack]点击体力用尽确定",
+            "采购草莓刨冰分流"
+        ],
+        "timeout": 2000
     },
     "点击采购小物": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [30, 263, 670, 141],
-				"expected": ["小物"]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"post_delay": 2000,
-		"next": ["[JumpBack]点击确定活力不足","采购电影票分流"],
-		"timeout": 2000
+            "type": "OCR",
+            "param": {
+                "roi": [30, 263, 670, 141],
+                "expected": ["小物"]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "post_delay": 2000,
+        "next": [
+            "[JumpBack]点击确定活力不足",
+            "采购电影票分流"
+        ],
+        "timeout": 2000
     },
     "点击确定活力不足": {
         "recognition": {
@@ -156,22 +163,22 @@
 		"timeout": 2000
     },
     "采购电影票分流": {
-        "next": ["点击电影票"],
-        "timeout": 2000
+        "next": ["采购调色板分流"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
     },
     "点击电影票": {
         "recognition": {
             "type": "OCR",
             "param": {
                 "roi": [0, 555, 720, 360],
-                "expected": ["电影票"]
+                "expected": ["^电影票$"]
             }
         },
         "action": {
             "type": "Custom",
-            "param": {
-                "custom_action": "click_center"
-            }
+            "param": {"custom_action": "click_center"}
         },
         "next": ["点击购买电影票"],
         "timeout": 2000
@@ -195,47 +202,53 @@
 		"timeout": 2000
     },
     "采购调色板分流": {
-        "next": ["点击缤纷调色板"],
-        "timeout": 2000
+        "next": ["采购晴雨伞分流"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
     },
 	"点击缤纷调色板": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [0, 555, 720, 360],
-				"expected": ["缤纷调色板", "调色板"]
-			}
-		},
-		"action": {
-			"type": "Custom",
-			"param": {
-                "custom_action": "click_center"
+            "type": "OCR",
+            "param": {
+                "roi": [0, 555, 720, 360],
+                "expected": ["^缤纷调色板$"]
             }
-		},
-		"next": ["点击购买缤纷调色板"],
-		"timeout": 2000
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
+        },
+        "next": ["点击购买缤纷调色板"],
+        "timeout": 2000
     },
     "点击购买缤纷调色板": {
-		"recognition": {
-			"type": "TemplateMatch",
-			"param": {
-				"template": "home_gold_corn.png",
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "home_gold_corn.png",
                 "roi": [351, 936, 369, 145]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
         "repeat": 2,
         "repeat_delay": 500,
-		"post_delay": 1000,
-		"next": ["采购晴雨伞分流"],
-		"timeout": 2000
+        "post_delay": 1000,
+        "next": [
+            "[JumpBack]点击确定活力不足",
+            "[JumpBack]点击体力用尽确定",
+            "采购晴雨伞分流"
+        ],
+        "timeout": 2000
     },
     "采购晴雨伞分流": {
-        "next": ["点击晴雨伞","[JumpBack]点击确定活力不足","[JumpBack]点击体力用尽确定","[JumpBack]上划日常采购"],
-        "timeout": 2000
+        "next": ["采购运动手环分流"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
     },
     "上划日常采购": {
         "recognition": {
@@ -253,36 +266,508 @@
     },
 	"点击晴雨伞": {
         "recognition": {
-			"type": "OCR",
-			"param": {
-				"roi": [0, 555, 720, 360],
-				"expected": ["晴雨伞", "雨伞"]
-			}
-		},
-		"action": {
-			"type": "Custom",
-			"param": {
-                "custom_action": "click_center"
+            "type": "OCR",
+            "param": {
+                "roi": [0, 555, 720, 360],
+                "expected": ["^晴雨伞$"]
             }
-		},
-		"next": ["点击购买晴雨伞"],
-		"timeout": 2000
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
+        },
+        "next": ["点击购买晴雨伞"],
+        "timeout": 2000
     },
     "点击购买晴雨伞": {
-		"recognition": {
-			"type": "TemplateMatch",
-			"param": {
-				"template": "home_gold_corn.png",
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "home_gold_corn.png",
                 "roi": [351, 936, 369, 145]
-			}
-		},
-		"action": {
-			"type": "Click",
-			"param": {}
-		},
-		"next": ["[JumpBack]点击确定活力不足","[JumpBack]点击体力用尽确定","点击空白-日常采购"],
-		"post_delay": 1000,
-		"timeout": 2000
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "next": [
+            "[JumpBack]点击确定活力不足",
+            "[JumpBack]点击体力用尽确定",
+            "采购运动手环分流"
+        ],
+        "post_delay": 1000,
+        "timeout": 2000
+    },
+    "采购流心奶黄月饼分流": {
+        "next": ["采购玫玫山楂月饼分流"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "查找流心奶黄月饼": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "home_purchase_find",
+                "custom_action_param": {
+                    "target_node": "点击流心奶黄月饼",
+                    "skip_next": "采购玫玫山楂月饼分流"
+                }
+            }
+        },
+        "next": ["点击购买流心奶黄月饼"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "点击流心奶黄月饼": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 555, 720, 360],
+                "expected": ["^流心奶黄月饼$"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
+        },
+        "next": ["点击购买流心奶黄月饼"],
+        "timeout": 2000
+    },
+    "点击购买流心奶黄月饼": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "home_gold_corn.png",
+                "roi": [351, 936, 369, 145]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "repeat_delay": 500,
+        "post_delay": 1000,
+        "next": [
+            "[JumpBack]点击确定活力不足",
+            "[JumpBack]点击体力用尽确定",
+            "采购玫玫山楂月饼分流"
+        ],
+        "timeout": 2000
+    },
+    "采购玫玫山楂月饼分流": {
+        "next": ["采购龙井流心月饼分流"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "查找玫玫山楂月饼": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "home_purchase_find",
+                "custom_action_param": {
+                    "target_node": "点击玫玫山楂月饼",
+                    "skip_next": "采购龙井流心月饼分流"
+                }
+            }
+        },
+        "next": ["点击购买玫玫山楂月饼"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "点击玫玫山楂月饼": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 555, 720, 360],
+                "expected": ["^玫玫山楂月饼$"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
+        },
+        "next": ["点击购买玫玫山楂月饼"],
+        "timeout": 2000
+    },
+    "点击购买玫玫山楂月饼": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "home_gold_corn.png",
+                "roi": [351, 936, 369, 145]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "repeat_delay": 500,
+        "post_delay": 1000,
+        "next": [
+            "[JumpBack]点击确定活力不足",
+            "[JumpBack]点击体力用尽确定",
+            "采购龙井流心月饼分流"
+        ],
+        "timeout": 2000
+    },
+    "采购龙井流心月饼分流": {
+        "next": ["采购番茄炒蛋分流"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "查找龙井流心月饼": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "home_purchase_find",
+                "custom_action_param": {
+                    "target_node": "点击龙井流心月饼",
+                    "skip_next": "采购番茄炒蛋分流"
+                }
+            }
+        },
+        "next": ["点击购买龙井流心月饼"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "点击龙井流心月饼": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 555, 720, 360],
+                "expected": ["^龙井流心月饼$"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
+        },
+        "next": ["点击购买龙井流心月饼"],
+        "timeout": 2000
+    },
+    "点击购买龙井流心月饼": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "home_gold_corn.png",
+                "roi": [351, 936, 369, 145]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "repeat_delay": 500,
+        "post_delay": 1000,
+        "next": [
+            "[JumpBack]点击确定活力不足",
+            "[JumpBack]点击体力用尽确定",
+            "采购番茄炒蛋分流"
+        ],
+        "timeout": 2000
+    },
+    "查找番茄炒蛋": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "home_purchase_find",
+                "custom_action_param": {
+                    "target_node": "点击番茄炒蛋",
+                    "skip_next": "采购草莓刨冰分流"
+                }
+            }
+        },
+        "next": ["点击购买番茄炒蛋"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "采购草莓刨冰分流": {
+        "next": ["采购桃花酥分流"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "查找草莓刨冰": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "home_purchase_find",
+                "custom_action_param": {
+                    "target_node": "点击草莓刨冰",
+                    "skip_next": "采购桃花酥分流"
+                }
+            }
+        },
+        "next": ["点击购买草莓刨冰"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "点击草莓刨冰": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 555, 720, 360],
+                "expected": ["^草莓刨冰$"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
+        },
+        "next": ["点击购买草莓刨冰"],
+        "timeout": 2000
+    },
+    "点击购买草莓刨冰": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "home_gold_corn.png",
+                "roi": [351, 936, 369, 145]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "repeat_delay": 500,
+        "post_delay": 1000,
+        "next": [
+            "[JumpBack]点击确定活力不足",
+            "[JumpBack]点击体力用尽确定",
+            "采购桃花酥分流"
+        ],
+        "timeout": 2000
+    },
+    "采购桃花酥分流": {
+        "next": ["采购番茄薯片分流"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "查找桃花酥": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "home_purchase_find",
+                "custom_action_param": {
+                    "target_node": "点击桃花酥",
+                    "skip_next": "采购番茄薯片分流"
+                }
+            }
+        },
+        "next": ["点击购买桃花酥"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "点击桃花酥": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 555, 720, 360],
+                "expected": ["^桃花酥$"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
+        },
+        "next": ["点击购买桃花酥"],
+        "timeout": 2000
+    },
+    "点击购买桃花酥": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "home_gold_corn.png",
+                "roi": [351, 936, 369, 145]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "repeat_delay": 500,
+        "post_delay": 1000,
+        "next": [
+            "[JumpBack]点击确定活力不足",
+            "[JumpBack]点击体力用尽确定",
+            "采购番茄薯片分流"
+        ],
+        "timeout": 2000
+    },
+    "采购番茄薯片分流": {
+        "next": ["点击采购小物"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "查找番茄薯片": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "home_purchase_find",
+                "custom_action_param": {
+                    "target_node": "点击番茄薯片",
+                    "skip_next": "点击采购小物"
+                }
+            }
+        },
+        "next": ["点击购买番茄薯片"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "点击番茄薯片": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 555, 720, 360],
+                "expected": ["^番茄薯片$"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
+        },
+        "next": ["点击购买番茄薯片"],
+        "timeout": 2000
+    },
+    "点击购买番茄薯片": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "home_gold_corn.png",
+                "roi": [351, 936, 369, 145]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "repeat_delay": 500,
+        "post_delay": 1000,
+        "next": [
+            "[JumpBack]点击确定活力不足",
+            "[JumpBack]点击体力用尽确定",
+            "点击采购小物"
+        ],
+        "timeout": 2000
+    },
+    "查找电影票": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "home_purchase_find",
+                "custom_action_param": {
+                    "target_node": "点击电影票",
+                    "skip_next": "采购调色板分流"
+                }
+            }
+        },
+        "next": ["点击购买电影票"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "查找缤纷调色板": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "home_purchase_find",
+                "custom_action_param": {
+                    "target_node": "点击缤纷调色板",
+                    "skip_next": "采购晴雨伞分流"
+                }
+            }
+        },
+        "next": ["点击购买缤纷调色板"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "查找晴雨伞": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "home_purchase_find",
+                "custom_action_param": {
+                    "target_node": "点击晴雨伞",
+                    "skip_next": "采购运动手环分流"
+                }
+            }
+        },
+        "next": ["点击购买晴雨伞"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "采购运动手环分流": {
+        "next": ["点击空白-日常采购"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "查找运动手环": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "home_purchase_find",
+                "custom_action_param": {
+                    "target_node": "点击运动手环",
+                    "skip_next": "点击空白-日常采购"
+                }
+            }
+        },
+        "next": ["点击购买运动手环"],
+        "timeout": 2000,
+        "pre_delay": 0,
+        "post_delay": 0
+    },
+    "点击运动手环": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 555, 720, 360],
+                "expected": ["^运动手环$"]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
+        },
+        "next": ["点击购买运动手环"],
+        "timeout": 2000
+    },
+    "点击购买运动手环": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "home_gold_corn.png",
+                "roi": [351, 936, 369, 145]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {}
+        },
+        "repeat_delay": 500,
+        "post_delay": 1000,
+        "next": [
+            "[JumpBack]点击确定活力不足",
+            "[JumpBack]点击体力用尽确定",
+            "点击空白-日常采购"
+        ],
+        "timeout": 2000
     },
 	"点击空白-日常采购":{
 		"recognition": {

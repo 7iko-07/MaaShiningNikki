@@ -24,23 +24,30 @@ class HeartsDoorAction(CustomAction):
             share = context.get_node_data(RESULT_NODE)["enabled"]
             # 临时阁名、分享识别及开关隔离在本轮，不留下跨任务状态。
             context = context.clone()
-            if not context.override_pipeline({RESULT_NODE: {"enabled": True}}):
-                raise RuntimeError("无法准备结果识别")
+            if not context.override_pipeline({
+                RESULT_NODE: {"enabled": True},
+                "点击谜之海": {"enabled": True},
+            }):
+                raise RuntimeError("无法准备感应流程")
             completed = 0
             if free:
-                for sea in ("绮海", "幻海"):
+                for sea in ("绮海", "幻海", "谜海"):
+                    if completed == 2:
+                        break
                     self._select_sea(context, sea)
                     self._wait_page(context)
                     result = self._recognize(context, FREE_NODE, self._capture(context))
                     if not result.hit:
-                        logger.info(f"心之门：{sea}无免费次数，跳过")
+                        logger.debug(f"心之门：{sea}无免费次数，跳过")
                         continue
                     self._click_center(context, result.box)
                     self._finish_draw(context, share and completed == 0)
                     completed += 1
-                    logger.info(f"心之门：{sea}免费感应成功，累计 {completed}/2 次")
+                    logger.debug(f"心之门：{sea}免费感应成功，累计 {completed}/2 次")
+            free_completed = completed
             if mystery and completed < 2:
-                self._select_sea(context, "谜海")
+                if not free:
+                    self._select_sea(context, "谜海")
                 for index in range(2 - completed):
                     ordinal = "第一次" if index == 0 else "第二次"
                     self._wait_hit(context, f"识别谜之海-感应{ordinal}")
@@ -49,8 +56,8 @@ class HeartsDoorAction(CustomAction):
                     self._click_center(context, result.box)
                     self._finish_draw(context, share and completed == 0)
                     completed += 1
-                    logger.info(f"心之门：谜海感应成功，累计 {completed}/2 次")
-            logger.info(f"心之门：本次成功感应 {completed}/2 次")
+                    logger.debug(f"心之门：谜海感应成功，累计 {completed}/2 次")
+            logger.info(f"心之门：免费 {free_completed} 次，谜海补足 {completed - free_completed} 次")
             return True
         except RuntimeError as exc:
             debug_exception("心之门执行失败")

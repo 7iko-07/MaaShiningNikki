@@ -62,20 +62,16 @@ class SettlementTests(unittest.TestCase):
         with patch.object(stair, "in_settlement", return_value=True):
             self.assertFalse(action.run(context, argv))
 
-    def test_crossing_settlement_before_retry_does_not_click_again(self):
+    def test_crossing_settlement_before_preparation_does_not_click(self):
         action = stair.MemoryStairwayChallengeAction()
         context = Mock()
         context.tasker.stopping = False
         context.override_next.return_value = True
-        argv = SimpleNamespace(node_name="点击心阶-开始挑战", box=Rect(10, 20, 30, 40),
-                               custom_action_param=json.dumps({"timeout": 0, "max_retries": 3,
-                                                               "after_click_delay": 0}))
-        with patch.object(stair, "in_settlement", side_effect=[False, False, True]), \
-             patch.object(action, "_screencap", return_value=np.zeros((4, 4, 3))), \
-             patch.object(action, "_image_changed", return_value=(False, 0)), \
-             patch("time.sleep"):
+        argv = SimpleNamespace(node_name="点击心阶-开始挑战")
+        with patch.object(stair, "in_settlement", side_effect=[False, True]):
             self.assertTrue(action.run(context, argv))
-        context.tasker.controller.post_click.assert_called_once_with(25, 40)
+        context.run_action_direct.assert_not_called()
+        context.tasker.controller.post_screencap.assert_not_called()
         context.override_next.assert_called_with(argv.node_name, [])
 
     def test_already_settling_or_cancelled_never_starts_challenge(self):

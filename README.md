@@ -119,3 +119,5 @@ GitHub Actions 在构建开始时统一确定 MaaFramework 发行版本，下载
 Windows、Linux、macOS 均使用包内 Python。构建会检查依赖完整性、主程序原生框架版本以及 Agent 握手和自定义动作注册。Unix 的 CI 中间产物为 `payload.tar`，用于保留执行权限和符号链接，正式发布时仍生成 ZIP。
 
 源码开发继续使用仓库现有 `.venv`，需要开发者手动准备依赖。仅更新资源或 `agent/` 的旧包不会自动补装依赖；请先安装新版完整发行包。修改打包流程后，需要在 GitHub Actions 手动运行 `install`，验证全部平台构建。
+
+每次发版前，手动填写 `assets/resource/announcement/00_latest.md`，第一行写公告标题，后面写更新内容。GitHub Release 说明直接读取这份文件，不再根据提交记录自动生成；文件也会随资源打包，程序首次打开时优先显示该公告。文件缺失或为空会使构建失败。发布后修改 GitHub Release 页面不会同步改变已打包的公告。

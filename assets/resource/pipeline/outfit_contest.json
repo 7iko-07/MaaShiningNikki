@@ -1,6 +1,11 @@
 {
     "搭配评选赛任务链入口": {
-        "next": ["搭配评选赛任务链准备", "[JumpBack]返回主页面"],
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "outfit_contest_guard"}
+        },
+        "attach": {"auto_submit": false},
+        "next": ["搭配评选赛任务链准备"],
         "timeout": 2000
     },
     "搭配评选赛任务链准备": {
@@ -10,27 +15,13 @@
             "param": {
                 "custom_action": "page_navigate",
                 "custom_action_param": {
-                    "target": "搭配评选赛"
+                    "target": "搭配评选赛",
+                    "wait_timeout": 30
                 }
             }
         },
-        "next": ["点击我当评委", "我要参赛-停止", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
+        "next": ["点击我当评委"],
         "timeout": 30000
-    },
-    "我要参赛-停止": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "expected": ["我要参赛", "参赛", "赛"],
-                "roi": [530, 1111, 190, 158]
-            }
-        },
-        "focus": {
-            "Node.Action.Starting": "#[color:red][b]参赛需要自行搭配[/b][/color]"
-        },
-        "post_delay": 2000,
-        "next": ["stop"],
-        "timeout": 2000
     },
     "点击我当评委": {
         "recognition": {
@@ -41,13 +32,11 @@
             }
         },
         "action": {
-            "type": "Click",
-            "param": {
-                "target": [620, 1200]
-            }
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
         },
         "post_delay": 250,
-        "next": ["点赞搭配评选赛", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
+        "next": ["点赞搭配评选赛"],
         "timeout": 30000,
         "rate_limit": 250
     },
@@ -87,7 +76,7 @@
             }
         },
         "post_delay": 250,
-        "next": ["搭配评选赛关闭奖励", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
+        "next": ["搭配评选赛关闭奖励"],
         "timeout": 30000,
         "rate_limit": 250
     },
@@ -124,7 +113,7 @@
             }
         },
         "post_delay": 250,
-        "next": ["点赞搭配评选赛", "搭配评选赛评委结束", "[JumpBack]在接受投稿页面", "[JumpBack]在加载页面"],
+        "next": ["点赞搭配评选赛", "搭配评选赛评委结束"],
         "timeout": 30000,
         "rate_limit": 250
     },
@@ -147,7 +136,7 @@
                             "type": "OCR",
                             "param": {
                                 "expected": ["我当评委|当评|评委"],
-                                "roi": [533, 1110, 173, 169]
+                                "roi": [346, 1092, 374, 188]
                             }
                         }
                     }
@@ -157,5 +146,264 @@
         "action": "DoNothing",
         "post_delay": 0,
         "next": []
+    },
+    "搭配评选赛自动参赛": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "outfit_contest_submit"
+            }
+        }
+    },
+    "搭配评选赛已参赛": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["修改作品"],
+                "roi": [458, 1059, 262, 221]
+            }
+        }
+    },
+    "搭配评选赛点击我要参赛": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["我要参赛"],
+                "roi": [530, 1111, 190, 158]
+            }
+        },
+        "action": {
+            "type": "Click"
+        }
+    },
+    "搭配评选赛上划分类": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Swipe",
+            "param": {
+                "begin": [652, 1219],
+                "end": [652, 236]
+            }
+        }
+    },
+    "搭配评选赛点击套装": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["^套?\\s*装$"],
+                "roi": [616, 620, 104, 63]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "compare_roi": [574, 197, 146, 1074],
+                    "max_retries": 1,
+                    "fail_on_timeout": true
+                }
+            }
+        }
+    },
+    "搭配评选赛选择首套": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [".+"],
+                                "roi": [541, 17, 179, 69]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": [".+"],
+                                "roi": [552, 77, 168, 55]
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "compare_roi": [223, 152, 256, 908],
+                    "max_retries": 1,
+                    "fail_on_timeout": true,
+                    "target": [646, 266, 10, 14]
+                }
+            }
+        }
+    },
+    "搭配评选赛换好了": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["换好了"],
+                "roi": [14, 1154, 249, 94]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "compare_roi": [15, 119, 156, 451],
+                    "max_retries": 1,
+                    "fail_on_timeout": true
+                }
+            }
+        }
+    },
+    "搭配评选赛投稿参赛": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["投稿参赛"],
+                "roi": [231, 1139, 262, 105]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "compare_roi": [22, 739, 59, 515],
+                    "max_retries": 1,
+                    "fail_on_timeout": true
+                }
+            }
+        }
+    },
+    "搭配评选赛拍摄确认上传": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["确认上传"],
+                "roi": [237, 1132, 254, 100]
+            }
+        },
+        "action": {
+            "type": "Click"
+        }
+    },
+    "搭配评选赛上传封面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["上传封面"],
+                "roi": [258, 197, 205, 70]
+            }
+        }
+    },
+    "搭配评选赛保存模板已勾选": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [93, 795, 32, 32],
+                "lower": [210, 90, 90],
+                "upper": [255, 180, 180],
+                "count": 200
+            }
+        },
+        "action": {
+            "type": "Click"
+        }
+    },
+    "搭配评选赛上传定格已勾选": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [93, 845, 32, 32],
+                "lower": [210, 90, 90],
+                "upper": [255, 180, 180],
+                "count": 200
+            }
+        },
+        "action": {
+            "type": "Click"
+        }
+    },
+    "搭配评选赛封面确认上传": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "搭配评选赛上传封面",
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": ["确认上传"],
+                                "roi": [362, 969, 264, 97]
+                            }
+                        }
+                    }
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Click"
+        }
+    },
+    "搭配评选赛不公开提示确定": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": ["未勾选"],
+                                "roi": [0, 368, 720, 420]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "expected": ["^确认$"],
+                                "roi": [0, 368, 720, 420]
+                            }
+                        }
+                    }
+                ],
+                "box_index": 1
+            }
+        },
+        "action": {
+            "type": "Click"
+        }
+    },
+    "搭配评选赛分享页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["分享"],
+                "roi": [24, 1140, 120, 112]
+            }
+        }
+    },
+    "搭配评选赛投稿后返回": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Click",
+            "param": {
+                "target": [36, 65]
+            }
+        }
     }
 }

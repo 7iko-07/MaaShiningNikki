@@ -92,7 +92,8 @@
 			}
 	    },
         "post_delay": 1000,
-		"next": ["点击心阶-开始搭配","点击心阶-空白"]
+		"next": ["点击心阶-开始挑战"],
+        "timeout": 30000
     },
     "点击心阶-开始搭配":{
 		"recognition": {
@@ -554,32 +555,23 @@
                     "开始挑战"
                 ],
                 "roi": [
-                    298,
-                    968,
-                    132,
-                    47
+                    420,
+                    950,
+                    250,
+                    90
                 ]
             }
         },
         "action": {
             "type": "Custom",
             "param": {
-                "custom_action": "memory_stairway_challenge",
-                "custom_action_param": {
-                    "compare_roi": [
-                        29,
-                        306,
-                        653,
-                        502
-                    ]
-                }
+                "custom_action": "memory_stairway_challenge"
             }
         },
-        "post_delay": 1000,
+        "post_delay": 0,
         "timeout": 3000,
         "next": [
-            "[JumpBack]在加载页面",
-            "点击心阶-空白"
+            "点击境遇1"
         ]
     },
     "点击心阶-空白":{
@@ -614,8 +606,8 @@
 			}
 		},
         "post_delay": 1000,
-        "timeout": 3000,
-		"next": ["[JumpBack]在加载页面","点击境遇1-开始挑战"]
+        "timeout": 30000,
+		"next": ["点击境遇1-开始挑战"]
 	},
     "点击境遇1-开始挑战":{
 		"recognition": {
@@ -628,13 +620,12 @@
         "action": {
             "type": "Custom",
 			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+                "custom_action": "memory_stairway_challenge"
 			}
 		},
-        "post_delay": 1000,
+        "post_delay": 0,
         "timeout": 3000,
-		"next": ["[JumpBack]在加载页面","点击境遇1-推荐搭配"]
+		"next": ["点击境遇2"]
 	},
     "点击境遇1-推荐搭配":{
 		"recognition": {
@@ -730,8 +721,8 @@
 			}
 		},
         "post_delay": 1000,
-        "timeout": 3000,
-		"next": ["[JumpBack]在加载页面","点击境遇2-开始挑战"]
+        "timeout": 30000,
+		"next": ["点击境遇2-开始挑战"]
 	},
     "点击境遇2-开始挑战":{
 		"recognition": {
@@ -744,13 +735,12 @@
         "action": {
             "type": "Custom",
 			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+                "custom_action": "memory_stairway_challenge"
 			}
 		},
-        "post_delay": 1000,
+        "post_delay": 0,
         "timeout": 3000,
-		"next": ["[JumpBack]在加载页面","点击境遇2-推荐搭配"]
+		"next": ["stop"]
 	},
     "点击境遇2-推荐搭配":{
 		"recognition": {
@@ -830,6 +820,53 @@
 		"repeat_delay": 1000,
 		"next": ["stop"]
 	},
+    "心阶快速战斗选项": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [115, 960, 155, 65],
+                "expected": ["快速战斗"]
+            }
+        }
+    },
+    "心阶快速战斗已开启": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [78, 972, 36, 36],
+                "lower": [210, 60, 70],
+                "upper": [255, 190, 190],
+                "count": 100
+            }
+        }
+    },
+    "心阶搭配之力计算提示": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [230, 600, 270, 85],
+                "expected": ["搭配之力计算中", "请搭配师稍等几秒"]
+            }
+        }
+    },
+    "心阶挑战奖励弹窗": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [200, 210, 330, 300],
+                "expected": ["恭喜获得"]
+            }
+        }
+    },
+    "心阶战斗评分弹窗": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [255, 350, 165, 200],
+                "expected": ["战斗评分"]
+            }
+        }
+    },
     "心阶搭配下一步按钮": {
         "recognition": {
             "type": "OCR",

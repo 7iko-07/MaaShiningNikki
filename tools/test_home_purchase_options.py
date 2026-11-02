@@ -3,6 +3,7 @@
 import copy
 import itertools
 import json
+import re
 import subprocess
 import sys
 import unittest
@@ -16,23 +17,56 @@ INTERFACE = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-
 SHARED_NODES = json.loads((ROOT / "assets/resource/pipeline/tools.json").read_text(encoding="utf-8"))
 # Option, routing node, selection node, purchase node, maximum, default.
 PRODUCTS = (
+    ("采购流心奶黄月饼次数", "采购流心奶黄月饼分流", "点击流心奶黄月饼", "点击购买流心奶黄月饼", 3, 1),
+    ("采购玫玫山楂月饼次数", "采购玫玫山楂月饼分流", "点击玫玫山楂月饼", "点击购买玫玫山楂月饼", 3, 1),
+    ("采购龙井流心月饼次数", "采购龙井流心月饼分流", "点击龙井流心月饼", "点击购买龙井流心月饼", 3, 1),
     ("采购番茄炒蛋次数", "采购番茄炒蛋分流", "点击番茄炒蛋", "点击购买番茄炒蛋", 3, 3),
+    ("采购草莓刨冰次数", "采购草莓刨冰分流", "点击草莓刨冰", "点击购买草莓刨冰", 3, 1),
+    ("采购桃花酥次数", "采购桃花酥分流", "点击桃花酥", "点击购买桃花酥", 3, 1),
+    ("采购番茄薯片次数", "采购番茄薯片分流", "点击番茄薯片", "点击购买番茄薯片", 3, 1),
     ("采购电影票次数", "采购电影票分流", "点击电影票", "点击购买电影票", 2, 2),
     ("采购调色板次数", "采购调色板分流", "点击缤纷调色板", "点击购买缤纷调色板", 2, 2),
     ("采购晴雨伞次数", "采购晴雨伞分流", "点击晴雨伞", "点击购买晴雨伞", 2, 1),
+    ("采购运动手环次数", "采购运动手环分流", "点击运动手环", "点击购买运动手环", 2, 1),
 )
 EXIT = "点击空白-日常采购"
-COMBINATIONS = tuple(itertools.product(*(range(product[4] + 1) for product in PRODUCTS)))
+DEFAULTS = tuple(product[5] for product in PRODUCTS)
+MAXIMUMS = tuple(product[4] for product in PRODUCTS)
+# Cover the original 108 combinations plus each new quantity and every product pair.
+combinations = {tuple(0 for _ in PRODUCTS), DEFAULTS, MAXIMUMS}
+for old in itertools.product(range(4), range(3), range(3), range(3)):
+    counts = [0] * len(PRODUCTS)
+    for index, count in zip((3, 7, 8, 9), old):
+        counts[index] = count
+    combinations.add(tuple(counts))
+for index, product in enumerate(PRODUCTS):
+    for count in range(1, product[4] + 1):
+        counts = [0] * len(PRODUCTS)
+        counts[index] = count
+        combinations.add(tuple(counts))
+for first, second in itertools.combinations(range(len(PRODUCTS)), 2):
+    counts = [0] * len(PRODUCTS)
+    counts[first], counts[second] = MAXIMUMS[first], MAXIMUMS[second]
+    combinations.add(tuple(counts))
+COMBINATIONS = tuple(sorted(combinations))
 
 
-def selected_overrides(quantities):
+def selected_overrides(quantities, selected=None):
     overrides = {}
-    for product, quantity in zip(PRODUCTS, quantities):
-        option = INTERFACE["option"][product[0]]
-        case = next(case for case in option["cases"] if case["name"] == str(quantity))
-        for name, fields in case["pipeline_override"].items():
-            # These cases only replace top-level next/repeat fields.
-            overrides.setdefault(name, {}).update(copy.deepcopy(fields))
+    quantities = {product[0]: quantity for product, quantity in zip(PRODUCTS, quantities)}
+    if selected is None:
+        selected = {name for name, quantity in quantities.items() if quantity > 0}
+    for group_name in ("采购小物", "采购零食"):
+        for product_case in INTERFACE["option"][group_name]["cases"]:
+            option_name, = product_case["option"]
+            if option_name not in selected:
+                continue
+            option = INTERFACE["option"][option_name]
+            case = next(case for case in option["cases"]
+                        if case["name"] == str(quantities[option_name]))
+            for name, fields in case["pipeline_override"].items():
+                # These cases only replace top-level next/repeat fields.
+                overrides.setdefault(name, {}).update(copy.deepcopy(fields))
     return overrides
 
 
@@ -45,7 +79,7 @@ def configured_pipeline(quantities):
 
 def ready_path(get_node):
     """Follow the first ready normal edge, with no popup or scrolling needed."""
-    current = "采购番茄炒蛋分流"
+    current = "点击采购零食"
     path = []
     while current != EXIT:
         if current in path:
@@ -64,13 +98,32 @@ def ready_path(get_node):
 class HomePurchaseOptionTests(unittest.TestCase):
     def test_choices_defaults_and_task_registration(self):
         task = next(task for task in INTERFACE["task"] if task["name"] == "回家")
+        self.assertEqual(task["option"][:2], ["采购小物", "采购零食"])
+        registered = []
+        for group_name in task["option"][:2]:
+            group = INTERFACE["option"][group_name]
+            self.assertEqual(group["type"], "checkbox")
+            self.assertEqual(group["default_case"], [])
+            for case in group["cases"]:
+                option_name, = case["option"]
+                registered.append(option_name)
+                self.assertEqual(INTERFACE["option"][option_name]["label"], case["name"])
+        self.assertCountEqual(registered, [product[0] for product in PRODUCTS])
         for option_name, _, _, _, maximum, default in PRODUCTS:
             option = INTERFACE["option"][option_name]
-            self.assertIn(option_name, task["option"])
+            self.assertNotIn(option_name, task["option"])
             self.assertEqual(option["type"], "select")
             self.assertEqual([case["name"] for case in option["cases"]],
                              [str(quantity) for quantity in range(maximum + 1)])
             self.assertEqual(option["default_case"], str(default))
+
+    def test_unchecked_products_ignore_saved_quantities_and_selected_zero_still_skips(self):
+        self.assertEqual(selected_overrides(DEFAULTS, selected=set()), {})
+        path = ready_path(PIPELINE.__getitem__)
+        self.assertFalse(any(name.startswith("点击购买") for name in path))
+        overrides = selected_overrides([0] * len(PRODUCTS), selected={p[0] for p in PRODUCTS})
+        for name, fields in overrides.items():
+            self.assertEqual(PIPELINE[name]["next"], fields["next"])
 
     def test_cases_only_change_their_own_route_and_quantity(self):
         for option_name, gate, _, purchase, _, _ in PRODUCTS:
@@ -85,7 +138,7 @@ class HomePurchaseOptionTests(unittest.TestCase):
                     if case["name"] != "0":
                         self.assertGreater(case["pipeline_override"][purchase]["repeat"], 0)
 
-    def test_all_108_quantity_combinations_skip_zero_and_preserve_order(self):
+    def test_quantity_combinations_skip_zero_and_preserve_screen_order(self):
         for quantities in COMBINATIONS:
             with self.subTest(quantities=quantities):
                 pipeline = configured_pipeline(quantities)
@@ -93,13 +146,14 @@ class HomePurchaseOptionTests(unittest.TestCase):
                 expected = []
                 for product, quantity in zip(PRODUCTS, quantities):
                     _, _, selection, purchase, _, _ = product
-                    self.assertEqual(selection in path, quantity > 0)
+                    self.assertNotIn(selection, path)
+                    self.assertEqual("查找" + selection.removeprefix("点击") in path, quantity > 0)
                     self.assertEqual(purchase in path, quantity > 0)
                     if quantity:
                         self.assertEqual(pipeline[purchase].get("repeat", 1), quantity)
                         expected.append(purchase)
                 self.assertEqual([name for name in path if name.startswith("点击购买")], expected)
-                self.assertEqual("点击采购零食" in path, quantities[0] > 0)
+                self.assertIn("点击采购小物", path)
 
     def test_study_setting_is_independent_of_purchase_quantities(self):
         for quantities in COMBINATIONS:
@@ -116,6 +170,15 @@ class HomePurchaseOptionTests(unittest.TestCase):
         for _, _, selection, purchase, _, _ in PRODUCTS:
             selected = PIPELINE[selection]
             self.assertEqual(selected["recognition"]["type"], "OCR")
+            pattern, = selected["recognition"]["param"]["expected"]
+            name = selection.removeprefix("点击")
+            self.assertEqual(pattern, f"^{name}$")
+            self.assertIsNotNone(re.search(pattern, name))
+            for text in ("其他" + name, name + "其他", "晴雨伞" if name != "晴雨伞" else "雨伞"):
+                self.assertIsNone(re.search(pattern, text))
+            x, y, w, h = selected["recognition"]["param"]["roi"]
+            self.assertGreaterEqual(y, 540)  # Exclude the owned-item strip.
+            self.assertLessEqual(y + h, 920)  # Exclude the selected-item details.
             self.assertEqual(selected["action"]["param"], {"custom_action": "click_center"})
             self.assertEqual(selected["next"], [purchase])
             recognition = PIPELINE[purchase]["recognition"]
@@ -124,10 +187,22 @@ class HomePurchaseOptionTests(unittest.TestCase):
             self.assertEqual(recognition["param"]["roi"], [351, 936, 369, 145])
 
     def test_swipe_and_popups_return_to_their_dispatcher(self):
-        self.assertEqual(PIPELINE["采购晴雨伞分流"]["next"], [
-            "点击晴雨伞", "[JumpBack]点击确定活力不足", "[JumpBack]点击体力用尽确定",
-            "[JumpBack]上划日常采购",
-        ])
+        for index, (_, gate, selection, purchase, _, _) in enumerate(PRODUCTS):
+            finder = PIPELINE["查找" + selection.removeprefix("点击")]
+            params = finder["action"]["param"]["custom_action_param"]
+            self.assertEqual(finder["action"]["param"]["custom_action"], "home_purchase_find")
+            self.assertEqual(params["target_node"], selection)
+            self.assertEqual(params["skip_next"], PIPELINE[gate]["next"][0])
+            self.assertEqual(finder["next"], [purchase])
+            for node in (finder, PIPELINE[gate]):
+                self.assertEqual(node["pre_delay"], 0)
+                self.assertEqual(node["post_delay"], 0)
+            self.assertEqual(PIPELINE[purchase]["next"][-1], params["skip_next"])
+            self.assertEqual(PIPELINE[purchase]["next"][:2], [
+                "[JumpBack]点击确定活力不足", "[JumpBack]点击体力用尽确定",
+            ])
+        self.assertEqual(PIPELINE["上划日常采购"]["action"]["param"],
+                         {"begin": [362, 850], "end": [360, 660]})
         for leaf in ("上划日常采购", "点击确定活力不足"):
             self.assertFalse(PIPELINE[leaf].get("next"))
 
@@ -151,11 +226,13 @@ def native_audit():
     resource = Resource()
     assert resource.post_bundle(ROOT / "assets/resource").wait().succeeded
     for quantities in COMBINATIONS:
+        assert resource.override_pipeline(PIPELINE)
         assert resource.override_pipeline(selected_overrides(quantities))
         path = ready_path(resource.get_node_data)
         for product, quantity in zip(PRODUCTS, quantities):
             _, _, selection, purchase, _, _ = product
-            assert (selection in path) == (quantity > 0), (quantities, path)
+            assert selection not in path, (quantities, path)
+            assert ("查找" + selection.removeprefix("点击") in path) == (quantity > 0), (quantities, path)
             assert (purchase in path) == (quantity > 0), (quantities, path)
             node = resource.get_node_data(purchase)
             if quantity:
@@ -196,19 +273,25 @@ def native_audit():
     assert controller.post_connection().wait().succeeded
     tasker = Tasker()
     assert tasker.bind(resource, controller)
-    samples = ((3, 2, 2, 1), (0, 0, 0, 0), (3, 2, 2, 2), (3, 0, 0, 0),
-               (0, 2, 0, 0), (0, 0, 2, 0), (0, 0, 0, 2), (3, 2, 2, 1))
+    samples = [DEFAULTS, tuple(0 for _ in PRODUCTS), MAXIMUMS]
+    samples.extend(tuple(product[4] if index == chosen else 0
+                         for index, product in enumerate(PRODUCTS))
+                   for chosen in range(len(PRODUCTS)))
+    samples.append(DEFAULTS)
     for quantities in samples:
         executed.clear()
+        assert resource.override_pipeline(PIPELINE)
+        assert resource.override_pipeline(fixtures)
         assert resource.override_pipeline(selected_overrides(quantities))
-        assert tasker.post_task("采购番茄炒蛋分流").wait().succeeded
+        assert tasker.post_task("点击采购零食").wait().succeeded
         counts = Counter(executed)
         for product, quantity in zip(PRODUCTS, quantities):
             _, _, selection, purchase, _, _ = product
-            assert counts[selection] == int(quantity > 0), (quantities, executed)
+            assert counts[selection] == 0, (quantities, executed)
+            assert counts["查找" + selection.removeprefix("点击")] == int(quantity > 0), (quantities, executed)
             assert counts[purchase] == quantity, (quantities, executed)
         assert executed[-1] == EXIT, executed
-    print("PASS: 108 native option combinations and 8 recorded purchase flows")
+    print(f"PASS: {len(COMBINATIONS)} native option combinations and {len(samples)} recorded purchase flows")
 
 
 if __name__ == "__main__":

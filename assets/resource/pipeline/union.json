@@ -687,6 +687,13 @@
         "next": ["返回主页面"],
         "timeout": 5000
     },
+    "联盟入夜派对": {
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "union_party"}
+        },
+        "next": ["返回主页面"]
+    },
     "返回联盟页面": {
         "recognition": "DirectHit",
         "action": {

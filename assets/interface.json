@@ -7,7 +7,7 @@
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
     "version": "v0.0.15-nightly.20261023",
-    "title": "闪现吧暖暖v0.0.15#10.23 - 寻阅山河#10.22",
+    "title": "闪现吧暖暖v0.0.16#11.02 - 寻阅山河#10.22",
     "icon": "logo.ico",
     "mirrorchyan_rid": "MaaShiningNikki",
     "mirrorchyan_multiplatform": true,
@@ -48,7 +48,7 @@
             "__mfa_startup": true,
             "entry": "启动账号记录初始化",
             "option": ["切换服务器", "切换账号"],
-            "description": "游戏语言须为简体中文。"
+            "description": "游戏语言须为简体中文，屏幕宽高比须为 9:16。"
         },
         {
             "name": "关闭闪耀暖暖",
@@ -56,7 +56,7 @@
             "__mfa_shutdown": true,
             "entry": "关闭闪暖",
             "__mfa_end_action": "Pipeline",
-            "description": "任务自动结束后执行；普通任务出错时按“出错后继续运行”设置处理，手动停止不执行。"
+            "description": "任务自动结束后执行。任务出错后是否继续执行，取决于“出错后继续运行”设置。"
         },
         {
             "name": "好友",
@@ -68,7 +68,7 @@
             "name": "联盟",
             "label": "🤝 联盟",
             "entry": "联盟任务链入口",
-            "option": ["机密任务执行方式"],
+            "option": ["机密任务执行方式", "联盟入夜派对"],
             "description": "完成机密任务、免费及金币捐献，领取联盟福利。"
         },
         {
@@ -81,12 +81,12 @@
             "name": "福利",
             "label": "🎁 福利",
             "entry": "福利任务链入口",
-            "description": "每日签到、补签并领取免费体力。"
+            "description": "每日签到、领取补签次数，领取免费体力。"
         },
         {
             "name": "美甲",
             "label": "💅 美甲",
-            "description":  "雇佣免费店员、提取心意币，完成特约顾客和美甲点赞。",
+            "description":  "雇佣免费店员、提取心意币、领取周好评、完成特约顾客、美甲点赞和领取话题任务。",
             "entry": "美甲任务链入口",
             "option": [
                 "美甲特约顾客任务"
@@ -97,20 +97,18 @@
             "label": "🏠 回家",
             "entry": "回家任务链入口",
             "option": [
-                "采购电影票次数",
-                "采购调色板次数",
-                "采购晴雨伞次数",
-                "采购番茄炒蛋次数",
+                "采购小物",
+                "采购零食",
                 "自习室是否离开",
                 "是否做自习室好感任务"
             ],
-            "description": "按设置次数采购零食和金币小物，可继续完成自习室好感任务；0次跳过对应商品。"
+            "description": "采购所选金币小物和零食，完成自习室好感任务。"
         },
         {
             "name": "分享",
             "label": "📢 分享",
             "entry": "分享任务链入口",
-            "description": "分享并领取奖励，需在模拟器内安装QQ，无需登录。可设置最多分享次数。",
+            "description": "分享并领取奖励，需在模拟器内安装 QQ，无需登录。",
             "option": [
                 "分享次数"
             ]
@@ -122,7 +120,7 @@
             "option": [
                 "免费感应", "谜海感应", "是否在心之门这里分享"
             ],
-            "description": "最多成功感应两次。"
+            "description": "每次运行最多成功感应两次。"
         },
         {
             "name": "月卡领取",
@@ -145,7 +143,7 @@
             "label": "💭 织梦空间",
             "entry": "织梦空间任务链入口",
             "option": ["织梦空间子任务"],
-            "description": "按勾选完成七日妙想、签到和织梦经营。七日妙想仅处理当前页面支持的任务；分享需安装QQ且保持未登录。经营每批生产5件，可选择自然等待或使用能量石。"
+            "description": "依次完成七日妙想、签到、织梦经营和成衣清理。其中七日妙想分享需安装 QQ。"
         },
         {
             "name": "时光钟表铺",
@@ -175,7 +173,7 @@
         {
             "name": "情报屋",
             "label": "🔍 情报屋",
-            "description":  "",
+            "description":  "对所选情报对象进行托管调查，消耗体力。",
             "entry": "情报屋任务链入口",
             "option": [
                 "获取情报对象选择",
@@ -185,7 +183,7 @@
         {
             "name": "制作目标服装",
             "label": "🧵 制作目标服装",
-            "description":  "收集制衣引导目标服装的材料，不自动制作服装。",
+            "description":  "仅收集制衣引导目标服装的材料。",
             "entry": "制作目标服装任务链入口",
             "option": [
                 "制作目标服装材料任务"
@@ -194,7 +192,7 @@
         {
             "name": "主线普通关卡",
             "label": "📖 主线普通关卡",
-            "description": "挑战指定主线关卡。0次表示尽量用完可用体力，不购买体力。",
+            "description": "挑战指定主线普通关卡，消耗体力，不购买体力。",
             "entry": "主线故事任务链入口",
             "option": [
                 "主线挑战卷",
@@ -223,7 +221,8 @@
             "name": "搭配评选赛",
             "label": "👗 搭配评选赛",
             "entry": "搭配评选赛任务链入口",
-            "description": "为搭配评选赛作品点赞。"
+            "option": ["搭配评选赛自动参赛"],
+            "description": "北京时间每周五21:00至周六05:00为结算期，跳过任务；周六05:00至周一05:00为参赛期；其余时间为评选期，自动点赞。"
         },
         {
             "name": "心阶",
@@ -234,7 +233,7 @@
         {
             "name": "回忆小铺",
             "label": "🛍️ 回忆小铺",
-            "description": "先处理限时回忆小铺，再处理回忆小铺，两家独立设置。遇到目标商品时暂停供手动处理；刷新受限或刷新卡用完时继续下一家。",
+            "description": "依次处理限时回忆小铺和回忆小铺。遇到目标商品时暂停，请手动处理；无法继续刷新时转到下一家。",
             "entry": "回忆小铺任务链入口",
             "option": ["回忆小铺店铺选择"]
         },
@@ -282,6 +281,13 @@
             "default_check": false,
             "description": "自动进入翻转印象并完成一次大师难度翻牌配对，仅适用于包含该小游戏的活动。",
             "group": ["往期活动"]
+        },
+        {
+            "name": "入夜派对",
+            "label": "🎉 入夜派对",
+            "entry": "入夜派对任务链入口",
+            "description": "北京时间10:10、19:10、20:10开放，每场10分钟；未开放时跳过。自动回答已收录题目，未知题跳过。",
+            "group": ["辅助工具"]
         },
         {
             "name": "兑换码",
@@ -348,6 +354,7 @@
                 {"name": "活动：湘间君子女", "enabled": false, "group": ["往期活动"]},
                 {"name": "活动：寻阅山河", "enabled": false, "group": ["往期活动"]},
                 {"name": "翻转印象", "enabled": false, "group": ["往期活动"]},
+                {"name": "入夜派对", "enabled": true, "group": ["辅助工具"]},
                 {"name": "兑换码", "enabled": true, "group": ["辅助工具"]},
                 {"name": "活动商店", "enabled": false, "group": ["辅助工具"]},
                 {"name": "剧情自动点击", "enabled": false, "group": ["辅助工具"]}
@@ -407,6 +414,16 @@
                         }
                     }
                 }
+            ]
+        },
+        "联盟入夜派对": {
+            "type": "switch",
+            "label": "入夜派对",
+            "description": "完成联盟日常后参加入夜派对，未开放时跳过。",
+            "default_case": "No",
+            "cases": [
+                {"name": "Yes", "pipeline_override": {"退出联盟福利": {"next": ["联盟入夜派对"]}}},
+                {"name": "No", "pipeline_override": {"退出联盟福利": {"next": ["返回主页面"]}}}
             ]
         },
         "切换服务器": {
@@ -1637,6 +1654,16 @@
                 }
             ]
         },
+        "搭配评选赛自动参赛": {
+            "type": "switch",
+            "label": "自动参赛",
+            "description": "开启后选择套装列表中的第一个套装并直接投稿，不保存为模板、不上传至定格。已参赛则跳过；关闭时参赛期直接跳过。追求搭配效果请手动参赛。",
+            "default_case": "No",
+            "cases": [
+                {"name": "Yes", "pipeline_override": {"搭配评选赛任务链入口": {"attach": {"auto_submit": true}}}},
+                {"name": "No", "pipeline_override": {"搭配评选赛任务链入口": {"attach": {"auto_submit": false}}}}
+            ]
+        },
         "竞技场是否搭配服装":{
             "type": "select",
             "label": "搭配方式",
@@ -1675,7 +1702,7 @@
         "免费感应": {
             "type": "switch",
             "default_case": "No",
-            "description": "依次检查绮海、幻海的免费次数，各尝试一次。",
+            "description": "依次检查绮海、幻海、谜海的免费次数，各尝试一次。",
             "__mfa_confirm_on_enable": "可能会误用资源，谨慎开启",
             "cases": [
                 {"name": "Yes", "pipeline_override": {"心之门免费按钮": {"enabled": true}}},
@@ -1708,9 +1735,34 @@
                 }
             ]
         },
+        "采购小物": {
+            "type": "checkbox",
+            "description": "勾选要买的小物，再设置各自次数；仅购买金币商品。",
+            "default_case": [],
+            "cases": [
+                {"name": "电影票", "option": ["采购电影票次数"]},
+                {"name": "调色板", "option": ["采购调色板次数"]},
+                {"name": "晴雨伞", "option": ["采购晴雨伞次数"]},
+                {"name": "运动手环", "option": ["采购运动手环次数"]}
+            ]
+        },
+        "采购零食": {
+            "type": "checkbox",
+            "description": "勾选要买的零食，再设置各自次数；仅购买金币商品。",
+            "default_case": [],
+            "cases": [
+                {"name": "流心奶黄月饼", "option": ["采购流心奶黄月饼次数"]},
+                {"name": "玫玫山楂月饼", "option": ["采购玫玫山楂月饼次数"]},
+                {"name": "龙井流心月饼", "option": ["采购龙井流心月饼次数"]},
+                {"name": "番茄炒蛋", "option": ["采购番茄炒蛋次数"]},
+                {"name": "草莓刨冰", "option": ["采购草莓刨冰次数"]},
+                {"name": "桃花酥", "option": ["采购桃花酥次数"]},
+                {"name": "番茄薯片", "option": ["采购番茄薯片次数"]}
+            ]
+        },
         "采购电影票次数": {
             "type": "select",
-            "label": "采购小物：电影票",
+            "label": "电影票",
             "description": "仅购买金币商品，0次跳过。",
             "default_case": "2",
             "cases": [
@@ -1723,14 +1775,14 @@
                 {
                     "name": "1",
                     "pipeline_override": {
-                        "采购电影票分流": {"next": ["点击电影票"]},
+                        "采购电影票分流": {"next": ["查找电影票"]},
                         "点击购买电影票": {"repeat": 1}
                     }
                 },
                 {
                     "name": "2",
                     "pipeline_override": {
-                        "采购电影票分流": {"next": ["点击电影票"]},
+                        "采购电影票分流": {"next": ["查找电影票"]},
                         "点击购买电影票": {"repeat": 2}
                     }
                 }
@@ -1738,7 +1790,7 @@
         },
         "采购调色板次数": {
             "type": "select",
-            "label": "采购小物：调色板",
+            "label": "调色板",
             "description": "仅购买金币商品，0次跳过。",
             "default_case": "2",
             "cases": [
@@ -1751,14 +1803,14 @@
                 {
                     "name": "1",
                     "pipeline_override": {
-                        "采购调色板分流": {"next": ["点击缤纷调色板"]},
+                        "采购调色板分流": {"next": ["查找缤纷调色板"]},
                         "点击购买缤纷调色板": {"repeat": 1}
                     }
                 },
                 {
                     "name": "2",
                     "pipeline_override": {
-                        "采购调色板分流": {"next": ["点击缤纷调色板"]},
+                        "采购调色板分流": {"next": ["查找缤纷调色板"]},
                         "点击购买缤纷调色板": {"repeat": 2}
                     }
                 }
@@ -1766,74 +1818,308 @@
         },
         "采购晴雨伞次数": {
             "type": "select",
-            "label": "采购小物：晴雨伞",
+            "label": "晴雨伞",
             "description": "仅购买金币商品，0次跳过。",
             "default_case": "1",
             "cases": [
                 {
                     "name": "0",
                     "pipeline_override": {
-                        "采购晴雨伞分流": {"next": ["点击空白-日常采购"]}
+                        "采购晴雨伞分流": {"next": ["采购运动手环分流"]}
                     }
                 },
                 {
                     "name": "1",
                     "pipeline_override": {
-                        "采购晴雨伞分流": {
-                            "next": ["点击晴雨伞", "[JumpBack]点击确定活力不足", "[JumpBack]点击体力用尽确定", "[JumpBack]上划日常采购"]
-                        },
+                        "采购晴雨伞分流": {"next": ["查找晴雨伞"]},
                         "点击购买晴雨伞": {"repeat": 1}
                     }
                 },
                 {
                     "name": "2",
                     "pipeline_override": {
-                        "采购晴雨伞分流": {
-                            "next": ["点击晴雨伞", "[JumpBack]点击确定活力不足", "[JumpBack]点击体力用尽确定", "[JumpBack]上划日常采购"]
-                        },
+                        "采购晴雨伞分流": {"next": ["查找晴雨伞"]},
                         "点击购买晴雨伞": {"repeat": 2}
+                    }
+                }
+            ]
+        },
+        "采购运动手环次数": {
+            "type": "select",
+            "label": "运动手环",
+            "description": "仅购买金币商品，0次跳过。",
+            "default_case": "1",
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "采购运动手环分流": {"next": ["点击空白-日常采购"]}
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "采购运动手环分流": {"next": ["查找运动手环"]},
+                        "点击购买运动手环": {"repeat": 1}
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "采购运动手环分流": {"next": ["查找运动手环"]},
+                        "点击购买运动手环": {"repeat": 2}
+                    }
+                }
+            ]
+        },
+        "采购流心奶黄月饼次数": {
+            "type": "select",
+            "label": "流心奶黄月饼",
+            "description": "仅购买金币商品，0次跳过。",
+            "default_case": "1",
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "采购流心奶黄月饼分流": {"next": ["采购玫玫山楂月饼分流"]}
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "采购流心奶黄月饼分流": {"next": ["查找流心奶黄月饼"]},
+                        "点击购买流心奶黄月饼": {"repeat": 1}
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "采购流心奶黄月饼分流": {"next": ["查找流心奶黄月饼"]},
+                        "点击购买流心奶黄月饼": {"repeat": 2}
+                    }
+                },
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "采购流心奶黄月饼分流": {"next": ["查找流心奶黄月饼"]},
+                        "点击购买流心奶黄月饼": {"repeat": 3}
+                    }
+                }
+            ]
+        },
+        "采购玫玫山楂月饼次数": {
+            "type": "select",
+            "label": "玫玫山楂月饼",
+            "description": "仅购买金币商品，0次跳过。",
+            "default_case": "1",
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "采购玫玫山楂月饼分流": {"next": ["采购龙井流心月饼分流"]}
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "采购玫玫山楂月饼分流": {"next": ["查找玫玫山楂月饼"]},
+                        "点击购买玫玫山楂月饼": {"repeat": 1}
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "采购玫玫山楂月饼分流": {"next": ["查找玫玫山楂月饼"]},
+                        "点击购买玫玫山楂月饼": {"repeat": 2}
+                    }
+                },
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "采购玫玫山楂月饼分流": {"next": ["查找玫玫山楂月饼"]},
+                        "点击购买玫玫山楂月饼": {"repeat": 3}
+                    }
+                }
+            ]
+        },
+        "采购龙井流心月饼次数": {
+            "type": "select",
+            "label": "龙井流心月饼",
+            "description": "仅购买金币商品，0次跳过。",
+            "default_case": "1",
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "采购龙井流心月饼分流": {"next": ["采购番茄炒蛋分流"]}
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "采购龙井流心月饼分流": {"next": ["查找龙井流心月饼"]},
+                        "点击购买龙井流心月饼": {"repeat": 1}
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "采购龙井流心月饼分流": {"next": ["查找龙井流心月饼"]},
+                        "点击购买龙井流心月饼": {"repeat": 2}
+                    }
+                },
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "采购龙井流心月饼分流": {"next": ["查找龙井流心月饼"]},
+                        "点击购买龙井流心月饼": {"repeat": 3}
                     }
                 }
             ]
         },
         "采购番茄炒蛋次数": {
             "type": "select",
-            "label": "采购零食：番茄炒蛋",
+            "label": "番茄炒蛋",
             "description": "仅购买金币商品，0次跳过。",
             "default_case": "3",
             "cases": [
                 {
                     "name": "0",
                     "pipeline_override": {
-                        "采购番茄炒蛋分流": {"next": ["点击采购小物"]}
+                        "采购番茄炒蛋分流": {"next": ["采购草莓刨冰分流"]}
                     }
                 },
                 {
                     "name": "1",
                     "pipeline_override": {
-                        "采购番茄炒蛋分流": {"next": ["点击采购零食"]},
+                        "采购番茄炒蛋分流": {"next": ["查找番茄炒蛋"]},
                         "点击购买番茄炒蛋": {"repeat": 1}
                     }
                 },
                 {
                     "name": "2",
                     "pipeline_override": {
-                        "采购番茄炒蛋分流": {"next": ["点击采购零食"]},
+                        "采购番茄炒蛋分流": {"next": ["查找番茄炒蛋"]},
                         "点击购买番茄炒蛋": {"repeat": 2}
                     }
                 },
                 {
                     "name": "3",
                     "pipeline_override": {
-                        "采购番茄炒蛋分流": {"next": ["点击采购零食"]},
+                        "采购番茄炒蛋分流": {"next": ["查找番茄炒蛋"]},
                         "点击购买番茄炒蛋": {"repeat": 3}
+                    }
+                }
+            ]
+        },
+        "采购草莓刨冰次数": {
+            "type": "select",
+            "label": "草莓刨冰",
+            "description": "仅购买金币商品，0次跳过。",
+            "default_case": "1",
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "采购草莓刨冰分流": {"next": ["采购桃花酥分流"]}
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "采购草莓刨冰分流": {"next": ["查找草莓刨冰"]},
+                        "点击购买草莓刨冰": {"repeat": 1}
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "采购草莓刨冰分流": {"next": ["查找草莓刨冰"]},
+                        "点击购买草莓刨冰": {"repeat": 2}
+                    }
+                },
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "采购草莓刨冰分流": {"next": ["查找草莓刨冰"]},
+                        "点击购买草莓刨冰": {"repeat": 3}
+                    }
+                }
+            ]
+        },
+        "采购桃花酥次数": {
+            "type": "select",
+            "label": "桃花酥",
+            "description": "仅购买金币商品，0次跳过。",
+            "default_case": "1",
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "采购桃花酥分流": {"next": ["采购番茄薯片分流"]}
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "采购桃花酥分流": {"next": ["查找桃花酥"]},
+                        "点击购买桃花酥": {"repeat": 1}
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "采购桃花酥分流": {"next": ["查找桃花酥"]},
+                        "点击购买桃花酥": {"repeat": 2}
+                    }
+                },
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "采购桃花酥分流": {"next": ["查找桃花酥"]},
+                        "点击购买桃花酥": {"repeat": 3}
+                    }
+                }
+            ]
+        },
+        "采购番茄薯片次数": {
+            "type": "select",
+            "label": "番茄薯片",
+            "description": "仅购买金币商品，0次跳过。",
+            "default_case": "1",
+            "cases": [
+                {
+                    "name": "0",
+                    "pipeline_override": {
+                        "采购番茄薯片分流": {"next": ["点击采购小物"]}
+                    }
+                },
+                {
+                    "name": "1",
+                    "pipeline_override": {
+                        "采购番茄薯片分流": {"next": ["查找番茄薯片"]},
+                        "点击购买番茄薯片": {"repeat": 1}
+                    }
+                },
+                {
+                    "name": "2",
+                    "pipeline_override": {
+                        "采购番茄薯片分流": {"next": ["查找番茄薯片"]},
+                        "点击购买番茄薯片": {"repeat": 2}
+                    }
+                },
+                {
+                    "name": "3",
+                    "pipeline_override": {
+                        "采购番茄薯片分流": {"next": ["查找番茄薯片"]},
+                        "点击购买番茄薯片": {"repeat": 3}
                     }
                 }
             ]
         },
         "是否做自习室好感任务":{
             "type": "switch",
-            "description": "开启后在采购结束时继续完成自习室任务；采购次数全为0时只做自习室任务。",
+            "description": "开启后在采购结束时继续完成自习室任务；未选择商品或次数全为0时只做自习室任务。",
             "default_case": "Yes",
             "cases": [
                 {
@@ -1868,7 +2154,7 @@
                 }
             ]
         },
-        "获取情报对象选择":{
+        "获取情报对象选择": {
             "type": "select",
             "description": "选择调查对象和挑战次数。",
             "default_case": "左一",
@@ -1876,16 +2162,255 @@
                 {
                     "name": "左一",
                     "pipeline_override": {
-                        "情报屋任务链入口":{
-                        "next": ["点击左一", "[JumpBack]上滑情报屋"]
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^左一?$"
+                                    ]
+                                }
+                            }
                         }
                     }
                 },
                 {
                     "name": "秦衣·上",
                     "pipeline_override": {
-                        "情报屋任务链入口":{
-                        "next": ["点击秦衣·上", "[JumpBack]上滑情报屋"]
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^秦衣上$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "秦衣·下",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^秦衣下$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "江西桐",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^江西桐$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "佐森",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^佐森$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "佑果",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^佑果$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "佐森佑果",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^佐森佑果$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "叶维冬",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^叶维冬$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "洛洛梨",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^洛洛梨$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "夜宵·上",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^夜宵上$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "夜宵·下",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^夜宵下$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "倾羽墨",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^倾羽墨$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "收视搭档",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^收视搭档$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "海哲",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^海哲$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "夏梦露",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^夏梦露$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "夜骸",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^夜骸$"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "叶苏夏",
+                    "pipeline_override": {
+                        "点击情报屋关卡": {
+                            "recognition": {
+                                "type": "OCR",
+                                "param": {
+                                    "expected": [
+                                        "^叶苏夏$"
+                                    ]
+                                }
+                            }
                         }
                     }
                 }

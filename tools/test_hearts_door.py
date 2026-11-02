@@ -7,6 +7,7 @@ import sys
 import unittest
 from collections import Counter
 from copy import deepcopy
+from itertools import product
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -38,7 +39,7 @@ class HeartsDoorTests(unittest.TestCase):
                        module.RESULT_NODE: {"enabled": True}}
         self.source.get_node_data.side_effect = lambda node: self.config[node]
         self.source.clone.side_effect = self.clone
-        self.free = {"绮海": True, "幻海": True}
+        self.free = {"绮海": True, "幻海": True, "谜海": False}
         self.sea = "谜海"
         self.pending = False
         self.events = []
@@ -70,17 +71,21 @@ class HeartsDoorTests(unittest.TestCase):
         self.context.run_action.side_effect = self.operate
         self.context.run_action_direct.side_effect = self.click
         self.context.run_task.side_effect = self.share
+        self.enabled = {node: data["enabled"] for node, data in self.config.items()}
         self.target = "绮海"
         return self.context
 
     def override(self, data):
+        for node, fields in data.items():
+            if "enabled" in fields:
+                self.enabled[node] = fields["enabled"]
         if "心之门阁名" in data:
             self.target = data["心之门阁名"]["recognition"]["param"]["expected"][0]
         return True
 
     def recognize(self, node, image):
         self.checks[(node, self.sea)] += 1
-        if node == self.failed_recognition:
+        if node == self.failed_recognition or not self.enabled.get(node, True):
             return None
         if node in ("心之门阁名", "点击谜之海"):
             hit = self.hide_tabs == 0
@@ -150,22 +155,24 @@ class HeartsDoorTests(unittest.TestCase):
         return [sea for kind, sea in self.events if kind == "draw"]
 
     def test_all_free_combinations_fill_only_remaining_with_mystery(self):
-        for qi in (False, True):
-            for fantasy in (False, True):
-                with self.subTest(qi=qi, fantasy=fantasy):
-                    self.events.clear()
-                    self.checks.clear()
-                    self.free = {"绮海": qi, "幻海": fantasy}
-                    self.assertTrue(self.run_action())
-                    expected = (["绮海"] if qi else []) + (["幻海"] if fantasy else [])
-                    expected += ["谜海"] * (2 - len(expected))
-                    self.assertEqual(self.draws(), expected)
-                    self.assertEqual([e for e in self.events if e[0] == "share"], [("share", expected[0])])
-                    self.assertEqual(sum(kind == "close" for kind, _ in self.events), 2)
-                    for sea in ("绮海", "幻海"):
-                        self.assertEqual(self.checks[module.FREE_NODE, sea], 1)
-                    if qi and fantasy:
-                        self.assertNotIn(("select", "谜海"), self.events)
+        for qi, fantasy, mystery in product((False, True), repeat=3):
+            with self.subTest(qi=qi, fantasy=fantasy, mystery=mystery):
+                self.events.clear()
+                self.checks.clear()
+                self.free = {"绮海": qi, "幻海": fantasy, "谜海": mystery}
+                self.assertTrue(self.run_action())
+                expected = [sea for sea, available in self.free.items() if available][:2]
+                paid = 2 - len(expected)
+                expected += ["谜海"] * paid
+                self.assertEqual(self.draws(), expected)
+                self.assertEqual([e for e in self.events if e[0] == "share"], [("share", expected[0])])
+                self.assertEqual(sum(kind == "close" for kind, _ in self.events), 2)
+                for sea in ("绮海", "幻海"):
+                    self.assertEqual(self.checks[module.FREE_NODE, sea], 1)
+                self.assertEqual(self.checks[module.FREE_NODE, "谜海"], int(not (qi and fantasy)))
+                self.assertEqual(self.events.count(("select", "谜海")), int(not (qi and fantasy)))
+                self.assertEqual(sum(self.checks[node, "谜海"] for node in (
+                    "点击谜之海-感应第一次", "点击谜之海-感应第二次")), paid)
 
     def test_switch_combinations_and_reentry_have_no_shared_count(self):
         for free in (False, True):
@@ -185,14 +192,19 @@ class HeartsDoorTests(unittest.TestCase):
                         if not free:
                             self.assertFalse(any(n == module.FREE_NODE for n, _ in self.checks))
 
-    def test_free_only_reports_actual_zero_or_one_without_mystery(self):
+    def test_free_only_includes_mystery_without_paid_supplement(self):
         self.config["点击谜之海"]["enabled"] = False
-        self.free = {"绮海": False, "幻海": False}
-        self.assertTrue(self.run_action())
-        self.assertEqual(self.draws(), [])
-        self.free["幻海"] = True
-        self.assertTrue(self.run_action())
-        self.assertEqual(self.draws(), ["幻海"])
+        for qi, fantasy, mystery in product((False, True), repeat=3):
+            with self.subTest(qi=qi, fantasy=fantasy, mystery=mystery):
+                self.events.clear()
+                self.checks.clear()
+                self.free = {"绮海": qi, "幻海": fantasy, "谜海": mystery}
+                self.assertTrue(self.run_action())
+                expected = [sea for sea, available in self.free.items() if available][:2]
+                self.assertEqual(self.draws(), expected)
+                self.assertFalse(self.config["点击谜之海"]["enabled"])
+                self.assertEqual(sum(self.checks[node, "谜海"] for node in (
+                    "点击谜之海-感应第一次", "点击谜之海-感应第二次")), 0)
 
     def test_selects_qi_before_checking_and_swipes_when_missing(self):
         self.hide_tabs = 1

@@ -1,0 +1,74 @@
+{
+    "入夜派对任务链入口": {
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "union_party"}
+        }
+    },
+    "入夜派对任务链准备": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "page_navigate",
+                "custom_action_param": {"target": "入夜派对说明"}
+            }
+        }
+    },
+    "导航在入夜派对页面": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [381, 0, 339, 162], "expected": ["入?夜派对"]}
+        }
+    },
+    "入夜派对点击入口": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [330, 960, 180, 180], "expected": ["入夜派对"]}
+        },
+        "action": "Click",
+        "post_delay": 500
+    },
+    "入夜派对读取题目": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [227, 151, 493, 375]}
+        }
+    },
+    "入夜派对点击前往派对": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [230, 740, 265, 110], "expected": ["前往派对"]}
+        },
+        "action": "Click",
+        "post_delay": 0
+    },
+    "入夜派对今日已参与": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [180, 610, 390, 70], "expected": ["今日已参与", "明天再来"]}
+        }
+    },
+    "入夜派对输入框": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [0, 1091, 720, 189], "expected": ["输入"]}
+        },
+        "action": "Click"
+    },
+    "入夜派对输入答案": {
+        "action": {
+            "type": "Custom",
+            "param": {"custom_action": "dreamweaver_input_text"}
+        }
+    },
+    "入夜派对点击空白": {
+        "action": {"type": "Click", "param": {"target": [436, 266, 19, 20]}}
+    },
+    "入夜派对发送": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [0, 1091, 720, 189], "expected": ["发送"]}
+        },
+        "action": "Click"
+    }
+}

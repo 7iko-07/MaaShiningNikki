@@ -814,6 +814,59 @@ class PlayerCardRecoveryTests(WithoutExitPopupTests):
 
 
 class NavigationEntryConfirmationTests(unittest.TestCase):
+    def test_existing_party_page_does_not_navigate_or_click_entry_again(self):
+        self.action._screencap.return_value = "party"
+        self.action._recognize.side_effect = lambda ctx, image, node: (
+            node == "导航在入夜派对页面" and image == "party")
+        argv = SimpleNamespace(custom_action_param=json.dumps({"target": "入夜派对", "wait_timeout": 1}))
+        self.assertTrue(self.action.run(self.context, argv))
+        self.action._run_task.assert_not_called()
+        self.action._run_fallback_step.assert_not_called()
+        self.assertEqual(self.action._screencap.call_count, 2)
+
+    def test_party_entry_click_requires_confirmed_party_page(self):
+        for arrived in (True, False):
+            with self.subTest(arrived=arrived):
+                state = ["alliance"]
+                self.action._screencap.side_effect = None
+                self.action._screencap.return_value = object()
+                self.action._recognize.side_effect = lambda ctx, image, node: (
+                    node == {"alliance": "导航在联盟页面", "invitation": "入夜派对点击前往派对",
+                             "party": "导航在入夜派对页面"}[state[0]])
+
+                def enter(ctx, node):
+                    if node == "入夜派对点击入口":
+                        state[0] = "invitation"
+                    else:
+                        self.assertEqual(node, "入夜派对点击前往派对")
+                        state[0] = "party" if arrived else "invitation"
+                    return True
+
+                self.action._run_task.reset_mock()
+                self.action._run_task.side_effect = enter
+                argv = SimpleNamespace(custom_action_param=json.dumps({"target": "入夜派对", "wait_timeout": 1}))
+                self.assertEqual(self.action.run(self.context, argv), arrived)
+                self.assertEqual([item.args[1] for item in self.action._run_task.call_args_list],
+                                 ["入夜派对点击入口", "入夜派对点击前往派对"])
+                self.action._run_fallback_step.assert_not_called()
+
+    def test_existing_party_invitation_only_clicks_go_to_party(self):
+        state = ["invitation"]
+        self.action._screencap.return_value = object()
+        self.action._recognize.side_effect = lambda ctx, image, node: (
+            node == {"invitation": "入夜派对点击前往派对", "party": "导航在入夜派对页面"}[state[0]])
+
+        def enter(ctx, node):
+            self.assertEqual(node, "入夜派对点击前往派对")
+            state[0] = "party"
+            return True
+
+        self.action._run_task.side_effect = enter
+        argv = SimpleNamespace(custom_action_param=json.dumps({"target": "入夜派对", "wait_timeout": 1}))
+        self.assertTrue(self.action.run(self.context, argv))
+        self.action._run_task.assert_called_once_with(self.context, "入夜派对点击前往派对")
+        self.action._run_fallback_step.assert_not_called()
+
     def setUp(self):
         self.now = 0.0
         self.action = navigation.PageNavigateAction()

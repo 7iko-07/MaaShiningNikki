@@ -1,6 +1,7 @@
 from . import my_action
 from . import my_reco
 from . import click_region
+from . import home_purchase
 from . import arena_action
 from . import make_target_clothes
 from . import select_same_text
@@ -28,3 +29,5 @@ from . import redeem_codes
 from . import story_auto_click
 from . import team_battle_runs
 from . import hearts_door
+from . import outfit_contest
+from . import union_party
