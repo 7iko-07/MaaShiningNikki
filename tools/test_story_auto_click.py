@@ -42,9 +42,9 @@ class StoryEntryTests(unittest.TestCase):
         result, context = self.run_entry()
         self.assertTrue(result)
         call = context.clone.return_value.run_task.call_args
-        self.assertEqual(call.args, ("在活动剧情页面",))
-        candidates = call.kwargs["pipeline_override"]["在活动剧情页面"]["next"]
-        self.assertIn("[JumpBack]点击聊天框", candidates)
+        self.assertEqual(call.args, ("剧情自动点击调度",))
+        candidates = call.kwargs["pipeline_override"]["剧情自动点击调度"]["next"]
+        self.assertIn("[JumpBack]剧情自动点击推进对话", candidates)
         self.assertFalse(any("点击剧情叉号" in node for node in candidates))
         self.assertFalse(any("Anchor" in node for node in candidates))
         context.run_recognition.assert_not_called()
@@ -54,9 +54,9 @@ class StoryEntryTests(unittest.TestCase):
         result, context = self.run_entry({"search_chapters": True})
         self.assertTrue(result)
         call = context.clone.return_value.run_task.call_args
-        self.assertEqual(call.args, ("点击活动剧情",))
-        self.assertEqual(call.kwargs["pipeline_override"]["在活动剧情页面"]["next"][-1],
-                         "[Anchor]点击活动剧情")
+        self.assertEqual(call.args, ("剧情自动点击查找章节",))
+        self.assertEqual(call.kwargs["pipeline_override"]["剧情自动点击调度"]["next"][-1],
+                         "[Anchor]剧情自动点击查找章节")
 
     def test_original_subtask_failure_is_not_reported_as_completion(self):
         result, _ = self.run_entry(success=False)
@@ -90,14 +90,14 @@ class StoryEntryTests(unittest.TestCase):
         task.nodes = [last]
         last.action.success = False
         self.assertFalse(story.is_manual_end(task))
-        last.name = "点击聊天框"
+        last.name = "剧情自动点击推进对话"
         last.action.success = True
         self.assertFalse(story.is_manual_end(task))
 
     def test_dialogue_jumpback_timeout_is_normal_only_after_successful_actions(self):
         dispatch = SimpleNamespace(name=story.DISPATCH_NODE, completed=True,
                                    action=SimpleNamespace(success=True))
-        dialogue = SimpleNamespace(name="点击聊天框", completed=True,
+        dialogue = SimpleNamespace(name="剧情自动点击推进对话", completed=True,
                                    action=SimpleNamespace(success=True))
         placeholder = SimpleNamespace(name="", completed=False, action=None, recognition=None)
         task = SimpleNamespace(status=SimpleNamespace(succeeded=False, failed=True),
@@ -156,7 +156,6 @@ def native_story_reuse(mode_filter=None):
     with patch.object(AgentServer, "register_custom_action", return_value=True):
         click_spec.loader.exec_module(click_module)
 
-    source = json.loads((ROOT / "assets/resource/pipeline/activity.json").read_text(encoding="utf-8"))
     pipeline = json.loads((ROOT / "assets/resource/pipeline/story_auto_click.json").read_text(encoding="utf-8"))
     interface = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-8"))
     option = interface["option"]["全屏点击查找剧情章节"]
@@ -168,11 +167,8 @@ def native_story_reuse(mode_filter=None):
                       "display": "log"}
 
     original_names = (
-        "点击活动剧情", "在活动剧情页面", "点击聊天框", "点击剧情叉号",
-        "识别剧情过完了并停止任务", "开始推演真相", "求助暖暖",
-        "听暖暖的", "推理真相", "推理成功")
-    nodes = {name: source[name] for name in original_names}
-    nodes.update(pipeline)
+        "剧情自动点击查找章节", "剧情自动点击调度", "剧情自动点击推进对话", "剧情自动点击结束识别")
+    nodes = pipeline
     nodes["stop"] = {"action": "StopTask"}
 
     class Controller(ScreenController):
@@ -201,11 +197,11 @@ def native_story_reuse(mode_filter=None):
             clicks = len(controller.clicks)
             mode = controller.mode
             hit = False
-            if argv.node_name == "识别剧情过完了并停止任务":
+            if argv.node_name == "剧情自动点击结束识别":
                 target = 2 if mode in ("search", "transient_after") else 1
                 hit = mode not in ("unknown", "special", "capture_fail", "action_fail", "dialogue_click_fail",
                                    "dialogue_timeout") and clicks >= target
-            elif argv.node_name == "点击聊天框":
+            elif argv.node_name == "剧情自动点击推进对话":
                 hit = mode in ("dialogue", "transient_before", "transient_after", "dialogue_click_fail", "action_fail") or (
                     mode == "dialogue_timeout" and clicks < 2) or (
                     mode == "search" and clicks == 1)
@@ -217,7 +213,7 @@ def native_story_reuse(mode_filter=None):
                 hit = mode == "special"
             return self.AnalyzeResult(box=(538, 0, 182, 277), detail={}) if hit else None
 
-    for name in ("识别剧情过完了并停止任务", "点击聊天框", "点击剧情叉号", story.SPECIAL_NODE):
+    for name in ("剧情自动点击结束识别", "剧情自动点击推进对话", story.SPECIAL_NODE):
         nodes[name]["recognition"] = {
             "type": "Custom", "param": {"custom_recognition": "story_snapshot"}}
 
@@ -225,6 +221,11 @@ def native_story_reuse(mode_filter=None):
         bundle = Path(directory)
         (bundle / "pipeline").mkdir()
         (bundle / "pipeline/story.json").write_text(json.dumps(nodes, ensure_ascii=False), encoding="utf-8")
+        # 覆盖升级可能残留旧活动文件；原节点名共存时也必须正常加载和运行。
+        legacy_nodes = {name: {} for name in (
+            "点击活动剧情", "在活动剧情页面", "点击聊天框", "识别剧情过完了并停止任务")}
+        (bundle / "pipeline/legacy_activity.json").write_text(
+            json.dumps(legacy_nodes, ensure_ascii=False), encoding="utf-8")
         resource = Resource()
         assert resource.register_custom_recognition("story_snapshot", Recognition())
         assert resource.register_custom_recognition("story_auto_click_controller_failed", story.StoryAutoClickControllerFailedRecognition())
@@ -261,7 +262,7 @@ def native_story_reuse(mode_filter=None):
             case = next(case for case in option["cases"] if case["name"] == ("Yes" if enabled else "No"))
             overrides = dict(case["pipeline_override"])
             if mode == "action_fail":
-                overrides["点击聊天框"] = {"action": {"type": "Click", "param": {}}}
+                overrides["剧情自动点击推进对话"] = {"action": {"type": "Click", "param": {}}}
             status = tasker.post_task(ENTRY, overrides).wait().status
             assert status.succeeded == success, (mode, status)
             assert [(x, y) for x, y, _ in controller.clicks] == expected, (mode, controller.clicks)

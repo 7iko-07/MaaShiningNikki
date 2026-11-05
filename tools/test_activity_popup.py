@@ -19,8 +19,8 @@ spec = importlib.util.spec_from_file_location(
 click_module = importlib.util.module_from_spec(spec)
 with patch.object(AgentServer, "register_custom_action", return_value=True):
     spec.loader.exec_module(click_module)
-PIPELINE = json.loads((ROOT / "assets/resource/pipeline/activity copy.json").read_text(encoding="utf-8"))
-PARAMS = PIPELINE["点击活动2页面-空白"]["action"]["param"]["custom_action_param"]
+PIPELINE = json.loads((ROOT / "assets/resource/pipeline/caged_song.json").read_text(encoding="utf-8"))
+PARAMS = PIPELINE["关闭笼中歌签到"]["action"]["param"]["custom_action_param"]
 
 
 class ActivityPopupTests(unittest.TestCase):
@@ -56,13 +56,13 @@ class ActivityPopupTests(unittest.TestCase):
         return SimpleNamespace(hit=self.ready(node))
 
     def click(self, x, y):
-        self.assertEqual((x, y), (359, 32))
+        self.assertEqual((x, y), (343, 142))
         self.click_times.append(self.now)
         return Mock(wait=Mock(return_value=SimpleNamespace(succeeded=True)))
 
     def run_action(self):
         return click_module.ClickAndWaitChangeAction().run(self.context, SimpleNamespace(
-            custom_action_param=json.dumps(PARAMS), node_name="点击活动2页面-空白",
+            custom_action_param=json.dumps(PARAMS), node_name="关闭笼中歌签到",
         ))
 
     def test_no_popup_and_ready_page_does_not_click_blank(self):
@@ -88,7 +88,7 @@ class ActivityPopupTests(unittest.TestCase):
 
     def test_popup_disappearing_is_not_enough_without_a_ready_page(self):
         self.popup = lambda: not self.click_times
-        self.ready = lambda node: self.now >= 2 and node == PARAMS["ready_nodes"][1]
+        self.ready = lambda node: self.now >= 2 and node == PARAMS["ready_nodes"][0]
         self.assertTrue(self.run_action())
         self.assertEqual(len(self.click_times), 1)
         self.assertGreaterEqual(self.now, 2)

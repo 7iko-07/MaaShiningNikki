@@ -6,8 +6,8 @@
     "license": "MIT",
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "v0.0.16-nightly.20261102.2",
-    "title": "闪现吧暖暖v0.0.16#11.02 - 寻阅山河#10.22",
+    "version": "v0.0.16-nightly.20261105",
+    "title": "闪现吧暖暖v0.0.16#11.05 - 笼中歌#11.05",
     "icon": "logo.ico",
     "mirrorchyan_rid": "MaaShiningNikki",
     "mirrorchyan_multiplatform": true,
@@ -254,26 +254,24 @@
             "description": "领取每周礼包，建议每周运行一次。"
         },
         {
-            "name": "活动：湘间君子女",
-            "label": "🌸 活动：湘间君子女",
-            "entry": "活动任务链入口",
+            "name": "活动：笼中歌",
+            "label": "🕊️ 活动：笼中歌",
+            "entry": "笼中歌任务链入口",
             "default_check": false,
-            "description": "###[color:red][b]自动完成活动剧情，默认关闭。运行时请勿随意点击返回，以免消耗粉钻；卡住时请手动处理后重试。[/b][/color]",
-            "option": [
-                "活动"
-            ],
-            "group": ["往期活动"]
-        },
-        {
-            "name": "活动：寻阅山河",
-            "label": "🏞️ 活动：寻阅山河",
-            "entry": "活动2任务链入口",
-            "default_check": false,
-            "description": "###[color:red][b]自动完成活动剧情，默认关闭。运行时请勿随意点击返回，以免消耗粉钻；卡住时请手动处理后重试。[/b][/color]",
-            "option": [
-                "活动2"
-            ],
-            "group": ["往期活动"]
+            "description": "自动进入笼中歌并全屏查找剧情章节、点击推进剧情。\n\n[size:14][color:red][b]请勿随意点击返回，以免消耗粉钻。[/b][/color][/size]",
+            "pipeline_override": {
+                "剧情自动点击任务链入口": {
+                    "action": {
+                        "type": "Custom",
+                        "param": {
+                            "custom_action": "story_auto_click",
+                            "custom_action_param": {
+                                "search_chapters": true
+                            }
+                        }
+                    }
+                }
+            }
         },
         {
             "name": "翻转印象",
@@ -303,7 +301,7 @@
             "entry": "活动商店任务链入口",
             "default_check": false,
             "option": ["仔细看任务说明了吗"],
-            "description": "请先手动打开活动商店页面。仅购买左侧第一格的橙色按钮商品，每次按 MAX 消耗活动货币。识别到货币不足时结束；识别超时或点击失败会中止。",
+            "description": "[size:14][color:red][b]请先手动打开活动商店页面。仅购买左侧第一格的橙色按钮商品，每次按 MAX 消耗活动货币。[/b][/color][/size]\n\n识别到货币不足时结束；识别超时或点击失败会中止。",
             "group": ["辅助工具"]
         },
         {
@@ -311,7 +309,7 @@
             "label": "🎬 剧情自动点击",
             "entry": "剧情自动点击任务链入口",
             "default_check": false,
-            "description": "###[color:red][b]请先进入剧情页面。非活动场景请勿开启全屏点击，以免误触并消耗资源。[/b][/color]\n\n自动点击剧情，遇到特殊互动或等待结束时提示手动操作，不自动领取奖励。出现右上角“跳过”时结束任务。",
+            "description": "[size:14][color:red][b]请先进入剧情页面。非活动场景请勿开启全屏点击，以免误触并消耗资源。[/b][/color][/size]\n\n自动点击剧情，遇到特殊互动或等待结束时提示手动操作，不自动领取奖励。出现右上角“跳过”时结束任务。",
             "option": ["全屏点击查找剧情章节"],
             "group": ["辅助工具"]
         }
@@ -352,8 +350,7 @@
                 {"name": "回忆小铺", "enabled": true, "group": []},
                 {"name": "联盟兑换幻之券", "enabled": true, "group": []},
                 {"name": "每周礼包", "enabled": true, "group": []},
-                {"name": "活动：湘间君子女", "enabled": false, "group": ["往期活动"]},
-                {"name": "活动：寻阅山河", "enabled": false, "group": ["往期活动"]},
+                {"name": "活动：笼中歌", "enabled": false, "group": []},
                 {"name": "翻转印象", "enabled": false, "group": ["往期活动"]},
                 {"name": "入夜派对", "enabled": true, "group": ["辅助工具"]},
                 {"name": "兑换码", "enabled": true, "group": ["辅助工具"]},
@@ -363,7 +360,7 @@
         },
         {
             "name": "完整日常",
-            "description": "包含完整日常、养成刷取、竞技场与评选赛、回忆小铺和寻阅山河。",
+            "description": "包含完整日常、养成刷取、竞技场与评选赛、回忆小铺和笼中歌。",
             "group": [],
             "task": [
                 {"name": "启动闪耀暖暖", "enabled": true, "group": []},
@@ -387,7 +384,7 @@
                 {"name": "回忆小铺", "enabled": true, "group": []},
                 {"name": "月卡领取", "enabled": true, "group": []},
                 {"name": "特权卡领取", "enabled": true, "group": []},
-                {"name": "活动：寻阅山河", "enabled": true, "group": []},
+                {"name": "活动：笼中歌", "enabled": true, "group": []},
                 {"name": "织梦空间", "enabled": true, "group": []}
             ]
         }
@@ -1422,61 +1419,6 @@
                     }
                 }
             }
-        },
-        "活动":{
-            "type": "checkbox",
-            "description": "",
-            "default_case": ["挑战关卡"],
-            "cases": [
-                {
-                    "name": "挑战关卡",
-                    "pipeline_override": {
-                        "点击挑战关卡":{
-                            "enabled": true
-                        }
-                    }
-                },
-                {
-                    "name": "活动剧情",
-                    "pipeline_override": {
-                        "点击活动剧情名称":{
-                            "enabled": true
-                        }
-                    }
-                }
-            ]
-        },
-        "活动2":{
-            "type": "checkbox",
-            "description": "",
-            "default_case": ["一键扫荡"],
-            "cases": [
-                {
-                    "name": "一键扫荡",
-                    "pipeline_override": {
-                        "活动2任务链入口": {
-                            "next": ["活动2任务链准备", "[JumpBack]返回主页面"]
-                        },
-                        "点击活动2荒野遇菇": {
-                            "enabled": true
-                        }
-                    }
-                },
-                {
-                    "name": "活动剧情",
-                    "pipeline_override": {
-                        "活动2任务链入口": {
-                            "next": ["活动2任务链准备", "[JumpBack]返回主页面"]
-                        },
-                        "活动2扫荡结束": {
-                            "next": ["点击活动2剧情名称"]
-                        },
-                        "点击活动2剧情名称":{
-                            "enabled": true
-                        }
-                    }
-                }
-            ]
         },
         "仔细看任务说明了吗": {
             "type": "switch",

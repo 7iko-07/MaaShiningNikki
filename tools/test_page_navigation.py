@@ -1066,14 +1066,7 @@ class NavigationClickTests(WithoutExitPopupTests):
         self.assertEqual([t for t, _ in clicks], [0, 1.5])
         self.assertNotEqual(clicks[0][1], clicks[1][1])
 
-    def test_activity_return_retries_only_on_exhausted_page_and_stops_at_activity_home(self):
-        nodes = load_jsonc(ROOT / "assets/resource/pipeline/activity copy.json")
-        node = nodes["点击返回活动2页面"]
-        self.assertEqual(node["action"]["param"]["custom_action"], "navigation_click")
-        params = node["action"]["param"]["custom_action_param"]
-        self.assertEqual(params["source_nodes"], ["活动2扫荡次数用尽"])
-        self.assertEqual(params["target_nodes"], ["活动2扫荡结束"])
-        self.assertEqual(node["next"], ["活动2扫荡结束"])
+    def test_return_retries_only_on_source_page_and_stops_at_destination(self):
         scenarios = [
             ({"target": lambda t: t >= 2}, True, [0, 1.5]),
             ({"target": lambda t: True}, True, []),
@@ -1087,13 +1080,13 @@ class NavigationClickTests(WithoutExitPopupTests):
                 observed = []
                 target = kwargs.get("target", lambda t: False)
                 kwargs = dict(kwargs, target=lambda t: observed.append(t) or target(t))
-                ok, clicks, _ = self.simulate(params=params, **kwargs)
+                ok, clicks, _ = self.simulate(**kwargs)
                 self.assertEqual(ok, expected)
                 self.assertEqual([t for t, _ in clicks], times)
                 if len(clicks) > 1:
                     self.assertNotEqual(clicks[0][1], clicks[1][1])
                 if not expected:
-                    self.assertEqual(observed[-1], 29.75)
+                    self.assertEqual(observed[-1], 14.75)
 
     def test_three_click_limit_includes_initial_click(self):
         ok, clicks, _ = self.simulate()

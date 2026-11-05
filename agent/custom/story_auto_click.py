@@ -1,4 +1,4 @@
-"""独立入口复用原活动剧情链，仅按开关裁剪全屏回退分支。"""
+"""剧情自动点击：按开关选择是否全屏查找章节。"""
 
 import json
 from contextlib import contextmanager
@@ -12,8 +12,8 @@ from maa.event_sink import NotificationType
 from utils import logger
 
 
-DISPATCH_NODE = "在活动剧情页面"
-SEARCH_NODE = "点击活动剧情"
+DISPATCH_NODE = "剧情自动点击调度"
+SEARCH_NODE = "剧情自动点击查找章节"
 SPECIAL_NODE = "剧情自动点击特殊互动识别"
 ERROR_NODE = "剧情自动点击控制器异常"
 
@@ -77,12 +77,12 @@ def is_manual_end(task):
         return False
     nodes = nodes[:-1]
     # JumpBack 只回到调度节点的 next，不会重新执行并记录调度动作。
-    # 因此对话点击后的正常超时，最后一个成功节点可能是“点击聊天框”。
+    # 因此对话点击后的正常超时，最后一个成功节点可能是“剧情自动点击推进对话”。
     return bool(nodes
                 and all(node is not None and node.completed
                         and node.action is not None and node.action.success for node in nodes)
                 and any(node.name == DISPATCH_NODE for node in nodes)
-                and nodes[-1].name in (DISPATCH_NODE, "点击聊天框"))
+                and nodes[-1].name in (DISPATCH_NODE, "剧情自动点击推进对话"))
 
 
 @AgentServer.custom_action("story_auto_click")
@@ -98,12 +98,12 @@ class StoryAutoClickAction(CustomAction):
             # 特殊互动只停止，不进入原活动专用的推理操作。
             candidates = [
                 ERROR_NODE,
-                "识别剧情过完了并停止任务",
+                "剧情自动点击结束识别",
                 SPECIAL_NODE,
-                "[JumpBack]点击聊天框",
+                "[JumpBack]剧情自动点击推进对话",
             ]
             if search:
-                candidates.append("[Anchor]点击活动剧情")
+                candidates.append("[Anchor]剧情自动点击查找章节")
 
             # 原 click_region 会动态修改 next；在独立 Context 中运行，
             # 避免修改原活动任务使用的流程或留下本任务的选项覆盖。
@@ -117,7 +117,7 @@ class StoryAutoClickAction(CustomAction):
                     SEARCH_NODE if search else DISPATCH_NODE,
                     pipeline_override={
                         DISPATCH_NODE: {"next": candidates},
-                        "识别剧情过完了并停止任务": {"focus": {"Node.Action.Starting": []}},
+                        "剧情自动点击结束识别": {"focus": {"Node.Action.Starting": []}},
                     },
                 )
                 if failures:

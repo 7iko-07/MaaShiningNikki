@@ -61,6 +61,11 @@ jobs:
       - id: set_tag
         run: |
           is_release=${{ startsWith(github.ref, 'refs/tags/v') }}
+          skip_commit_build=false
+          version_tag=$(git tag --points-at "$GITHUB_SHA" --list "v*" | sed -n '1p')
+          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF" == refs/heads/* && -n "$version_tag" ]]; then
+            skip_commit_build=true
+          fi
           tag=$(git describe --tags --match "v*" ${{ github.ref }} || true)
           if [[ $tag != v* ]]; then
             tag=$(curl -sX GET "https://api.github.com/repos/${{ github.repository }}/releases/latest" --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' | awk '/tag_name/{print $4}' FS='["]')
@@ -82,13 +87,16 @@ jobs:
           echo tag=$tag | tee -a $GITHUB_OUTPUT
           echo is_release=$is_release | tee -a $GITHUB_OUTPUT
           echo is_prerelease=$is_prerelease | tee -a $GITHUB_OUTPUT
+          echo skip_commit_build=$skip_commit_build | tee -a $GITHUB_OUTPUT
     outputs:
       maafw_tag: ${{ steps.maafw.outputs.tag }}
       tag: ${{ steps.set_tag.outputs.tag }}
       is_release: ${{ steps.set_tag.outputs.is_release }}
       is_prerelease: ${{ steps.set_tag.outputs.is_prerelease }}
+      skip_commit_build: ${{ steps.set_tag.outputs.skip_commit_build }}
 
   windows:
+    if: ${{ needs.meta.outputs.skip_commit_build != 'true' }}
     needs: meta
     runs-on: ${{ matrix.runner }}
     env:
@@ -233,6 +241,7 @@ jobs:
             !install/debug
 
   unix:
+    if: ${{ needs.meta.outputs.skip_commit_build != 'true' }}
     needs: meta
     runs-on: ${{ matrix.runner }}
     env:

@@ -21,6 +21,13 @@
                             ],
                             "roi": [3, 249, 133, 569]
                         }
+                    }},
+                    {"recognition": {
+                        "type": "TemplateMatch",
+                        "param": {
+                            "template": "活动_金色头像.png",
+                            "roi": [3, 249, 133, 569]
+                        }
                     }}
                 ]
             }

@@ -11,7 +11,7 @@
             }
         },
         "focus": {
-            "Node.Action.Starting": "剧情自动点击：请自行进入剧情页面；遇到特殊互动将停止。",
+            "Node.Action.Starting": "剧情自动点击：遇到特殊互动将停止。",
             "Node.Action.Succeeded": {
                 "content": "[size:14][color:#A16207][b]剧情点击结束，需要手动操作。[/b][/color][/size]",
                 "display": "log"
@@ -23,11 +23,15 @@
     "剧情自动点击控制器异常": {
         "recognition": {
             "type": "Custom",
-            "param": {"custom_recognition": "story_auto_click_controller_failed"}
+            "param": {
+                "custom_recognition": "story_auto_click_controller_failed"
+            }
         },
         "action": {
             "type": "Custom",
-            "param": {"custom_action": "story_auto_click_controller_guard"}
+            "param": {
+                "custom_action": "story_auto_click_controller_guard"
+            }
         },
         "next": []
     },
@@ -35,12 +39,7 @@
         "recognition": {
             "type": "OCR",
             "param": {
-                "roi": [
-                    0,
-                    200,
-                    720,
-                    1080
-                ],
+                "roi": [0, 200, 720, 1080],
                 "expected": [
                     "请选择",
                     "选择.{0,6}(回答|选项|答案)",
@@ -66,5 +65,108 @@
             }
         },
         "next": []
+    },
+    "剧情自动点击查找章节": {
+        "recognition": {
+            "type": "DirectHit",
+            "param": {}
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_region",
+                "custom_action_param": {
+                    "step": 70,
+                    "delay": 50,
+                    "roi": [0, 0, 720, 1280],
+                    "max_points": 20000,
+                    "change_detection": true,
+                    "exclude": [
+                        [0, 14, 120, 114],
+                        [543, 0, 177, 202],
+                        [0, 1156, 155, 89]
+                    ],
+                    "stop_on_no_change": true,
+                    "direction": "left_to_right"
+                }
+            }
+        },
+        "next": ["剧情自动点击调度"],
+        "timeout": 2000,
+        "anchor": "剧情自动点击查找章节"
+    },
+    "剧情自动点击调度": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "DoNothing",
+            "param": {}
+        },
+        "next": [
+            "剧情自动点击控制器异常",
+            "剧情自动点击结束识别",
+            "剧情自动点击特殊互动识别",
+            "[JumpBack]剧情自动点击推进对话",
+            "[Anchor]剧情自动点击查找章节"
+        ],
+        "timeout": 2000
+    },
+    "剧情自动点击推进对话": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    {
+                        "recognition": {
+                            "type": "OCR",
+                            "param": {
+                                "roi": [538, 0, 182, 277],
+                                "expected": ["自动播放", "自动", "播放", "文字速度", "文字", "速度"]
+                            }
+                        }
+                    },
+                    {
+                        "recognition": {
+                            "type": "ColorMatch",
+                            "param": {
+                                "roi": [538, 0, 182, 277],
+                                "lower": [0, 0, 0],
+                                "upper": [0, 0, 0],
+                                "count": 3000,
+                                "connected": true
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "click_region",
+                "custom_action_param": {
+                    "step": 70,
+                    "delay": 50,
+                    "roi": [0, 301, 720, 804],
+                    "max_points": 20000,
+                    "change_detection": true,
+                    "stop_on_no_change": true,
+                    "direction": "left_to_right"
+                }
+            }
+        },
+        "timeout": 2000
+    },
+    "剧情自动点击结束识别": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [552, 33, 168, 91],
+                "expected": ["跳过"]
+            }
+        },
+        "focus": {
+            "Node.Action.Starting": "#[color:blue][b]剧情已结束[/b][/color]"
+        },
+        "next": ["stop"]
     }
 }

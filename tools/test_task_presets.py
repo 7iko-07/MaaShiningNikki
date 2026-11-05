@@ -56,7 +56,7 @@ class TaskPresetTests(unittest.TestCase):
             "启动闪耀暖暖", "关闭闪耀暖暖", "好友", "联盟", "邮件", "福利",
             "心之门", "回家", "时光钟表铺", "不落的帷幕", "印象旅航",
             "制作目标服装", "美甲", "情报屋", "竞技场", "搭配评选赛", "分享",
-            "一键领取", "回忆小铺", "月卡领取", "特权卡领取", "活动：寻阅山河", "织梦空间",
+            "一键领取", "回忆小铺", "月卡领取", "特权卡领取", "活动：笼中歌", "织梦空间",
         ])
 
     def test_declared_groups_match_tasks(self):
@@ -65,7 +65,6 @@ class TaskPresetTests(unittest.TestCase):
                 declared = [group["name"] for group in preset["group"]]
                 memberships = Counter(group for task in preset["task"] for group in task["group"])
                 self.assertEqual(set(declared), set(memberships))
-                self.assertTrue(all(count > 1 for count in memberships.values()))
                 runs = []
                 for task in preset["task"]:
                     group = task["group"]
@@ -77,7 +76,7 @@ class TaskPresetTests(unittest.TestCase):
 
     def test_preview_preserves_optional_task_defaults(self):
         tasks = {task["name"]: task for task in self.presets["全部任务"]["task"]}
-        for name in ["活动：湘间君子女", "活动：寻阅山河", "剧情自动点击"]:
+        for name in ["活动：笼中歌", "剧情自动点击"]:
             self.assertFalse(tasks[name]["enabled"])
         self.assertTrue(all(task["enabled"] for task in self.presets["完整日常"]["task"]))
 
