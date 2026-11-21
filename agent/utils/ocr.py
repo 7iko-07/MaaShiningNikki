@@ -3,8 +3,6 @@ import time
 import unicodedata
 from numbers import Integral
 
-from maa.pipeline import JOCR, JRecognitionType
-
 from .logger import logger
 
 __all__ = [
@@ -207,6 +205,8 @@ def _fraction_value(result, label=""):
 
 def read_ocr_fraction(context, image, roi, label=""):
     """Read the numerator, retrying the same region as a single line if needed."""
+    from maa.pipeline import JOCR, JRecognitionType
+
     for only_rec in (False, True):
         result = context.run_recognition_direct(JRecognitionType.OCR, JOCR(
             roi=tuple(roi), expected=[".*"], only_rec=only_rec,
