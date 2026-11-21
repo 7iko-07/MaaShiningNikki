@@ -108,6 +108,8 @@ def simulated_recognition(recognition):
         return result
     if kind == "DirectHit":
         return recognition
+    if kind == "Custom" and recognition["param"]["custom_recognition"] == "make_target_clothes_corridor_stamina":
+        return recognition
     params = recognition["param"] if kind == "OCR" else {"return_button": True}
     return {"type": "Custom", "param": {
         "custom_recognition": "screen", "custom_recognition_param": params,
@@ -380,6 +382,19 @@ class ClothingReadinessTests(unittest.TestCase):
                 from tools.test_time_corridor_challenge import module
                 waiter = module.MakeTargetClothesWaitReadyAction()
                 self.assertTrue(resource.register_custom_action("make_target_clothes_wait_ready", waiter))
+                self.assertTrue(resource.register_custom_recognition(
+                    "make_target_clothes_corridor_stamina", module.MakeTargetClothesCorridorStaminaRecognition()))
+
+                def read_stamina(context, image, roi):
+                    if controller.frames < ready_frame:
+                        return None
+                    frame_texts = texts() if callable(texts) else texts
+                    match = re.fullmatch(r"(\d+)\s*[/／]\s*\d+", frame_texts.get(tuple(roi), ""))
+                    return int(match[1]) if match else None
+
+                patcher = patch.object(module, "read_ocr_fraction", side_effect=read_stamina)
+                patcher.start()
+                self.addCleanup(patcher.stop)
             self.assertTrue(resource.post_bundle(bundle).wait().status.succeeded)
             self.assertTrue(controller.post_connection().wait().status.succeeded)
             tasker = Tasker()
@@ -425,6 +440,7 @@ class ClothingReadinessTests(unittest.TestCase):
     def test_zero_count_and_zero_stamina_do_not_require_enabled_buttons(self):
         cases = [
             ("时空回廊", {(323, 749, 351, 226): "今日剩余挑战次数：0/15", (0, 0, 218, 37): "234/140"}),
+            ("时空回廊", {(323, 749, 351, 226): "今日剩余挑战次数：5/15", (0, 0, 218, 37): "0/140"}),
             ("心灵迷宫", {(82, 0, 145, 40): "100/140", (55, 755, 205, 52): "每次消耗：8", (298, 755, 330, 52): "剩余心灵迷宫次数：0/30"}),
             ("主线", {(82, 0, 145, 40): "0/140", (55, 755, 205, 52): "每次消耗：4"}),
         ]

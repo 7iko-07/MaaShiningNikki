@@ -5,6 +5,7 @@ import json
 import sys
 import tempfile
 import unittest
+from itertools import permutations
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -145,6 +146,26 @@ class ArenaTests(unittest.TestCase):
         # 重启不恢复旧多账号身份，无 start 时统一使用默认账号。
         state._sessions.clear()
         self.assertEqual(state.take_account(self.context), "default")
+
+    def test_manicure_and_arena_can_each_take_the_same_login_once(self):
+        for first, second in (("arena", "manicure"), ("manicure", "arena")):
+            with self.subTest(first=first):
+                self.login("0012")
+                account = state.take_account(self.context, first)
+                self.assertNotEqual(account, "default")
+                self.assertEqual(state.take_account(self.context, first), "default")
+                self.assertEqual(state.take_account(self.context, second), account)
+                self.assertEqual(state.take_account(self.context, second), "default")
+
+    def test_union_arena_and_manicure_can_consume_login_in_any_order(self):
+        for order in permutations(("arena", "manicure", "union")):
+            with self.subTest(order=order):
+                self.login("0012")
+                accounts = [state.take_account(self.context, consumer) for consumer in order]
+                self.assertNotEqual(accounts[0], "default")
+                self.assertEqual(accounts, [accounts[0]] * 3)
+                for consumer in order:
+                    self.assertEqual(state.take_account(self.context, consumer), "default")
 
     def test_failed_login_and_unknown_server_have_no_identity(self):
         self.assertEqual(state.take_account(self.context), "default")

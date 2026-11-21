@@ -1,88 +1,25 @@
 import json
 import re
 import time
-import unicodedata
-from numbers import Integral
 
 import numpy as np
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
+from maa.custom_recognition import CustomRecognition
 from maa.context import Context
 from maa.pipeline import JActionType, JClick, JOCR, JRecognitionType, JSwipe, JWaitFreezes
-from utils import logger, debug_exception, read_ocr_number, read_ocr_text
+from utils import logger, debug_exception, read_ocr_fraction, read_ocr_number, read_ocr_text
 
 
-def _ocr_box(value):
-    """OCR result boxes may be JSON lists even when the SDK annotates Rect."""
-    if not isinstance(value, (list, tuple)):
-        value = tuple(getattr(value, name, None) for name in ("x", "y", "w", "h"))
-    if len(value) != 4 or any(isinstance(part, bool) or not isinstance(part, Integral) for part in value):
-        return None
-    x, y, w, h = value
-    if x < 0 or y < 0 or w <= 0 or h <= 0:
-        return None
-    return x, y, w, h
-
-
-def _fraction_value(result):
-    """Accept a complete fraction or two intact, horizontally aligned number boxes."""
-    if result is None or not result.hit:
-        return None
-    candidates = getattr(result, "all_results", None) or getattr(result, "filtered_results", None) or []
-    if not candidates and getattr(result, "best_result", None) is not None:
-        candidates = [result.best_result]
-    parts = []
-    for item in candidates:
-        text = unicodedata.normalize("NFKC", str(getattr(item, "text", ""))).strip()
-        match = re.fullmatch(r"(?:剩余心灵迷宫次数\s*[:：]?\s*)?(\d+)\s*/\s*(\d+)", text)
-        if match and int(match[2]) > 0:
-            parts.append((item, text, (int(match[1]), int(match[2]))))
-        elif text:
-            parts.append((item, text, None))
-    if len(parts) == 1 and parts[0][2] is not None:
-        return parts[0][2][0]
-    if len(parts) not in (2, 3):
-        return None
-    if any(getattr(item, "score", 1.0) < .7 or getattr(item, "box", None) is None
-           for item, _, _ in parts):
-        return None
-    positioned = [(_ocr_box(item.box), text) for item, text, _ in parts]
-    if any(box is None for box, _ in positioned):
-        return None
-    positioned.sort(key=lambda part: part[0][0])
-    boxes = [box for box, _ in positioned]
-    if max(box[1] for box in boxes) >= min(box[1] + box[3] for box in boxes):
-        return None
-    if any(left[0] + left[2] > right[0] for left, right in zip(boxes, boxes[1:])):
-        return None
-    texts = [text for _, text in positioned]
-    if len(texts) == 3:
-        if texts[1] != "/" or not all(re.fullmatch(r"\d+", text) for text in (texts[0], texts[2])):
+@AgentServer.custom_recognition("make_target_clothes_corridor_stamina")
+class MakeTargetClothesCorridorStaminaRecognition(CustomRecognition):
+    def analyze(self, context: Context, argv: CustomRecognition.AnalyzeArg):
+        roi = tuple(argv.roi)
+        stamina = read_ocr_fraction(context, argv.image, roi)
+        required_value = json.loads(argv.custom_recognition_param or "null")
+        if stamina is None or (required_value is not None and stamina != required_value):
             return None
-        text = "".join(texts)
-    elif all(re.fullmatch(r"\d+", text) for text in texts):
-        text = "/".join(texts)
-    elif ((re.fullmatch(r"\d+", texts[0]) and re.fullmatch(r"/\s*\d+", texts[1]))
-          or (re.fullmatch(r"\d+\s*/", texts[0]) and re.fullmatch(r"\d+", texts[1]))):
-        text = "".join(texts)
-    else:
-        return None
-    match = re.fullmatch(r"(\d+)\s*/\s*(\d+)", text)
-    if match and int(match[2]) > 0:
-        return int(match[1])
-    return None
-
-
-def _read_fraction(context, image, roi):
-    # Detection keeps split boxes; only_rec is a second attempt, never digit guessing.
-    for only_rec in (False, True):
-        detail = context.run_recognition_direct(JRecognitionType.OCR, JOCR(
-            roi=tuple(roi), expected=[".*"], only_rec=only_rec,
-        ), image)
-        value = _fraction_value(detail)
-        if value is not None:
-            return value
-    return None
+        return roi
 
 
 @AgentServer.custom_action("make_target_clothes_wait_ready")
@@ -335,14 +272,9 @@ class MakeTargetClothesChallengeAction(CustomAction):
             img = controller.cached_image
 
             challenge_count = self._read_challenge_count(context, img, challenge_count_roi)
-            stamina = read_ocr_number(
-                context,
-                img,
-                "_make_target_clothes_stamina_ocr",
-                stamina_roi,
-                [r"\d+"],
-                "make_target_clothes_challenge",
-            )
+            if challenge_count == 0:
+                return True
+            stamina = read_ocr_fraction(context, img, stamina_roi)
 
             if challenge_count is not None and stamina is not None:
                 break
@@ -360,12 +292,9 @@ class MakeTargetClothesChallengeAction(CustomAction):
             return False
 
         if stamina is None:
-            logger.debug("make_target_clothes_challenge: 无法识别体力，按体力足够处理")
-            logger.warning("制衣材料：无法识别体力，将继续尝试挑战")
-            challenge_times = challenge_count
-        else:
-            available_by_stamina = stamina // stamina_cost
-            challenge_times = min(challenge_count, available_by_stamina)
+            logger.error("制衣材料：无法识别体力")
+            return False
+        challenge_times = min(challenge_count, stamina // stamina_cost)
 
         multi_clicks, once_clicks = self._calc_clicks(
             challenge_count=challenge_count,
@@ -676,8 +605,6 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                 context=context,
                 controller=controller,
                 roi=stamina_roi,
-                node_name="_make_target_clothes_batch_stamina_after_ocr",
-                expected=[r"\d+\s*/\s*\d+"],
                 retry=retry,
                 retry_delay=retry_delay,
                 label="挑战后体力",
@@ -822,8 +749,6 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             context=context,
             controller=controller,
             roi=stamina_roi,
-            node_name="_make_target_clothes_batch_stamina_ocr",
-            expected=[r"\d+\s*/\s*\d+"],
             retry=retry,
             retry_delay=retry_delay,
             label="体力",
@@ -837,7 +762,7 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
             controller=controller,
             roi=stamina_cost_roi,
             node_name="_make_target_clothes_batch_cost_ocr",
-            expected=[r"每次消耗.*\d+"],
+            expected=[r"消耗.*\d+"],
             retry=retry,
             retry_delay=retry_delay,
             label="单次体力消耗",
@@ -875,11 +800,11 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
         context,
         controller,
         roi,
-        node_name,
-        expected,
         retry,
         retry_delay,
         label,
+        node_name=None,
+        expected=None,
         image=None,
         quiet=False,
     ):
@@ -890,16 +815,14 @@ class MakeTargetClothesBatchChallengeAction(CustomAction):
                 if not controller.post_screencap().wait().status.succeeded:
                     return None
                 image = controller.cached_image
-            number = read_ocr_number(
-                context,
-                image,
-                node_name,
-                roi,
-                expected,
-                "make_target_clothes_batch_challenge",
-            )
-            if number is None and label in ("体力", "挑战后体力", "心灵迷宫剩余挑战次数"):
-                number = _read_fraction(context, image, roi)
+            if node_name is None:
+                number = read_ocr_fraction(context, image, roi)
+            else:
+                number = read_ocr_number(
+                    context, image, node_name, roi, expected, "make_target_clothes_batch_challenge",
+                )
+                if number is None and label == "心灵迷宫剩余挑战次数":
+                    number = read_ocr_fraction(context, image, roi, label="剩余心灵迷宫次数")
             if number is not None:
                 return number
 

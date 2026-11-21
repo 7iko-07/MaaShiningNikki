@@ -1285,7 +1285,13 @@
         "recognition": {
             "type": "Or",
             "param": {
-                "any_of": ["材料已收集完毕-时空回廊", "点击前往获取时空回廊制衣材料", "点击前往获取心灵迷宫制衣材料", "点击前往获取主线制衣材料"]
+                "any_of": [
+                    "材料已收集完毕-时空回廊",
+                    "点击前往获取时空回廊制衣材料",
+                    "点击前往获取心灵迷宫制衣材料",
+                    "点击前往获取主线制衣材料",
+                    "制衣返回材料弹窗识别"
+                ]
             }
         },
         "action": "DoNothing",
@@ -1461,12 +1467,10 @@
                     },
                     {
                         "recognition": {
-                            "type": "OCR",
+                            "type": "Custom",
                             "param": {
                                 "roi": [0, 0, 218, 37],
-                                "expected": [
-                                    "\\d+\\s*[/／]\\s*\\d+"
-                                ]
+                                "custom_recognition": "make_target_clothes_corridor_stamina"
                             }
                         }
                     },
@@ -1495,12 +1499,11 @@
                                     },
                                     {
                                         "recognition": {
-                                            "type": "OCR",
+                                            "type": "Custom",
                                             "param": {
                                                 "roi": [0, 0, 218, 37],
-                                                "expected": [
-                                                    "^\\s*0\\s*[/／]\\s*\\d+\\s*$"
-                                                ]
+                                                "custom_recognition": "make_target_clothes_corridor_stamina",
+                                                "custom_recognition_param": 0
                                             }
                                         }
                                     },

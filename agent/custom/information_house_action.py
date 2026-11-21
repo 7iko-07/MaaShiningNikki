@@ -4,8 +4,8 @@ import time
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
-from maa.pipeline import JWaitFreezes
-from utils import debug_exception, logger, read_number_from_controller
+from maa.pipeline import JOCR, JRecognitionType, JWaitFreezes
+from utils import debug_exception, logger, read_fraction_from_controller, read_number_from_controller
 
 from .click_and_wait_change import ClickAndWaitChangeAction
 
@@ -119,16 +119,8 @@ class InformationHouseAutoInvestigateAction(CustomAction):
             logger.debug(f"information_house_auto_investigate: waiting {load_delay:.1f}s for page load")
             time.sleep(load_delay)
 
-        stamina = read_number_from_controller(
-            context,
-            controller,
-            stamina_roi,
-            "_information_house_ocr",
-            [r"\d+\s*/", r"\d+"],
-            retry=retry,
-            retry_delay=retry_delay,
-            log_prefix="information_house_auto_investigate",
-            retry_label="stamina",
+        stamina = read_fraction_from_controller(
+            context, controller, stamina_roi, retry, retry_delay,
         )
         if stamina is None:
             logger.debug("information_house_auto_investigate: failed to read stamina")
@@ -194,8 +186,45 @@ class InformationHouseAutoInvestigateAction(CustomAction):
             f"start investigate, stamina={stamina}, target_cost={target_cost}"
         )
         logger.info(f"情报屋：开始调查，预计消耗 {target_cost} 体力")
-        self._click_roi(controller, start_button_roi)
-        return True
+        if not self._click_roi(controller, start_button_roi):
+            logger.error("情报屋：点击开始调查失败")
+            return False
+        return self._return_to_investigation(context, controller)
+
+    def _return_to_investigation(self, context, controller):
+        deadline = time.monotonic() + 15
+        next_click = 0
+        while not context.tasker.stopping and time.monotonic() < deadline:
+            if not controller.post_screencap().wait().succeeded:
+                logger.error("情报屋：返回时获取画面失败")
+                return False
+            image = controller.cached_image
+            travelling = context.run_recognition_direct(
+                JRecognitionType.OCR,
+                JOCR(roi=(135, 280, 430, 90), expected=["正在前往.*事件地点"]),
+                image,
+            )
+            if travelling and travelling.hit:
+                if time.monotonic() >= next_click:
+                    back = context.run_recognition("导航点击返回", image)
+                    if back and back.hit and back.box and back.box.w > 0 and back.box.h > 0:
+                        if context.tasker.stopping or time.monotonic() >= deadline:
+                            break
+                        if not self._click_roi(controller, tuple(back.box)):
+                            logger.error("情报屋：点击返回失败")
+                            return False
+                        next_click = time.monotonic() + 1.5
+            else:
+                ready = context.run_recognition("点击调查中", image, pipeline_override={
+                    "点击调查中": {"recognition": {"type": "OCR", "param": {"expected": ["调查中"]}}},
+                })
+                if ready and ready.hit and not context.tasker.stopping and time.monotonic() < deadline:
+                    return True
+            time.sleep(0.25)
+
+        if not context.tasker.stopping:
+            logger.error("情报屋：返回调查页面超时")
+        return False
 
     def _increase_to_target_count(
         self,
@@ -391,7 +420,7 @@ class InformationHouseAutoInvestigateAction(CustomAction):
 
     def _click_roi(self, controller, roi):
         x, y, w, h = roi
-        controller.post_click(x + w // 2, y + h // 2).wait()
+        return controller.post_click(x + w // 2, y + h // 2).wait().succeeded
 
     def _valid_roi(self, value):
         return isinstance(value, list) and len(value) == 4

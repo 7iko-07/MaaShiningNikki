@@ -18,7 +18,8 @@ spec = importlib.util.spec_from_file_location(
     "time_corridor_challenge_under_test", ROOT / "agent/custom/make_target_clothes.py"
 )
 module = importlib.util.module_from_spec(spec)
-with patch.object(AgentServer, "register_custom_action", return_value=True):
+with patch.object(AgentServer, "register_custom_action", return_value=True), \
+     patch.object(AgentServer, "register_custom_recognition", return_value=True):
     spec.loader.exec_module(module)
 
 
@@ -65,13 +66,26 @@ class TimeCorridorChallengeTests(unittest.TestCase):
                     "retry_delay": 0,
                 }
                 with patch.object(module, "read_ocr_text", return_value=text) as read, \
-                     patch.object(module, "read_ocr_number", return_value=100), \
+                     patch.object(module, "read_ocr_fraction", return_value=100), \
                      patch.object(self.action, "_click_challenge_button") as click:
                     self.assertEqual(self.action.run(
                         self.context, SimpleNamespace(custom_action_param=json.dumps(params))
                     ), expected_success)
                     self.assertEqual(read.call_count, attempts)
                     click.assert_not_called()
+
+    def test_unreadable_stamina_stops_before_challenge(self):
+        pipeline = json.loads(
+            (ROOT / "assets/resource/pipeline/Make_the_target_clothes.json").read_text(encoding="utf-8")
+        )
+        params = pipeline["计算并挑战时空回廊制衣材料"]["action"]["param"]["custom_action_param"]
+        argv = SimpleNamespace(custom_action_param=json.dumps(dict(params, retry_delay=0)))
+        with patch.object(self.action, "_read_challenge_count", return_value=10), \
+             patch.object(module, "read_ocr_fraction", return_value=None) as read, \
+             patch.object(self.action, "_click_challenge_button") as click:
+            self.assertFalse(self.action.run(self.context, argv))
+            self.assertEqual(read.call_count, 3)
+            click.assert_not_called()
 
     def test_click_uses_ocr_box_and_refreshes_image(self):
         box = Rect(75, 920, 70, 30)
@@ -129,7 +143,7 @@ class TimeCorridorChallengeTests(unittest.TestCase):
         for button_results, expected_success in (([True, True], True), ([False], False)):
             with self.subTest(button_results=button_results):
                 with patch.object(module, "read_ocr_text", return_value="今日剩余挑战次数：11/15"), \
-                     patch.object(module, "read_ocr_number", return_value=100), \
+                     patch.object(module, "read_ocr_fraction", return_value=100), \
                      patch.object(module.time, "sleep"), \
                      patch.object(self.action, "_click_roi"), \
                      patch.object(self.action, "_click_challenge_button", side_effect=button_results) as click:

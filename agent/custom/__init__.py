@@ -17,6 +17,7 @@ from . import share_counter
 from . import time_clock_shop_counter
 from . import unending_curtain_counter
 from . import main_storyline
+from . import stage_farming
 from . import union_shop
 from . import union_gold_donation
 from . import union_secret_task
@@ -31,3 +32,5 @@ from . import team_battle_runs
 from . import hearts_door
 from . import outfit_contest
 from . import union_party
+from . import companion
+from . import red_packet

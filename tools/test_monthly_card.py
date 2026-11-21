@@ -26,6 +26,60 @@ PIPELINE = json.loads(
 )
 
 
+class CardRewardsTests(unittest.TestCase):
+    def setUp(self):
+        self.context = Mock()
+        self.context.tasker.stopping = False
+        self.context.run_task.return_value = SimpleNamespace(
+            status=SimpleNamespace(succeeded=True)
+        )
+        self.action = monthly_card.CardRewardsAction()
+
+    def test_switch_combinations_and_order(self):
+        for selected in ((), ("月卡",), ("特权卡",), ("月卡", "特权卡")):
+            with self.subTest(selected=selected):
+                self.context.run_task.reset_mock()
+                self.context.get_node_data.side_effect = lambda node: {
+                    "enabled": node.removeprefix("卡片福利选择") in selected
+                }
+                self.assertTrue(self.action.run(self.context, None))
+                self.assertEqual(
+                    [call.args for call in self.context.run_task.call_args_list],
+                    [(name + "任务链入口", {"点击" + name: {"next": []}})
+                     for name in selected],
+                )
+
+    def test_failure_stops_before_second_card(self):
+        self.context.get_node_data.return_value = {"enabled": True}
+        for result in (None, SimpleNamespace(status=SimpleNamespace(succeeded=False))):
+            self.context.run_task.reset_mock()
+            self.context.run_task.return_value = result
+            self.assertFalse(self.action.run(self.context, None))
+            self.assertEqual(self.context.run_task.call_count, 1)
+
+    def test_cancelled_task_does_not_claim(self):
+        self.context.tasker.stopping = True
+        self.assertFalse(self.action.run(self.context, None))
+        self.context.run_task.assert_not_called()
+
+    def test_interface_switches_and_presets(self):
+        interface = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-8"))
+        tasks = {task["name"]: task for task in interface["task"]}
+        self.assertNotIn("月卡领取", tasks)
+        self.assertNotIn("特权卡领取", tasks)
+        self.assertEqual(tasks["月卡"]["entry"], "卡片福利任务链入口")
+        option = interface["option"]["卡片福利领取"]
+        self.assertEqual(option["default_case"], ["月卡", "特权卡"])
+        for case in option["cases"]:
+            node = "卡片福利选择" + case["name"]
+            self.assertFalse(PIPELINE[node]["enabled"])
+            self.assertEqual(case["pipeline_override"], {node: {"enabled": True}})
+        for preset in interface["preset"]:
+            names = [task["name"] for task in preset["task"]]
+            self.assertNotIn("月卡领取", names)
+            self.assertNotIn("特权卡领取", names)
+
+
 class MonthlyCardPopupTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

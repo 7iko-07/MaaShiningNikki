@@ -6,6 +6,7 @@ import subprocess
 import sys
 import textwrap
 import unittest
+from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -44,7 +45,9 @@ class PeriodTests(unittest.TestCase):
         context = Mock()
         context.tasker.stopping = False
         context.override_next.return_value = True
+        context.override_pipeline.return_value = True
         argv = SimpleNamespace(node_name=PREFIX + "任务链入口")
+        prepare = PREFIX + "任务链准备"
         action = module.OutfitContestGuard()
         for period, enabled, expected in [
             ("settlement", False, []), ("settlement", True, []),
@@ -52,21 +55,30 @@ class PeriodTests(unittest.TestCase):
             ("judging", False, ["点击我当评委"]), ("judging", True, ["点击我当评委"]),
         ]:
             context.reset_mock()
-            context.get_node_data.return_value = {"attach": {"auto_submit": enabled}}
+            context.get_node_data.side_effect = lambda name: (
+                {"attach": {"auto_submit": enabled}} if name == argv.node_name else deepcopy(PIPELINE[name])
+            )
             with patch.object(module, "contest_period", return_value=period):
                 self.assertTrue(action.run(context, argv))
             if not expected:
+                context.override_pipeline.assert_not_called()
                 context.override_next.assert_called_once_with(argv.node_name, [])
             else:
                 self.assertEqual(context.override_next.call_args_list[0].args,
-                                 (PREFIX + "任务链准备", expected))
-                context.override_next.assert_called_with(argv.node_name, [PREFIX + "任务链准备"])
+                                 (prepare, expected))
+                context.override_next.assert_called_with(argv.node_name, [prepare])
+                override = context.override_pipeline.call_args.args[0][prepare]
+                self.assertEqual(override["action"]["param"]["custom_action_param"], {
+                    "target": "搭配评选赛",
+                    "wait_timeout": 30,
+                    "ignore_background_download": period == "judging",
+                })
             context.run_action.assert_not_called()
 
     def test_override_failure_stops_and_default_option_is_off(self):
         context = Mock()
         context.tasker.stopping = False
-        context.get_node_data.return_value = PIPELINE[PREFIX + "任务链入口"]
+        context.get_node_data.side_effect = lambda name: deepcopy(PIPELINE[name])
         context.override_next.return_value = False
         with patch.object(module, "contest_period", return_value="judging"):
             self.assertFalse(module.OutfitContestGuard().run(context, SimpleNamespace(node_name=PREFIX + "任务链入口")))

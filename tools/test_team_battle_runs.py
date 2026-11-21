@@ -165,12 +165,21 @@ class TeamBattleOptionsTests(unittest.TestCase):
     def test_each_option_only_overrides_its_own_ready_node(self):
         interface = json.loads((ROOT / "assets/interface.json").read_text(encoding="utf-8"))
         tasks = {task["name"]: task for task in interface["task"]}
+        self.assertEqual(tasks["结伴"]["option"], ["结伴子任务"])
+        companion = interface["option"]["结伴子任务"]
+        selections = {case["name"]: case for case in companion["cases"]}
+        self.assertEqual(companion["default_case"], list(selections))
         for name, filename, stage in (
             ("时光钟表铺", "time_clock_shop.json", "点击04"),
             ("不落的帷幕", "unending_curtain.json", "点击第八幕"),
             ("印象旅航", "impressions_of_travel.json", "点击虚渊"),
         ):
             with self.subTest(task=name):
+                self.assertNotIn(name, tasks)
+                self.assertEqual(
+                    selections[name]["pipeline_override"],
+                    {f"结伴选择{name}": {"enabled": True}},
+                )
                 option_name = f"{name}刷取次数"
                 option = interface["option"][option_name]
                 field = option["inputs"][0]
@@ -184,8 +193,9 @@ class TeamBattleOptionsTests(unittest.TestCase):
                 params = option["pipeline_override"][node]["action"]["param"]["custom_action_param"]
                 self.assertEqual(params, {"task_name": name, "runs": "{runs}"})
                 if name == "印象旅航":
-                    self.assertIn(option_name, tasks[name]["option"])
+                    self.assertIn(option_name, selections[name]["option"])
                 else:
+                    self.assertIn(f"{name}模式", selections[name]["option"])
                     cases = interface["option"][f"{name}模式"]["cases"]
                     self.assertIn(option_name, cases[0]["option"])
                     self.assertNotIn(option_name, cases[1]["option"])

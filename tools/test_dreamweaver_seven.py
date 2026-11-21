@@ -938,10 +938,23 @@ class SevenTests(unittest.TestCase):
 
     def test_qq_requires_both_labels_and_game_return_requires_both_buttons(self):
         runner = self.runner()
-        for predicate in (runner.seven_qq_ready, runner.seven_share_page):
-            for hits, expected in (([False], False), ([True, False], False), ([True, True], True)):
-                runner.hit = Mock(side_effect=hits)
-                self.assertEqual(predicate(object()), expected)
+        for labels, expected in (
+            ((), False),
+            (("新用户",), False),
+            (("账号管理",), False),
+            (("一键登录",), False),
+            (("账号管理", "登录"), False),
+            (("新用户", "一键登录"), False),
+            (("新用户", "登录"), True),
+            (("账号管理", "一键登录"), True),
+        ):
+            with self.subTest(labels=labels):
+                runner.reco = Mock(return_value=self.result(*(self.item(label) for label in labels)))
+                self.assertEqual(runner.seven_qq_ready(object()), expected)
+
+        for hits, expected in (([False], False), ([True, False], False), ([True, True], True)):
+            runner.hit = Mock(side_effect=hits)
+            self.assertEqual(runner.seven_share_page(object()), expected)
 
     def test_share_icons_are_guarded_by_selected_work_and_result_page(self):
         runner = self.runner()

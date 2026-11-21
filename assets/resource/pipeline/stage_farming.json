@@ -1,0 +1,17 @@
+{
+    "关卡刷取任务链入口": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "stage_farming",
+                "custom_action_param": {
+                    "mode": "stage",
+                    "list": ""
+                }
+            }
+        }
+    },
+    "关卡刷取允许调查首通": {
+        "enabled": false
+    }
+}

@@ -17,6 +17,7 @@ from maa.agent.agent_server import AgentServer
 from maa.define import Rect
 from maa.tasker import Tasker
 from tools.test_time_corridor_challenge import ROOT, module as clothes
+from utils.ocr import _fraction_value, read_ocr_fraction
 
 
 def load(name):
@@ -341,7 +342,7 @@ class FractionTests(unittest.TestCase):
                                 ([("０／１４０", 133, 7, 67, 23, .99)], 0)]:
             for box_type in (Rect, list, tuple):
                 with self.subTest(texts=texts, box_type=box_type):
-                    self.assertEqual(clothes._fraction_value(self.detail(texts, box_type)), expected)
+                    self.assertEqual(_fraction_value(self.detail(texts, box_type)), expected)
 
     def test_missing_digits_wrong_rows_ambiguous_and_low_confidence_are_rejected(self):
         for texts in [[("5", 134, 10, 12, 17, .99), ("厂", 146, 13, 16, 9, .8), ("140", 162, 7, 38, 23, .99)],
@@ -354,7 +355,7 @@ class FractionTests(unittest.TestCase):
                       [("55/140", 133, 7, 67, 23, .99), ("60/140", 240, 7, 67, 23, .99)]]:
             for box_type in (Rect, list, tuple):
                 with self.subTest(texts=texts, box_type=box_type):
-                    self.assertIsNone(clothes._fraction_value(self.detail(texts, box_type)))
+                    self.assertIsNone(_fraction_value(self.detail(texts, box_type)))
 
     def test_invalid_box_returns_no_value(self):
         for box in (None, [], [1, 2, 3], [1, 2, 3, 0], [1, 2, 3, -1],
@@ -362,7 +363,7 @@ class FractionTests(unittest.TestCase):
             with self.subTest(box=box):
                 detail = self.detail([("55", 133, 10, 27, 17, .99), ("140", 162, 7, 38, 23, .99)])
                 detail.all_results[0].box = box
-                self.assertIsNone(clothes._fraction_value(detail))
+                self.assertIsNone(_fraction_value(detail))
 
     def test_logged_split_boxes_use_sdk_parser_and_whole_line_fallback(self):
         # The actual 02:40:18 result has list boxes and a one-pixel overlap.
@@ -371,14 +372,14 @@ class FractionTests(unittest.TestCase):
         all_results, _, _ = Tasker._parse_recognition_raw_detail(None, "OCR", raw)
         self.assertIsInstance(all_results[0].box, list)
         split = SimpleNamespace(hit=True, all_results=all_results)
-        self.assertIsNone(clothes._fraction_value(split))
+        self.assertIsNone(_fraction_value(split))
         for text, expected in (("93/140", 93), ("93140", None)):
             with self.subTest(whole_line=text):
                 context = Mock()
                 image = object()
                 context.run_recognition_direct.side_effect = [split,
                     self.detail([(text, 82, 0, 145, 40, .99)], list)]
-                self.assertEqual(clothes._read_fraction(context, image, [82, 0, 145, 40]), expected)
+                self.assertEqual(read_ocr_fraction(context, image, [82, 0, 145, 40]), expected)
                 calls = context.run_recognition_direct.call_args_list
                 self.assertFalse(calls[0].args[1].only_rec)
                 self.assertTrue(calls[1].args[1].only_rec)
@@ -389,7 +390,7 @@ class FractionTests(unittest.TestCase):
         context = Mock()
         context.run_recognition_direct.side_effect = [SimpleNamespace(hit=False),
             self.detail([("55/140", 82, 0, 145, 40, .99)])]
-        self.assertEqual(clothes._read_fraction(context, None, [82, 0, 145, 40]), 55)
+        self.assertEqual(read_ocr_fraction(context, None, [82, 0, 145, 40]), 55)
         calls = context.run_recognition_direct.call_args_list
         self.assertFalse(calls[0].args[1].only_rec)
         self.assertTrue(calls[1].args[1].only_rec)

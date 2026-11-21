@@ -6,8 +6,8 @@
     "license": "MIT",
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "v0.0.16-nightly.20261105",
-    "title": "闪现吧暖暖v0.0.16#11.05 - 笼中歌#11.05",
+    "version": "v0.0.17-nightly.20261121",
+    "title": "闪现吧暖暖v0.0.17#11.21 - 永昼启示录",
     "icon": "logo.ico",
     "mirrorchyan_rid": "MaaShiningNikki",
     "mirrorchyan_multiplatform": true,
@@ -90,7 +90,9 @@
             "entry": "美甲任务链入口",
             "option": [
                 "美甲特约顾客任务",
-                "美甲点赞"
+                "美甲投稿",
+                "美甲点赞",
+                "采购美甲券"
             ]
         },
         {
@@ -121,23 +123,22 @@
             "option": [
                 "免费感应", "谜海感应", "是否在心之门这里分享"
             ],
-            "description": "每次运行最多成功感应两次。"
+            "description": "三海都有免费次数时可感应三次。"
         },
         {
-            "name": "月卡领取",
-            "label": "🌙 月卡领取",
-            "entry": "月卡任务链入口"
-        },
-        {
-            "name": "特权卡领取",
-            "label": "💎 特权卡领取",
-            "entry": "特权卡任务链入口"
+            "name": "月卡",
+            "label": "💎 月卡",
+            "entry": "卡片福利任务链入口",
+            "option": [
+                "卡片福利领取"
+            ]
         },
         {
             "name": "一键领取",
             "label": "🎉 一键领取",
             "entry": "一键领取任务链入口",
-            "description": "领取活跃任务、时尚任务和时尚提升计划奖励。"
+            "description": "领取活跃任务、时尚任务和时尚提升计划奖励。",
+            "option": ["一键领取补足活跃", "一键领取时尚任务奖励", "一键领取时尚提升计划奖励"]
         },
         {
             "name": "织梦空间",
@@ -147,29 +148,13 @@
             "description": "依次完成七日妙想、签到、织梦经营和成衣清理。其中七日妙想分享需安装 QQ。"
         },
         {
-            "name": "时光钟表铺",
-            "label": "🕰️ 时光钟表铺",
-            "entry": "时光钟表铺任务链入口",
-            "description": "时光钟表铺",
+            "name": "结伴",
+            "label": "🤝 结伴",
+            "entry": "结伴任务链入口",
+            "description": "依次完成所选结伴挑战，消耗体力。",
             "option": [
-                "时光钟表铺模式"
+                "结伴子任务"
             ]
-        },
-        {
-            "name": "不落的帷幕",
-            "label": "🎭 不落的帷幕",
-            "entry": "不落的帷幕任务链入口",
-            "description": "不落的帷幕",
-            "option": [
-                "不落的帷幕模式"
-            ]
-        },
-        {
-            "name": "印象旅航",
-            "label": "⛵ 印象旅航",
-            "entry": "印象旅航任务链入口",
-            "description": "印象旅航",
-            "option": ["印象旅航刷取次数"]
         },
         {
             "name": "情报屋",
@@ -191,20 +176,9 @@
             ]
         },
         {
-            "name": "主线普通关卡",
-            "label": "📖 主线普通关卡",
-            "description": "挑战指定主线普通关卡，消耗体力，不购买体力。",
-            "entry": "主线故事任务链入口",
-            "option": [
-                "主线挑战卷",
-                "主线挑战次数"
-            ]
-        },
-        {
-            "name": "挑战关卡2-1",
-            "label": "⚔️ 挑战关卡2-1",
-            "description": "挑战关卡2-1，共5次。",
-            "entry": "挑战关卡任务链入口"
+            "name": "(test)关卡刷取",
+            "entry": "关卡刷取任务链入口",
+            "option": ["关卡刷取方式", "关卡刷取调查首通"]
         },
         {
             "name": "竞技场",
@@ -254,24 +228,18 @@
             "description": "领取每周礼包，建议每周运行一次。"
         },
         {
-            "name": "活动：笼中歌",
-            "label": "🕊️ 活动：笼中歌",
-            "entry": "笼中歌任务链入口",
+            "name": "活动：虹猫蓝兔",
+            "label": "🐇 活动：虹猫蓝兔",
+            "entry": "虹猫蓝兔任务链入口",
             "default_check": false,
-            "description": "自动进入笼中歌并全屏查找剧情章节、点击推进剧情。\n\n[size:14][color:red][b]请勿随意点击返回，以免消耗粉钻。[/b][/color][/size]",
-            "pipeline_override": {
-                "剧情自动点击任务链入口": {
-                    "action": {
-                        "type": "Custom",
-                        "param": {
-                            "custom_action": "story_auto_click",
-                            "custom_action_param": {
-                                "search_chapters": true
-                            }
-                        }
-                    }
-                }
-            }
+            "description": "打开虹猫蓝兔活动。要自动推进剧情，请先手动进入剧情页面，再使用「[size:14][color:red][b]添加任务 → 辅助工具 → 剧情自动点击[/b][/color][/size]」。"
+        },
+        {
+            "name": "活动：永昼启示录",
+            "label": "☀️ 活动：永昼启示录",
+            "entry": "永昼启示录任务链入口",
+            "default_check": false,
+            "description": "自动完成挑战关卡首通，并批量完成剩余挑战次数。"
         },
         {
             "name": "翻转印象",
@@ -333,24 +301,21 @@
                 {"name": "回家", "enabled": true, "group": []},
                 {"name": "分享", "enabled": true, "group": []},
                 {"name": "心之门", "enabled": true, "group": []},
-                {"name": "月卡领取", "enabled": true, "group": []},
-                {"name": "特权卡领取", "enabled": true, "group": []},
+                {"name": "月卡", "enabled": true, "group": []},
                 {"name": "一键领取", "enabled": true, "group": []},
                 {"name": "织梦空间", "enabled": true, "group": []},
-                {"name": "时光钟表铺", "enabled": true, "group": []},
-                {"name": "不落的帷幕", "enabled": true, "group": []},
-                {"name": "印象旅航", "enabled": true, "group": []},
+                {"name": "结伴", "enabled": true, "group": []},
                 {"name": "情报屋", "enabled": true, "group": []},
                 {"name": "制作目标服装", "enabled": true, "group": []},
-                {"name": "主线普通关卡", "enabled": true, "group": []},
-                {"name": "挑战关卡2-1", "enabled": true, "group": []},
+                {"name": "(test)关卡刷取", "enabled": true, "group": []},
                 {"name": "竞技场", "enabled": true, "group": []},
                 {"name": "搭配评选赛", "enabled": true, "group": []},
                 {"name": "心阶", "enabled": true, "group": []},
                 {"name": "回忆小铺", "enabled": true, "group": []},
                 {"name": "联盟兑换幻之券", "enabled": true, "group": []},
                 {"name": "每周礼包", "enabled": true, "group": []},
-                {"name": "活动：笼中歌", "enabled": false, "group": []},
+                {"name": "活动：虹猫蓝兔", "enabled": false, "group": []},
+                {"name": "活动：永昼启示录", "enabled": false, "group": []},
                 {"name": "翻转印象", "enabled": false, "group": ["往期活动"]},
                 {"name": "入夜派对", "enabled": true, "group": ["辅助工具"]},
                 {"name": "兑换码", "enabled": true, "group": ["辅助工具"]},
@@ -360,7 +325,7 @@
         },
         {
             "name": "完整日常",
-            "description": "包含完整日常、养成刷取、竞技场与评选赛、回忆小铺和笼中歌。",
+            "description": "包含完整日常、养成刷取、竞技场与评选赛和回忆小铺。",
             "group": [],
             "task": [
                 {"name": "启动闪耀暖暖", "enabled": true, "group": []},
@@ -371,9 +336,7 @@
                 {"name": "福利", "enabled": true, "group": []},
                 {"name": "心之门", "enabled": true, "group": []},
                 {"name": "回家", "enabled": true, "group": []},
-                {"name": "时光钟表铺", "enabled": true, "group": []},
-                {"name": "不落的帷幕", "enabled": true, "group": []},
-                {"name": "印象旅航", "enabled": true, "group": []},
+                {"name": "结伴", "enabled": true, "group": []},
                 {"name": "制作目标服装", "enabled": true, "group": []},
                 {"name": "美甲", "enabled": true, "group": []},
                 {"name": "情报屋", "enabled": true, "group": []},
@@ -382,9 +345,7 @@
                 {"name": "分享", "enabled": true, "group": []},
                 {"name": "一键领取", "enabled": true, "group": []},
                 {"name": "回忆小铺", "enabled": true, "group": []},
-                {"name": "月卡领取", "enabled": true, "group": []},
-                {"name": "特权卡领取", "enabled": true, "group": []},
-                {"name": "活动：笼中歌", "enabled": true, "group": []},
+                {"name": "月卡", "enabled": true, "group": []},
                 {"name": "织梦空间", "enabled": true, "group": []}
             ]
         }
@@ -406,13 +367,100 @@
                 },
                 {
                     "name": "开始执行",
+                    "option": ["机密任务每周一次"],
                     "pipeline_override": {
+                        "联盟任务链入口": {"attach": {"mode": "start"}},
                         "联盟机密任务入口分流": {
-                            "next": ["关闭机密任务周奖励弹窗", "点击前往当前目标", "机密任务已完成", "点击开始执行", "点击执行多次"]
+                            "next": ["关闭机密任务周奖励弹窗", "点击前往当前目标", "机密任务已完成", "机密任务每周检查", "点击执行多次"]
+                        }
+                    }
+                },
+                {
+                    "name": "刷爆发",
+                    "option": ["机密任务每周一次", "机密任务爆发目标", "机密任务自选爆发部位", "机密任务刷取上限", "机密任务超时继续"],
+                    "pipeline_override": {
+                        "联盟任务链入口": {"attach": {"mode": "burst"}},
+                        "联盟机密任务入口分流": {
+                            "next": ["关闭机密任务周奖励弹窗", "点击前往当前目标", "机密任务已完成", "机密任务每周检查"]
                         }
                     }
                 }
             ]
+        },
+        "机密任务每周一次": {
+            "type": "switch",
+            "label": "每周只做一次",
+            "description": "本周按当前设置结算过，之后直接执行多次。更换执行方式或刷爆发设置后重新做一次。每周一凌晨5点重置（北京时间）。多账号请先运行启动任务。",
+            "default_case": "No",
+            "cases": [
+                {"name": "No"},
+                {"name": "Yes", "pipeline_override": {"联盟任务链入口": {"attach": {"weekly": true}}}}
+            ]
+        },
+        "机密任务超时继续": {
+            "type": "switch",
+            "label": "到时没刷到也继续",
+            "description": "打完当前这场，再执行剩余次数，也算本周做过。",
+            "default_case": "No",
+            "cases": [
+                {"name": "No"},
+                {"name": "Yes", "pipeline_override": {"机密任务刷爆发": {"attach": {"continue_on_timeout": true}}}}
+            ]
+        },
+        "机密任务爆发目标": {
+            "type": "select",
+            "label": "刷几爆",
+            "description": "概率：随机三爆＞发型裙子双爆＞发型裙子鞋袜三爆（非常难刷不建议，刷了一个小时都没有）",
+            "default_case": "两项",
+            "cases": [
+                {
+                    "name": "两项",
+                    "label": "双爆",
+                    "pipeline_override": {"机密任务刷爆发": {"attach": {"total": 2}}}
+                },
+                {
+                    "name": "三项",
+                    "label": "三爆",
+                    "pipeline_override": {"机密任务刷爆发": {"attach": {"total": 3}}}
+                }
+            ]
+        },
+        "机密任务自选爆发部位": {
+            "type": "checkbox",
+            "label": "哪些部位必须爆",
+            "description": "想指定哪个部位就选，不指定的就是任意。\n\n比如选「三爆」，只勾「发型」，就是发型必须爆，另外再有任意两个部位爆就行。\n\n比如选「双爆」，勾「发型」和「裙子」，就是发型和裙子必须爆。",
+            "default_case": [],
+            "cases": [
+                {"name": "裙子", "pipeline_override": {"机密任务刷爆发": {"attach": {"裙子": true}}}},
+                {"name": "发型", "pipeline_override": {"机密任务刷爆发": {"attach": {"发型": true}}}},
+                {"name": "耳饰", "pipeline_override": {"机密任务刷爆发": {"attach": {"耳饰": true}}}},
+                {"name": "项圈", "label": "颈饰（项圈）", "pipeline_override": {"机密任务刷爆发": {"attach": {"项圈": true}}}},
+                {"name": "头饰", "pipeline_override": {"机密任务刷爆发": {"attach": {"头饰": true}}}},
+                {"name": "面饰", "pipeline_override": {"机密任务刷爆发": {"attach": {"面饰": true}}}},
+                {"name": "手饰", "pipeline_override": {"机密任务刷爆发": {"attach": {"手饰": true}}}},
+                {"name": "手持", "pipeline_override": {"机密任务刷爆发": {"attach": {"手持": true}}}},
+                {"name": "背饰", "pipeline_override": {"机密任务刷爆发": {"attach": {"背饰": true}}}},
+                {"name": "摆件", "pipeline_override": {"机密任务刷爆发": {"attach": {"摆件": true}}}},
+                {"name": "鞋袜", "pipeline_override": {"机密任务刷爆发": {"attach": {"鞋袜": true}}}}
+            ]
+        },
+        "机密任务刷取上限": {
+            "type": "input",
+            "label": "刷取上限（分钟）",
+            "description": "到达上限仍未刷到时，按「到时没刷到也继续」的设置处理。",
+            "inputs": [
+                {
+                    "name": "burst_minutes",
+                    "label": "刷取上限（分钟）",
+                    "default": "60",
+                    "pipeline_type": "int",
+                    "verify": "^[1-9][0-9]*$",
+                    "pattern_msg": "请输入正整数分钟"
+                }
+            ],
+            "pipeline_override": {
+                "机密任务刷爆发": {"attach": {"minutes": "{burst_minutes}"}}
+            }
         },
         "联盟入夜派对": {
             "type": "switch",
@@ -499,8 +547,8 @@
                         "启动账号记录初始化": {
                             "action": {"type": "Custom", "param": {"custom_action": "start_account_session", "custom_action_param": {"multi": true}}}
                         },
-                        "启动闪暖": {"next": ["资源更新", "启动切换账号", "[JumpBack]嗯等"]},
-                        "资源更新": {"next": ["启动切换账号", "[JumpBack]在资源更新页面", "[JumpBack]嗯等"]}
+                        "启动闪暖": {"next": ["资源更新", "[JumpBack]关闭启动公告", "启动切换账号", "[JumpBack]嗯等"]},
+                        "资源更新": {"next": ["[JumpBack]关闭启动公告", "启动切换账号", "[JumpBack]在资源更新页面", "[JumpBack]嗯等"]}
                     }
                 },
                 {
@@ -509,8 +557,8 @@
                         "启动账号记录初始化": {
                             "action": {"type": "Custom", "param": {"custom_action": "start_account_session", "custom_action_param": {"multi": false}}}
                         },
-                        "启动闪暖": {"next": ["资源更新", "点击开始", "[JumpBack]嗯等"]},
-                        "资源更新": {"next": ["点击开始", "[JumpBack]在资源更新页面", "[JumpBack]嗯等"]}
+                        "启动闪暖": {"next": ["资源更新", "[JumpBack]关闭启动公告", "点击开始", "[JumpBack]嗯等"]},
+                        "资源更新": {"next": ["[JumpBack]关闭启动公告", "点击开始", "[JumpBack]在资源更新页面", "[JumpBack]嗯等"]}
                     }
                 }
             ]
@@ -658,6 +706,76 @@
                     "repeat": "{quantity}"
                 }
             }
+        },
+        "卡片福利领取": {
+            "type": "checkbox",
+            "label": "领取项目",
+            "default_case": [
+                "月卡",
+                "特权卡"
+            ],
+            "cases": [
+                {
+                    "name": "月卡",
+                    "pipeline_override": {
+                        "卡片福利选择月卡": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "特权卡",
+                    "pipeline_override": {
+                        "卡片福利选择特权卡": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
+        },
+        "结伴子任务": {
+            "type": "checkbox",
+            "label": "结伴子任务",
+            "default_case": [
+                "时光钟表铺",
+                "不落的帷幕",
+                "印象旅航"
+            ],
+            "cases": [
+                {
+                    "name": "时光钟表铺",
+                    "option": [
+                        "时光钟表铺模式"
+                    ],
+                    "pipeline_override": {
+                        "结伴选择时光钟表铺": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "不落的帷幕",
+                    "option": [
+                        "不落的帷幕模式"
+                    ],
+                    "pipeline_override": {
+                        "结伴选择不落的帷幕": {
+                            "enabled": true
+                        }
+                    }
+                },
+                {
+                    "name": "印象旅航",
+                    "option": [
+                        "印象旅航刷取次数"
+                    ],
+                    "pipeline_override": {
+                        "结伴选择印象旅航": {
+                            "enabled": true
+                        }
+                    }
+                }
+            ]
         },
         "时光钟表铺模式": {
             "type": "select",
@@ -1186,6 +1304,111 @@
                 }
             }
         },
+        "一键领取补足活跃": {
+            "type": "switch",
+            "label": "今日活跃不足时补做",
+            "description": "第五个活跃礼盒未点亮时，通过每日任务前往卷Ⅰ 1-1，补齐主线搭配的10次进度并返回领取。",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "pipeline_override": {
+                        "活跃不足时补做主线": {
+                            "action": {
+                                "type": "Custom",
+                                "param": {
+                                    "custom_action": "claim_daily_main_stage",
+                                    "custom_action_param": {"supplement": true}
+                                }
+                            }
+                        }
+                    }
+                },
+                {"name": "No"}
+            ]
+        },
+        "一键领取时尚任务奖励": {
+            "type": "switch",
+            "label": "领取时尚任务奖励",
+            "default_case": "Yes",
+            "cases": [
+                {"name": "Yes"},
+                {"name": "No", "pipeline_override": {"点击时尚任务": {"enabled": false}}}
+            ]
+        },
+        "一键领取时尚提升计划奖励": {
+            "type": "switch",
+            "label": "领取时尚提升计划奖励",
+            "default_case": "Yes",
+            "cases": [
+                {"name": "Yes"},
+                {"name": "No", "pipeline_override": {"点击时尚提升计划": {"enabled": false}}}
+            ]
+        },
+        "关卡刷取方式": {
+            "type": "select",
+            "label": "刷取方式",
+            "default_case": "按关卡刷",
+            "cases": [
+                {"name": "按关卡刷", "option": ["关卡刷取清单"]},
+                {"name": "按服装材料刷", "option": ["关卡刷取材料清单"]}
+            ]
+        },
+        "关卡刷取清单": {
+            "type": "input",
+            "label": "关卡清单",
+            "inputs": [
+                {
+                    "name": "stage_plan",
+                    "label": "关卡清单",
+                    "description": "用逗号分隔，按填写顺序刷。例如：卷2 挑战 16-4=5，迷宫 2-3=0，调查 4-6-1=2。等号后留空跳过，0刷到体力不足或次数用完。",
+                    "default": "",
+                    "pipeline_type": "string"
+                }
+            ],
+            "pipeline_override": {
+                "关卡刷取任务链入口": {
+                    "action": {"param": {"custom_action_param": {"mode": "stage", "list": "{stage_plan}"}}}
+                }
+            }
+        },
+        "关卡刷取材料清单": {
+            "type": "input",
+            "label": "材料清单",
+            "inputs": [
+                {
+                    "name": "material_plan",
+                    "label": "材料清单",
+                    "description": "填写材料和目标持有量。例如：木纹耳钉=10，碧色眼眸@卷1 10-10=5。加 @ 关卡可指定来源，省略则自动选。等号后留空跳过，0刷到体力不足或次数用完。",
+                    "default": "",
+                    "pipeline_type": "string"
+                }
+            ],
+            "pipeline_override": {
+                "关卡刷取任务链入口": {
+                    "action": {"param": {"custom_action_param": {"mode": "material", "list": "{material_plan}"}}}
+                }
+            }
+        },
+        "关卡刷取调查首通": {
+            "type": "select",
+            "label": "调查行动需要首通时",
+            "default_case": "提醒并跳过",
+            "cases": [
+                {
+                    "name": "提醒并跳过",
+                    "pipeline_override": {
+                        "关卡刷取允许调查首通": {"enabled": false}
+                    }
+                },
+                {
+                    "name": "自动首通后刷取",
+                    "pipeline_override": {
+                        "关卡刷取允许调查首通": {"enabled": true}
+                    }
+                }
+            ]
+        },
         "制作目标服装主线挑战次数": {
             "type": "input",
             "label": "主线最大挑战次数",
@@ -1484,10 +1707,33 @@
                 }
             ]
         },
+        "美甲投稿": {
+            "type": "switch",
+            "description": "请先在游戏里设置一套美甲套装。开启后会使用列表中的第一套投稿。",
+            "default_case": "No",
+            "cases": [
+                {
+                    "name": "Yes",
+                    "option": ["美甲投稿每周一次"],
+                    "pipeline_override": {"美甲投稿打开我的投稿": {"enabled": true}}
+                },
+                {"name": "No"}
+            ]
+        },
+        "美甲投稿每周一次": {
+            "type": "switch",
+            "label": "每周一次",
+            "description": "北京时间周一 05:00 刷新。关闭后，每次运行时检查本期是否已有投稿。",
+            "default_case": "Yes",
+            "cases": [
+                {"name": "Yes"},
+                {"name": "No", "pipeline_override": {"美甲投稿与点赞分流": {"attach": {"periodic": false}}}}
+            ]
+        },
         "美甲点赞": {
             "type": "switch",
             "label": "点赞",
-            "description": "开启后完成5次点赞并领取话题任务奖励。",
+            "description": "开启后完成5次点赞。开启点赞或投稿时会检查话题任务奖励。",
             "default_case": "Yes",
             "cases": [
                 {
@@ -1497,11 +1743,59 @@
                 {
                     "name": "No",
                     "pipeline_override": {
-                        "点击返回美甲页面": {
-                            "next": []
+                        "点击浏览点赞": {
+                            "enabled": false
                         }
                     }
                 }
+            ]
+        },
+        "采购美甲券": {
+            "type": "switch",
+            "default_case": "Yes",
+            "cases": [
+                {"name": "Yes", "option": ["美甲采购项目"]},
+                {"name": "No", "pipeline_override": {"美甲采购美甲券": {"attach": {"enabled": false}}}}
+            ]
+        },
+        "美甲采购项目": {
+            "type": "checkbox",
+            "label": "采购方式",
+            "description": "多账号请先运行启动任务以区分采购记录。手动切号会共用默认记录。",
+            "default_case": ["免费", "时尚礼券"],
+            "cases": [
+                {
+                    "name": "免费",
+                    "label": "免费兑换",
+                    "option": ["美甲免费每30小时一次"],
+                    "pipeline_override": {"美甲采购免费领取": {"attach": {"selected": true}}}
+                },
+                {
+                    "name": "时尚礼券",
+                    "label": "时尚礼券兑换",
+                    "option": ["美甲时尚礼券每周一次"],
+                    "pipeline_override": {"美甲采购时尚礼券兑换": {"attach": {"selected": true}}}
+                }
+            ]
+        },
+        "美甲免费每30小时一次": {
+            "type": "switch",
+            "label": "每 30 小时一次",
+            "description": "从领取成功起计算。关闭后，每次运行时检查能否免费领取。",
+            "default_case": "Yes",
+            "cases": [
+                {"name": "Yes"},
+                {"name": "No", "pipeline_override": {"美甲采购免费领取": {"attach": {"periodic": false}}}}
+            ]
+        },
+        "美甲时尚礼券每周一次": {
+            "type": "switch",
+            "label": "每周一次",
+            "description": "北京时间周一 05:00 刷新。关闭后，每次运行时检查本周是否还有缤纷星券可兑换。",
+            "default_case": "Yes",
+            "cases": [
+                {"name": "Yes"},
+                {"name": "No", "pipeline_override": {"美甲采购时尚礼券兑换": {"attach": {"periodic": false}}}}
             ]
         },
         "竞技场挑战策略": {
@@ -2093,7 +2387,7 @@
                     "name": "No",
                     "pipeline_override": {
                         "点击空白-日常采购":{
-                            "next": ["stop"]
+                            "next": ["[JumpBack]点击收起日程表", "stop"]
                         }
                     }
                 }
@@ -2108,7 +2402,18 @@
                     "name": "只是暂时离开",
                     "pipeline_override": {
                         "点击退出自习室": {
-                            "next": ["[JumpBack]在加载页面", "点击只是暂时离开"]
+                            "action": {
+                                "type": "Custom",
+                                "param": {
+                                    "custom_action": "click_and_wait_change",
+                                    "custom_action_param": {
+                                        "ready_nodes": ["点击只是暂时离开"],
+                                        "click_interval": 3000,
+                                        "timeout": 120000
+                                    }
+                                }
+                            },
+                            "next": ["点击只是暂时离开"]
                         }
                     }
                 },

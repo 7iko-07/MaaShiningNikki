@@ -89,7 +89,7 @@ class SelectSameTextAfterThumbAction(CustomAction):
         controller.post_screencap().wait()
         result = context.run_recognition_direct(
             JRecognitionType.OCR,
-            JOCR(roi=roi, threshold=threshold),
+            JOCR(roi=roi, threshold=threshold, model="ppocr_v6"),
             controller.cached_image,
         )
         for item in self._iter_ocr_results(result):
@@ -102,7 +102,7 @@ class SelectSameTextAfterThumbAction(CustomAction):
         controller.post_screencap().wait()
         result = context.run_recognition_direct(
             JRecognitionType.OCR,
-            JOCR(roi=roi, threshold=threshold, order_by="Vertical"),
+            JOCR(roi=roi, threshold=threshold, order_by="Vertical", model="ppocr_v6"),
             controller.cached_image,
         )
 

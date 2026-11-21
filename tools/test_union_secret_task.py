@@ -3,7 +3,9 @@
 import importlib.util
 import json
 import sys
+import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -387,12 +389,320 @@ class UnionSecretTaskTests(unittest.TestCase):
                     "next"
                 ]
                 completion_index = next_nodes.index("机密任务已完成")
-                for execution_node in ("点击开始执行", "点击执行多次"):
+                for execution_node in ("点击开始执行", "点击执行多次", "机密任务刷爆发", "机密任务每周检查"):
                     if execution_node in next_nodes:
                         self.assertLess(
                             completion_index,
                             next_nodes.index(execution_node),
                         )
+
+
+class SecretTaskBurstTests(unittest.TestCase):
+    def watch(self, frames, required, total=2):
+        action = union_secret_task.UnionSecretTaskBurstAction()
+        context = SimpleNamespace(tasker=SimpleNamespace(stopping=False))
+        now = [0.]
+        with patch.object(action, "_capture", side_effect=frames), \
+             patch.object(action, "_read_part", side_effect=lambda _, frame: frame[0]), \
+             patch.object(action, "_ocr", side_effect=lambda _, frame, *args: SimpleNamespace(
+                 hit=bool(frame[1]), filtered_results=[SimpleNamespace(text=frame[1])],
+             )), \
+             patch.object(union_secret_task.time, "monotonic", side_effect=lambda: now[0]), \
+             patch.object(union_secret_task.time, "sleep", side_effect=lambda dt: now.__setitem__(0, now[0] + dt)):
+            return action._watch(context, required, total, 60)
+
+    def test_three_selected_parts_must_trigger_in_one_battle(self):
+        parts = {"裙子", "发型", "鞋袜"}
+        frames = [
+            ("裙子", "魅力爆发"), ("裙子", "魅力爆发"), ("裙子", ""),
+            ("发型", ""), ("发型", "魅力爆发"), ("发型", ""),
+            ("鞋袜", ""), ("鞋袜", "魅力爆发"),
+        ]
+        self.assertEqual(self.watch(frames, parts, 3), "matched")
+
+    def test_missing_required_round_retries_after_confirmed_transition(self):
+        frames = [
+            ("发型", ""), ("发型", "闪耀瞬间"), ("面饰", ""), ("面饰", ""),
+        ]
+        with patch.object(union_secret_task.logger, "info") as info:
+            self.assertEqual(self.watch(frames, {"裙子", "发型"}), "retry")
+        info.assert_called_once_with("发型：未爆发")
+
+    def test_v6_reads_both_known_and_unlisted_round_labels(self):
+        action = union_secret_task.UnionSecretTaskBurstAction()
+        for text, part in (("面饰评分", "面饰"), ("颈饰评分", "项圈"), ("特殊饰品评分", "特殊饰品")):
+            with patch.object(action, "_ocr", return_value=SimpleNamespace(
+                hit=True, best_result=SimpleNamespace(text=text),
+            )):
+                self.assertEqual(action._read_part(None, None), part)
+
+    def test_any_pair_ignores_single_burst_that_spans_part_labels(self):
+        frames = [
+            ("裙子", ""), ("裙子", ""),
+            ("耳饰", "魅力爆发"), ("耳饰", "魅力爆发"),
+            ("项圈", "魅力爆发"), ("项圈", "魅力爆发"),
+            ("项圈", ""), ("发型", ""), ("发型", "魅力爆发"),
+        ]
+        with patch.object(union_secret_task.logger, "info") as info:
+            self.assertEqual(self.watch(frames, set()), "matched")
+        messages = [call.args[0] for call in info.call_args_list]
+        self.assertEqual([msg for msg in messages if msg.endswith("：已爆发")],
+                         ["耳饰：已爆发", "发型：已爆发"])
+
+    def test_three_bursts_may_include_one_or_two_required_parts(self):
+        frames = [
+            ("裙子", "魅力爆发"), ("裙子", ""), ("裙子", ""),
+            ("发型", "魅力爆发"), ("发型", ""), ("发型", ""),
+            ("面饰", "魅力爆发"),
+        ]
+        for required in (set(), {"发型"}, {"裙子", "发型"}):
+            with self.subTest(required=required):
+                self.assertEqual(self.watch(frames, required, 3), "matched")
+
+    def test_last_round_waits_for_skill_before_retry(self):
+        frames = [("发型", "")] * 2 + [("鞋袜", "")] * 3 + [("鞋袜", "轻盈脚步")] * 8
+        self.assertEqual(self.watch(frames, set()), "retry")
+
+    def test_missing_required_round_stops_after_last_round(self):
+        frames = [("发型", "魅力爆发")] + [("鞋袜", "轻盈脚步")] * 9
+        with patch.object(union_secret_task.logger, "info") as info:
+            self.assertEqual(self.watch(frames, {"发型", "耳饰"}, 2), "unavailable")
+        messages = [call.args[0] for call in info.call_args_list]
+        self.assertTrue(any("未识别到必爆部位（耳饰）" in msg for msg in messages))
+        self.assertNotIn("耳饰：未爆发", messages)
+
+    def make_runner(self, **options):
+        action = union_secret_task.UnionSecretTaskBurstAction()
+        context = MagicMock()
+        context.get_node_data.return_value = {"attach": options}
+        context.tasker.stopping = False
+        context.clone.return_value.run_task.return_value.status.succeeded = True
+        return action, context, SimpleNamespace(node_name="机密任务刷爆发")
+
+    def test_user_limit_exits_once_and_does_not_enter_settlement(self):
+        action, context, argv = self.make_runner(total=2, minutes=37)
+        with patch.object(action, "_wait_progress", return_value=(5, 5)), \
+             patch.object(action, "_watch", return_value="limit") as watch, \
+             patch.object(action, "_exit_battle", return_value=True) as exit_battle, \
+             patch.object(union_secret_task.time, "monotonic", side_effect=[100, 105, 2321]):
+            self.assertTrue(action.run(context, argv))
+        watch.assert_called_once_with(context, set(), 2, 2320)
+        exit_battle.assert_called_once_with(context, (5, 5))
+        context.clone.return_value.run_task.assert_called_once()
+        context.override_next.assert_called_once_with(argv.node_name, [])
+
+    def test_timeout_continue_hands_current_battle_to_settlement(self):
+        action, context, argv = self.make_runner(total=3, minutes=1, continue_on_timeout=True)
+        with patch.object(action, "_wait_progress", return_value=(5, 5)), \
+             patch.object(action, "_watch", return_value="limit"), \
+             patch.object(action, "_exit_battle") as exit_battle:
+            self.assertTrue(action.run(context, argv))
+        context.clone.return_value.run_task.assert_called_once()
+        exit_battle.assert_not_called()
+        context.override_next.assert_called_once_with(argv.node_name, ["等待机密任务比拼中"])
+
+    def test_timeout_between_battles_with_continue_starts_one_final_battle(self):
+        action, context, argv = self.make_runner(total=3, minutes=1, continue_on_timeout=True)
+        with patch.object(action, "_wait_progress", return_value=(5, 5)), \
+             patch.object(action, "_watch", side_effect=["retry", "limit"]), \
+             patch.object(action, "_exit_battle", return_value=True) as exit_battle, \
+             patch.object(union_secret_task.time, "monotonic", side_effect=[100, 105, 165]):
+            self.assertTrue(action.run(context, argv))
+        self.assertEqual(context.clone.return_value.run_task.call_count, 2)
+        exit_battle.assert_called_once()
+        context.override_next.assert_called_once_with(argv.node_name, ["等待机密任务比拼中"])
+
+    def test_manual_stop_does_not_continue_to_settlement(self):
+        action, context, argv = self.make_runner(total=3, minutes=1, continue_on_timeout=True)
+        with patch.object(action, "_wait_progress", return_value=(5, 5)), \
+             patch.object(action, "_watch", return_value="stopped"), \
+             patch.object(action, "_exit_battle") as exit_battle:
+            self.assertFalse(action.run(context, argv))
+        exit_battle.assert_not_called()
+        context.override_next.assert_not_called()
+
+    def test_unavailable_part_exits_without_starting_another_battle(self):
+        action, context, argv = self.make_runner(total=3, minutes=60, 发型=True)
+        with patch.object(action, "_wait_progress", return_value=(5, 5)), \
+             patch.object(action, "_watch", return_value="unavailable") as watch, \
+             patch.object(action, "_exit_battle", return_value=True) as exit_battle:
+            self.assertTrue(action.run(context, argv))
+        self.assertEqual(watch.call_args.args[1:3], ({"发型"}, 3))
+        exit_battle.assert_called_once_with(context, (5, 5))
+        context.clone.return_value.run_task.assert_called_once()
+        context.override_next.assert_called_once_with(argv.node_name, [])
+
+    def test_invalid_selection_stops_before_entering_battle(self):
+        action, context, argv = self.make_runner(total=2, minutes=60, 裙子=True, 发型=True, 鞋袜=True)
+        with patch.object(action, "_wait_progress") as progress:
+            self.assertFalse(action.run(context, argv))
+        progress.assert_not_called()
+        context.clone.assert_not_called()
+
+    def test_exit_requires_unchanged_remaining_count(self):
+        action, context, _ = self.make_runner()
+        exit_button = SimpleNamespace(hit=True, box=(20, 150, 60, 22))
+        context.run_action_direct.return_value.success = True
+        with patch.object(action, "_capture"), \
+             patch.object(action, "_ocr", side_effect=[
+                 SimpleNamespace(hit=False), SimpleNamespace(hit=False), exit_button,
+                 SimpleNamespace(hit=True),
+             ]), \
+             patch.object(action, "_progress", return_value=(4, 5)), \
+             patch.object(union_secret_task.time, "sleep"):
+            with self.assertRaisesRegex(ValueError, "剩余次数发生变化"):
+                action._exit_battle(context, (5, 5))
+        context.run_action_direct.assert_called_once()
+
+    def test_exit_retries_visible_button_and_clicks_exact_center(self):
+        action, context, _ = self.make_runner()
+        now = [0.0]
+        context.run_action_direct.return_value.success = True
+        miss = SimpleNamespace(hit=False)
+        exit_button = SimpleNamespace(hit=True, box=(1, 115, 92, 18))
+        popup = SimpleNamespace(hit=True)
+        confirm = SimpleNamespace(hit=True, box=(456, 684, 64, 39))
+
+        def recognize(_context, _image, roi, _expected):
+            clicks = context.run_action_direct.call_count
+            if roi[0] == 160:
+                return SimpleNamespace(hit=clicks == 3)
+            if roi[0] == 70:
+                return popup if clicks == 2 else miss
+            return confirm if roi[0] == 350 else exit_button
+
+        with patch.object(action, "_capture"), \
+             patch.object(action, "_ocr", side_effect=recognize), \
+             patch.object(action, "_progress", return_value=(5, 5)), \
+             patch.object(union_secret_task.time, "monotonic", side_effect=lambda: now[0]), \
+             patch.object(union_secret_task.time, "sleep", side_effect=lambda dt: now.__setitem__(0, now[0] + dt)):
+            self.assertTrue(action._exit_battle(context, (5, 5)))
+        calls = context.run_action_direct.call_args_list
+        self.assertEqual([call.args[1].target for call in calls],
+                         [(47, 124), (47, 124), (488, 703)])
+        self.assertTrue(all(len(call.args) == 2 for call in calls))
+
+
+class SecretTaskWeeklyTests(unittest.TestCase):
+    def setUp(self):
+        self.state = union_secret_task.state
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        patcher = patch.object(self.state, "STATE_PATH", Path(self.temp.name) / "weekly.sqlite3")
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.state._sessions.clear()
+        self.now = datetime(2026, 11, 18, 10, tzinfo=self.state.BEIJING)
+        clock = patch.object(self.state, "now_beijing", side_effect=lambda: self.now)
+        clock.start()
+        self.addCleanup(clock.stop)
+        self.action = union_secret_task.UnionSecretTaskWeeklyAction()
+        self.context = MagicMock()
+        self.context.tasker.controller.uuid = "union-device"
+        self.context.tasker.stopping = False
+        self.entry = {"mode": "start", "weekly": True}
+        self.burst = {"total": 2, "minutes": 60}
+        self.context.get_node_data.side_effect = lambda node: {
+            "attach": self.burst if node == "机密任务刷爆发" else self.entry,
+        }
+
+    def invoke(self, operation, task_id=20):
+        return self.action.run(self.context, SimpleNamespace(
+            node_name="联盟任务链入口" if operation == "enter" else operation,
+            task_detail=SimpleNamespace(task_id=task_id),
+            custom_action_param=json.dumps({"operation": operation}),
+        ))
+
+    def branch(self):
+        return self.context.override_next.call_args.args[1]
+
+    def new_run(self):
+        self.action = union_secret_task.UnionSecretTaskWeeklyAction()
+        self.assertTrue(self.invoke("enter"))
+        self.assertTrue(self.invoke("choose"))
+
+    def finish(self):
+        self.new_run()
+        self.assertTrue(self.invoke("complete"))
+
+    def test_week_resets_on_monday_five_in_beijing(self):
+        before = datetime(2026, 11, 23, 4, 59, 59, tzinfo=self.state.BEIJING)
+        after = before.replace(hour=5, minute=0, second=0)
+        self.assertEqual(union_secret_task.secret_task_week_key(before), "2026-11-16T05:00:00+08:00")
+        self.assertEqual(union_secret_task.secret_task_week_key(after.astimezone(timezone.utc)),
+                         "2026-11-23T05:00:00+08:00")
+
+    def test_failed_run_retries_and_completion_persists_after_restart(self):
+        self.new_run()
+        self.assertEqual(self.branch(), ["点击开始执行"])
+        self.new_run()
+        self.assertEqual(self.branch(), ["点击开始执行"])
+        self.assertTrue(self.invoke("complete"))
+        self.new_run()
+        self.assertEqual(self.branch(), ["点击执行多次"])
+
+    def test_new_settings_replace_previous_completion(self):
+        self.finish()
+        self.entry["mode"] = "burst"
+        self.new_run()
+        self.assertEqual(self.branch(), ["机密任务刷爆发"])
+        self.invoke("complete")
+        for change in ({"total": 3}, {"发型": True}, {"minutes": 30}, {"continue_on_timeout": True}):
+            self.burst.update(change)
+            self.new_run()
+            self.assertEqual(self.branch(), ["机密任务刷爆发"])
+            self.invoke("complete")
+            self.new_run()
+            self.assertEqual(self.branch(), ["点击执行多次"])
+        self.entry["mode"] = "start"
+        self.new_run()
+        self.assertEqual(self.branch(), ["点击开始执行"])
+
+    def test_disabled_weekly_still_executes_and_records_completion(self):
+        self.entry["weekly"] = False
+        self.finish()
+        self.new_run()
+        self.assertEqual(self.branch(), ["点击开始执行"])
+        self.entry["weekly"] = True
+        self.new_run()
+        self.assertEqual(self.branch(), ["点击执行多次"])
+
+    def test_accounts_are_isolated_and_unknown_login_cannot_save(self):
+        for suffix, expected in (("0012", "点击开始执行"), ("0013", "点击开始执行"),
+                                 ("0012", "点击执行多次")):
+            self.state.begin_login(self.context, 10, True)
+            self.state.set_login_suffix(self.context, suffix)
+            self.state.set_login_server(self.context, "千羽森林")
+            self.context.tasker.get_task_detail.return_value.status.succeeded = True
+            self.new_run()
+            self.assertEqual(self.branch(), [expected])
+            if expected == "点击开始执行":
+                self.invoke("complete")
+        self.state.begin_login(self.context, 10, True)
+        with patch.object(self.state.StateStore, "mark_secret_task_completed") as save:
+            self.new_run()
+            self.assertEqual(self.branch(), ["点击开始执行"])
+            self.invoke("complete")
+        save.assert_not_called()
+
+    def test_stop_wrong_task_and_new_week_do_not_save(self):
+        self.new_run()
+        with patch.object(self.state.StateStore, "mark_secret_task_completed") as save:
+            self.assertFalse(self.invoke("complete", task_id=21))
+            self.context.tasker.stopping = True
+            self.assertFalse(self.invoke("complete"))
+            self.context.tasker.stopping = False
+            self.now = datetime(2026, 11, 23, 5, tzinfo=self.state.BEIJING)
+            self.assertTrue(self.invoke("complete"))
+        save.assert_not_called()
+
+    def test_settlement_record_is_after_confirmed_result_and_before_batch(self):
+        pipeline = json.loads((ROOT / "assets/resource/pipeline/union.json").read_text(encoding="utf-8"))
+        self.assertEqual(pipeline["机密任务本次执行进度"]["next"], ["机密任务比拼完成记录"])
+        self.assertEqual(pipeline["机密任务比拼完成记录"]["action"]["param"]["custom_action_param"],
+                         {"operation": "complete"})
+        self.assertIn("点击执行多次", pipeline["机密任务比拼完成记录"]["next"])
+        self.assertEqual(union_secret_task.BURST_START_OVERRIDE["等待机密任务比拼中"]["next"], [])
 
 
 if __name__ == "__main__":

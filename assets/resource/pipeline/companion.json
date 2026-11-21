@@ -1,0 +1,19 @@
+{
+    "结伴任务链入口": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "companion_run"
+            }
+        }
+    },
+    "结伴选择时光钟表铺": {
+        "enabled": false
+    },
+    "结伴选择不落的帷幕": {
+        "enabled": false
+    },
+    "结伴选择印象旅航": {
+        "enabled": false
+    }
+}

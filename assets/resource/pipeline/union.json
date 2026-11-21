@@ -1,5 +1,13 @@
 {
     "联盟任务链入口": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "union_secret_task_weekly",
+                "custom_action_param": {"operation": "enter"}
+            }
+        },
+        "attach": {"mode": "execute"},
         "next": ["联盟任务链准备"],
         "timeout": 2000
     },
@@ -96,6 +104,43 @@
         "next": ["联盟机密任务入口分流"],
         "timeout": 5000
     },
+    "机密任务每周检查": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "model": "ppocr_v6",
+                "expected": ["开始执行"],
+                "roi": [227, 1131, 493, 149]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "union_secret_task_weekly",
+                "custom_action_param": {"operation": "choose"}
+            }
+        },
+        "next": ["点击执行多次"],
+        "timeout": 5000
+    },
+    "机密任务刷爆发": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "model": "ppocr_v6",
+                "expected": ["开始执行"],
+                "roi": [227, 1131, 493, 149]
+            }
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "union_secret_task_burst"
+            }
+        },
+        "attach": {"total": 2, "minutes": 60},
+        "next": ["等待机密任务比拼中"]
+    },
     "点击开始执行": {
         "recognition": {
             "type": "OCR",
@@ -149,8 +194,8 @@
             }
         },
         "action": {
-            "type": "Click",
-            "param": {}
+            "type": "Custom",
+            "param": {"custom_action": "click_center"}
         },
         "next": ["代理评选已选中"],
         "timeout": 2000
@@ -261,6 +306,18 @@
                     "pixel_threshold": 30,
                     "change_threshold": 0.3
                 }
+            }
+        },
+        "next": ["机密任务比拼完成记录"],
+        "timeout": 5000
+    },
+    "机密任务比拼完成记录": {
+        "recognition": "DirectHit",
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "union_secret_task_weekly",
+                "custom_action_param": {"operation": "complete"}
             }
         },
         "next": ["机密任务完成奖励", "机密任务已完成", "点击执行多次"],

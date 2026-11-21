@@ -1501,7 +1501,8 @@ class DreamRunner:
         return self.hit("七日分享按钮", image) and self.hit("七日分享保存本地", image)
 
     def seven_qq_ready(self, image):
-        return self.hit("七日分享QQ新用户", image) and self.hit("七日分享QQ登录", image)
+        labels = {item.text for item in matches(self.reco("七日分享QQ登录", image))}
+        return {"新用户", "登录"} <= labels or {"账号管理", "一键登录"} <= labels
 
     def seven_share(self):
         self.button("七日制衣连衣裙")
@@ -1538,7 +1539,7 @@ class DreamRunner:
         self.button("七日分享按钮")
         self.button("七日分享QQ渠道")
         # QQ 页面识别成功才关闭应用；不依赖固定等待，不进入联系人或发送消息。
-        self.wait(self.seven_qq_ready, "QQ新用户及登录页面")
+        self.wait(self.seven_qq_ready, "QQ登录页面")
         self.seven_action("七日分享关闭QQ")
         self.wait(self.seven_share_page, "关闭QQ后返回游戏分享页面")
         self.button("七日分享返回按钮")

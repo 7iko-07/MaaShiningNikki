@@ -31,9 +31,13 @@ class OutfitContestGuard(CustomAction):
             logger.info("搭配评选赛：自动参赛未开启，跳过参赛期")
             return context.override_next(argv.node_name, [])
         # 每次进入均恢复入口和导航后继，避免上次跳过或其他账号的覆盖残留。
+        prepare = "搭配评选赛任务链准备"
         next_nodes = ["搭配评选赛自动参赛"] if period == "submission" else ["点击我当评委"]
-        return (context.override_next("搭配评选赛任务链准备", next_nodes)
-                and context.override_next(argv.node_name, ["搭配评选赛任务链准备"]))
+        action = context.get_node_data(prepare)["action"]
+        action["param"]["custom_action_param"]["ignore_background_download"] = period == "judging"
+        return (context.override_pipeline({prepare: {"action": action}})
+                and context.override_next(prepare, next_nodes)
+                and context.override_next(argv.node_name, [prepare]))
 
 
 @AgentServer.custom_action("outfit_contest_submit")

@@ -10,7 +10,7 @@
                 }
             }
         },
-		"next": ["点击我的店铺"],
+		"next": ["美甲采购美甲券"],
 		"timeout": 30000
     },
 	"点击我的店铺": {
@@ -401,67 +401,26 @@
                 "end": [362, 836]
             }
         },
-		"next": ["领取前两个周好评奖励"],
+		"next": ["领取周好评奖励"],
         "timeout": 2000,
         "post_delay": 500
     },
-	"领取前两个周好评奖励":{
-		"recognition": "DirectHit",
-		"action": {
-			"type": "Custom",
-			"param":{
-				"custom_action":"click_nail_tabs_sequence",
-				"custom_action_param":{
-					"rois": [
-						[556, 474, 34, 28],
-						[317, 989, 21, 9],
-						[556, 474, 34, 28],
-						[317, 989, 21, 9],
-						[562, 656, 18, 18],
-						[317, 989, 21, 9]
-					]
-				}
-			}
-		},
-		"timeout": 10000,
-		"post_delay": 1000,
-		"next": ["上滑周好评奖励"]
-	},
-	"上滑周好评奖励":{
-        "recognition": "DirectHit",
+    "领取周好评奖励": {
         "action": {
-            "type": "Swipe",
-            "param":{
-                "end": [363, 528],
-                "begin": [362, 836]
+            "type": "Custom",
+            "param": {
+                "custom_action": "claim_visible_rewards",
+                "custom_action_param": {
+                    "list_roi": [191, 413, 467, 562],
+                    "button_roi": [495, 413, 162, 562],
+                    "close_roi": [317, 989, 21, 9],
+                    "max_swipes": 2,
+                    "gold_only": true
+                }
             }
         },
-		"next": ["领取后三个周好评奖励"],
-        "timeout": 2000,
-        "post_delay": 500
+        "next": ["点击空白-周好评礼包"]
     },
-	"领取后三个周好评奖励":{
-		"recognition": "DirectHit",
-		"action": {
-			"type": "Custom",
-			"param":{
-				"custom_action":"click_nail_tabs_sequence",
-				"custom_action_param":{
-					"rois": [
-						[567, 544, 19, 22],
-						[317, 989, 21, 9],
-						[562, 720, 21, 14],
-						[317, 989, 21, 9],
-						[564, 891, 18, 11],
-						[317, 989, 21, 9]
-					]
-				}
-			}
-		},
-		"timeout": 10000,
-		"next": ["点击空白-周好评礼包"],
-		"post_delay": 1000
-	},
 	"点击空白-周好评礼包":{
 		"recognition": "DirectHit",
 		"action": {
@@ -487,7 +446,7 @@
             }
         },
 		"timeout": 30000,
-        "next": ["点击此刻投稿"]
+        "next": ["美甲投稿与点赞分流"]
     },
     "点击此刻投稿": {
         "recognition": {
@@ -523,9 +482,6 @@
         "action": {
             "type": "DoNothing",
             "param": {}
-        },
-        "focus": {
-            "Node.Action.Starting": "#[color:red][b]美甲投稿需自行搭配[/b][/color]"
         },
         "next": [
             "美甲话题任务分流"
@@ -564,7 +520,7 @@
 			}
 		},
         "post_wait_freezes": 1000,
-		"next": ["[JumpBack]在加载页面","点击美甲完美评价1"],
+		"next": ["[JumpBack]在阻塞加载页面","点击美甲完美评价1"],
 		"timeout": 2000
     },
     "点击美甲完美评价1": {
@@ -583,7 +539,7 @@
 			}
 		},
 		"pre_delay": 500,
-		"next": ["[JumpBack]在加载页面","点击美甲完美评价2", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
+		"next": ["[JumpBack]在阻塞加载页面","点击美甲完美评价2", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
 		"timeout": 2000
     },
 	"点击美甲完美评价2": {
@@ -602,7 +558,7 @@
 			}
 		},
 		"pre_delay": 500,
-		"next": ["[JumpBack]在加载页面","点击美甲完美评价3", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
+		"next": ["[JumpBack]在阻塞加载页面","点击美甲完美评价3", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
 		"timeout": 2000
     },
 	"点击美甲完美评价3": {
@@ -621,7 +577,7 @@
 			}
 		},
 		"pre_delay": 500,
-		"next": ["[JumpBack]在加载页面","点击美甲完美评价4", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
+		"next": ["[JumpBack]在阻塞加载页面","点击美甲完美评价4", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
 		"timeout": 2000
     },
 	"点击美甲完美评价4": {
@@ -640,7 +596,7 @@
 			}
 		},
 		"pre_delay": 500,
-		"next": ["[JumpBack]在加载页面","点击美甲完美评价5", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
+		"next": ["[JumpBack]在阻塞加载页面","点击美甲完美评价5", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
 		"timeout": 2000
     },
 	"点击美甲完美评价5": {
@@ -659,7 +615,7 @@
 			}
 		},
 		"pre_delay": 500,
-		"next": ["[JumpBack]在加载页面","点击返回点赞美甲页面", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
+		"next": ["[JumpBack]在阻塞加载页面","点击返回点赞美甲页面", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
 		"timeout": 2000
     },
     "点击返回点赞美甲页面": {
@@ -715,10 +671,11 @@
         "param": {
             "custom_action": "claim_visible_rewards",
             "custom_action_param": {
-                "list_roi": [40, 430, 640, 590],
-                "button_roi": [455, 430, 220, 590],
+                "list_roi": [60, 447, 602, 543],
+                "button_roi": [480, 447, 180, 543],
                 "close_roi": [344, 998, 30, 17],
-                "max_swipes": 2
+                "max_swipes": 2,
+                "gold_only": true
             }
         }
     },
@@ -737,44 +694,20 @@
             "点击话题任务"
         ]
     },
+    "美甲话题任务文字": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [0, 1133, 550, 147],
+                "expected": ["话题任务"]
+            }
+        }
+    },
     "美甲话题页面就绪": {
         "recognition": {
             "type": "And",
             "param": {
-                "all_of": [
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "roi": [
-                                    550,
-                                    1133,
-                                    170,
-                                    147
-                                ],
-                                "expected": [
-                                    "我的投稿"
-                                ]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "roi": [
-                                    0,
-                                    1133,
-                                    550,
-                                    147
-                                ],
-                                "expected": [
-                                    "话题任务"
-                                ]
-                            }
-                        }
-                    }
-                ]
+                "all_of": ["此刻投稿-我的投稿", "美甲话题任务文字"]
             }
         },
         "action": "DoNothing",

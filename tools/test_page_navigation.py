@@ -281,7 +281,7 @@ class NavigationTests(WithoutExitPopupTests):
 
     def test_default_targets_exclude_pages_without_a_route_to_target(self):
         for target, expected in (("主页面", {"主页面"}), ("任务", {"任务", "主页面"}),
-                                 ("美甲", {"美甲", "主页面", "设计中心", "制衣", "情报屋", "美甲我的店铺"})):
+                                 ("美甲", {"美甲", "主页面", "设计中心", "制衣", "情报屋", "美甲我的店铺", "美甲采购", "美甲投稿征集"})):
             with self.subTest(target=target):
                 order = self.action._build_detection_order(
                     navigation.DEFAULT_PAGES, navigation.DEFAULT_ROUTES, target,
@@ -1093,6 +1093,13 @@ class NavigationClickTests(WithoutExitPopupTests):
         self.assertFalse(ok)
         self.assertEqual([t for t, _ in clicks], [0, 1.5, 3])
 
+    def test_start_journey_clicks_center_of_fresh_ocr_boxes(self):
+        nodes = json.loads((ROOT / "assets/resource/pipeline/navigation.json").read_text(encoding="utf-8"))
+        params = nodes["导航点击开始旅程"]["action"]["param"]["custom_action_param"]
+        ok, clicks, _ = self.simulate(target=lambda t: t >= 2, params=params)
+        self.assertTrue(ok)
+        self.assertEqual(clicks, [(0, (15, 40)), (1.5, (30, 40))])
+
     def test_no_clicks_during_loading(self):
         ok, clicks, _ = self.simulate(loading=lambda t: t < 2, target=lambda t: t >= 2.5)
         self.assertTrue(ok)
@@ -1185,7 +1192,7 @@ class NavigationClickTests(WithoutExitPopupTests):
                 self.assertTrue(params["custom_action_param"][key])
                 for ref in params["custom_action_param"][key]:
                     self.assertIn(ref, all_nodes)
-        self.assertEqual(len(guarded), 28)
+        self.assertEqual(len(guarded), 29)
 
 
 if __name__ == "__main__":

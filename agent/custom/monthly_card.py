@@ -7,6 +7,28 @@ from maa.custom_action import CustomAction
 from utils import logger
 
 
+@AgentServer.custom_action("card_rewards_run")
+class CardRewardsAction(CustomAction):
+    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        for name in ("月卡", "特权卡"):
+            if context.tasker.stopping:
+                return False
+            data = context.get_node_data("卡片福利选择" + name)
+            if not data or not data.get("enabled"):
+                continue
+            logger.info(f"卡片福利：开始领取{name}")
+            # 领取后交回组合任务，继续下一项。
+            result = context.run_task(
+                name + "任务链入口",
+                {"点击" + name: {"next": []}},
+            )
+            if not result or not result.status.succeeded:
+                logger.error(f"{name}：领取流程失败")
+                return False
+            logger.info(f"{name}：领取流程成功")
+        return True
+
+
 @AgentServer.custom_action("monthly_card_popup")
 class MonthlyCardPopupAction(CustomAction):
     """关闭特惠弹窗，确认消失后才交回领取流程。"""

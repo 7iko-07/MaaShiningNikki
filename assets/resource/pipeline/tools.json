@@ -137,7 +137,7 @@
         "post_delay": 500,
         "timeout": 1000
     },
-    "在加载页面":{
+    "在阻塞加载页面": {
         "recognition": {
             "type": "Or",
             "param":{
@@ -169,7 +169,18 @@
                             ],
                             "roi": [310, 592, 101, 98]
                         }
-                    }},
+                    }}
+                ]
+            }
+        },
+        "post_delay": 1000
+    },
+    "在加载页面": {
+        "recognition": {
+            "type": "Or",
+            "param": {
+                "any_of": [
+                    "在阻塞加载页面",
                     {"recognition": {
                         "type": "OCR",
 			            "param": {

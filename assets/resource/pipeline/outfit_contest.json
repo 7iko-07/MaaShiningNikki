@@ -33,7 +33,15 @@
         },
         "action": {
             "type": "Custom",
-            "param": {"custom_action": "click_center"}
+            "param": {
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "compare_roi": [400, 1140, 130, 120],
+                    "timeout": 2500,
+                    "max_retries": 3,
+                    "fail_on_timeout": true
+                }
+            }
         },
         "post_delay": 250,
         "next": ["点赞搭配评选赛"],

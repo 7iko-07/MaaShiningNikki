@@ -1,1 +1,2 @@
-ocr
+ocr/*
+!ocr/ppocr_v6/

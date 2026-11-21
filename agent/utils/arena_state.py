@@ -3,7 +3,7 @@
 import json
 import sqlite3
 from contextlib import closing
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -47,6 +47,10 @@ class StateStore:
                                "(device TEXT PRIMARY KEY, multi INTEGER NOT NULL)")
             connection.execute("CREATE TABLE IF NOT EXISTS outfits "
                                "(account TEXT PRIMARY KEY, week TEXT NOT NULL, completed_at TEXT NOT NULL)")
+            connection.execute("CREATE TABLE IF NOT EXISTS manicure_claims "
+                               "(account TEXT, item TEXT, available_at TEXT NOT NULL, PRIMARY KEY (account, item))")
+            connection.execute("CREATE TABLE IF NOT EXISTS secret_tasks "
+                               "(account TEXT PRIMARY KEY, week TEXT NOT NULL, settings TEXT NOT NULL, completed_at TEXT NOT NULL)")
             return connection
         except Exception:
             connection.close()
@@ -75,6 +79,28 @@ class StateStore:
             connection.execute("INSERT OR REPLACE INTO outfits VALUES (?, ?, ?)",
                                (account, week, now.isoformat()))
 
+    def manicure_available(self, account, item, now):
+        with closing(self._connect()) as connection:
+            row = connection.execute("SELECT available_at FROM manicure_claims WHERE account = ? AND item = ?",
+                                     (account, item)).fetchone()
+            return row is None or now >= datetime.fromisoformat(row[0])
+
+    def mark_manicure_claimed(self, account, item, available_at):
+        with closing(self._connect()) as connection, connection:
+            connection.execute("INSERT OR REPLACE INTO manicure_claims VALUES (?, ?, ?)",
+                               (account, item, available_at.isoformat()))
+
+    def secret_task_completed(self, account, week, settings):
+        with closing(self._connect()) as connection:
+            row = connection.execute("SELECT week, settings FROM secret_tasks WHERE account = ?",
+                                     (account,)).fetchone()
+            return row == (week, settings)
+
+    def mark_secret_task_completed(self, account, week, settings, now):
+        with closing(self._connect()) as connection, connection:
+            connection.execute("INSERT OR REPLACE INTO secret_tasks VALUES (?, ?, ?, ?)",
+                               (account, week, settings, now.isoformat()))
+
 
 @dataclass
 class LoginSession:
@@ -82,6 +108,7 @@ class LoginSession:
     multi: bool
     suffix: str = ""
     server: str = ""
+    consumers: set[str] = field(default_factory=set)
 
 
 _sessions = {}
@@ -110,13 +137,16 @@ def set_login_server(context, server):
         session.server = server
 
 
-def take_account(context):
-    """消费本次 start 身份；没有 start 会话时使用默认账号，不恢复旧身份。"""
+def take_account(context, consumer="arena"):
+    """各任务独立取用一次本次 start 身份；无可用会话时使用默认账号。"""
     device = context.tasker.controller.uuid
     if not device:
         return None
-    session = _sessions.pop(device, None)
-    if session:
+    session = _sessions.get(device)
+    if session and consumer not in session.consumers:
+        session.consumers.add(consumer)
+        if session.consumers == {"arena", "manicure", "union"}:
+            _sessions.pop(device)
         detail = context.tasker.get_task_detail(session.task_id)
         if not detail or not detail.status.succeeded:
             return None

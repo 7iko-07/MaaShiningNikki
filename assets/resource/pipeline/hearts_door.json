@@ -44,6 +44,12 @@
             "param": {"roi": [0, 1029, 720, 149], "expected": ["感应.*次"]}
         }
     },
+    "心之门设计师展示": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [0, 0, 720, 110], "expected": ["设计师"]}
+        }
+    },
     "心之门品质展示": {
         "recognition": {
             "type": "OCR",

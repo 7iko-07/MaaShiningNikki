@@ -1,4 +1,18 @@
 {
+    "卡片福利任务链入口": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "card_rewards_run"
+            }
+        }
+    },
+    "卡片福利选择月卡": {
+        "enabled": false
+    },
+    "卡片福利选择特权卡": {
+        "enabled": false
+    },
     "月卡任务链入口": {
 		"next": ["月卡任务链准备"],
 		"timeout": 2000

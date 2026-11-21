@@ -53,6 +53,8 @@ class HeartsDoorTests(unittest.TestCase):
         self.share_closes_result = False
         self.display = self.display_after_result = False
         self.stuck_display = False
+        self.designer_after_draw = self.stuck_designer = False
+        self.designer_clicks = 0
         for name, replacement in (("sleep", self.sleep), ("monotonic", lambda: self.now)):
             mock = patch.object(module.time, name, replacement)
             mock.start()
@@ -95,6 +97,8 @@ class HeartsDoorTests(unittest.TestCase):
             hit = not self.pending and not self.display and not self.loading
         elif node == module.DISPLAY_NODE:
             hit = self.display
+        elif node == module.DESIGNER_NODE:
+            hit = self.pending and self.designer_clicks == 3
         elif node == module.FREE_NODE:
             hit = self.free[self.sea]
         elif node == "点击体力用尽确定":
@@ -124,6 +128,12 @@ class HeartsDoorTests(unittest.TestCase):
         if tuple(params.target) == (659, 211):
             if self.failed_action == module.CLOSE_NODE:
                 return SimpleNamespace(success=False)
+            if self.designer_clicks:
+                self.events.append(("designer_close", self.sea))
+                if not self.stuck_designer:
+                    self.designer_clicks -= 1
+                    self.pending = self.designer_clicks > 0
+                return SimpleNamespace(success=True)
             if self.display:
                 self.events.append(("display_close", self.sea))
                 if not self.stuck_display:
@@ -138,6 +148,7 @@ class HeartsDoorTests(unittest.TestCase):
         self.assertFalse(self.pending)
         self.events.append(("draw", self.sea))
         self.pending = True
+        self.designer_clicks = 3 if self.designer_after_draw else 0
         return SimpleNamespace(success=self.failed_action != "free")
 
     def share(self, node):
@@ -161,20 +172,20 @@ class HeartsDoorTests(unittest.TestCase):
                 self.checks.clear()
                 self.free = {"绮海": qi, "幻海": fantasy, "谜海": mystery}
                 self.assertTrue(self.run_action())
-                expected = [sea for sea, available in self.free.items() if available][:2]
-                paid = 2 - len(expected)
+                expected = [sea for sea, available in self.free.items() if available]
+                paid = max(0, 2 - len(expected))
                 expected += ["谜海"] * paid
                 self.assertEqual(self.draws(), expected)
                 self.assertEqual([e for e in self.events if e[0] == "share"], [("share", expected[0])])
-                self.assertEqual(sum(kind == "close" for kind, _ in self.events), 2)
-                for sea in ("绮海", "幻海"):
+                self.assertEqual(sum(kind == "close" for kind, _ in self.events), len(expected))
+                for sea in ("绮海", "幻海", "谜海"):
                     self.assertEqual(self.checks[module.FREE_NODE, sea], 1)
-                self.assertEqual(self.checks[module.FREE_NODE, "谜海"], int(not (qi and fantasy)))
-                self.assertEqual(self.events.count(("select", "谜海")), int(not (qi and fantasy)))
+                self.assertEqual(self.events.count(("select", "谜海")), 1)
                 self.assertEqual(sum(self.checks[node, "谜海"] for node in (
                     "点击谜之海-感应第一次", "点击谜之海-感应第二次")), paid)
 
     def test_switch_combinations_and_reentry_have_no_shared_count(self):
+        self.free = {"绮海": True, "幻海": True, "谜海": True}
         for free in (False, True):
             for mystery in (False, True):
                 for share in (False, True):
@@ -186,7 +197,7 @@ class HeartsDoorTests(unittest.TestCase):
                         self.config[module.RESULT_NODE]["enabled"] = share
                         before = deepcopy(self.config)
                         self.assertTrue(self.run_action())
-                        self.assertEqual(len(self.draws()), 2 if free or mystery else 0)
+                        self.assertEqual(len(self.draws()), 3 if free else 2 if mystery else 0)
                         self.assertEqual(sum(e[0] == "share" for e in self.events), int(share and (free or mystery)))
                         self.assertEqual(self.config, before)
                         if not free:
@@ -200,7 +211,7 @@ class HeartsDoorTests(unittest.TestCase):
                 self.checks.clear()
                 self.free = {"绮海": qi, "幻海": fantasy, "谜海": mystery}
                 self.assertTrue(self.run_action())
-                expected = [sea for sea, available in self.free.items() if available][:2]
+                expected = [sea for sea, available in self.free.items() if available]
                 self.assertEqual(self.draws(), expected)
                 self.assertFalse(self.config["点击谜之海"]["enabled"])
                 self.assertEqual(sum(self.checks[node, "谜海"] for node in (
@@ -314,6 +325,62 @@ class HeartsDoorTests(unittest.TestCase):
         self.failed_action = module.CLOSE_NODE
         self.assertFalse(self.run_action())
         self.assertEqual(self.draws(), ["绮海"])
+
+    def test_designer_clicks_continue_after_text_disappears_and_stop_when_ready(self):
+        for share in (False, True):
+            with self.subTest(share=share):
+                self.events.clear()
+                self.config[module.RESULT_NODE]["enabled"] = share
+                self.designer_after_draw = True
+                self.assertTrue(self.run_action())
+                self.assertEqual(self.draws(), ["绮海", "幻海"])
+                for sea in ("绮海", "幻海"):
+                    self.assertEqual(self.events.count(("designer_close", sea)), 3)
+                if share:
+                    self.assertLess(self.events.index(("share", "绮海")),
+                                    self.events.index(("designer_close", "绮海")))
+                self.assertEqual(self.designer_clicks, 0)
+                self.assertFalse(any(event[0] == "close" for event in self.events))
+
+    def test_designer_is_not_checked_in_mystery_free_or_paid_draws(self):
+        for free in (False, True):
+            with self.subTest(free=free):
+                self.events.clear()
+                self.checks.clear()
+                self.config[module.FREE_NODE]["enabled"] = free
+                self.free = {"绮海": False, "幻海": False, "谜海": True}
+                self.assertTrue(self.run_action())
+                self.assertEqual(self.draws(), ["谜海", "谜海"])
+                self.assertEqual(self.checks[module.DESIGNER_NODE, "谜海"], 0)
+                self.assertEqual(self.events.count(("close", "谜海")), 2)
+
+    def test_designer_timeout_keeps_deadline_and_never_draws_again(self):
+        self.designer_after_draw = self.stuck_designer = True
+        self.assertFalse(self.run_action())
+        self.assertEqual(self.draws(), ["绮海"])
+        self.assertLess(self.now, 32)
+        self.assertGreater(self.events.count(("designer_close", "绮海")), 1)
+
+    def test_designer_click_failure_stops_before_any_later_draw(self):
+        self.designer_after_draw = True
+        self.failed_action = module.CLOSE_NODE
+        self.assertFalse(self.run_action())
+        self.assertEqual(self.draws(), ["绮海"])
+
+    def test_cancel_during_designer_clicks_stops_before_any_later_draw(self):
+        self.designer_after_draw = True
+        original_click = self.click
+
+        def cancel_after_click(kind, params):
+            result = original_click(kind, params)
+            if self.events[-1][0] == "designer_close":
+                self.context.tasker.stopping = True
+            return result
+
+        self.click = cancel_after_click
+        self.assertFalse(self.run_action())
+        self.assertEqual(self.draws(), ["绮海"])
+        self.assertEqual(self.events.count(("designer_close", "绮海")), 1)
 
 
 class HeartsDoorOptionsTests(unittest.TestCase):

@@ -8,6 +8,226 @@ from maa.custom_action import CustomAction
 from maa.context import Context
 from maa.pipeline import JActionType, JRecognitionType, JOCR, JSwipe
 from utils import logger
+from utils.ocr import iter_recognition_results
+
+from .stage_farming import CATALOG, FarmingCatalog, FarmingError, StageFarmingSession, normalized
+
+
+class DailyMainStageSession(StageFarmingSession):
+    KEY = ("main", 1, 1, "1-1", False)
+    LIST = (20, 730, 680, 460)
+    TOTAL = 10
+
+    def daily_page(self, image):
+        return self.box(image, (452, 508, 161, 35), "今日活跃") and self.box(
+            image, (53, 635, 235, 58), "每日任务"
+        )
+
+    @staticmethod
+    def fifth_gift(image):
+        pixels = image[542:564, 580:601].astype(np.int16)
+        b, g, r = pixels.transpose(2, 0, 1)
+        if ((r - g >= 35) & (r - b >= 22)).mean() >= 0.18:
+            return "pink"
+        if ((b <= 228) & (g <= 228) & (r <= 228) & (np.ptp(pixels, axis=2) <= 20)).mean() >= 0.18:
+            return "gray"
+        return None
+
+    def progress(self, image):
+        result = self.ocr(image, (27, 730, 404, 451), [r"主\s*线\s*搭\s*配\s*关\s*卡\s*10"])
+        if not result or not result.hit or not result.box:
+            return None
+        y = result.box[1]
+        if y + 133 > 1190:
+            return None
+        state_result = self.ocr(image, (446, y - 1, 201, 94), [r"^\s*(前\s*往|已\s*领取|领\s*取)\s*$"])
+        if not state_result or not state_result.hit or not state_result.best_result:
+            return None
+        item = state_result.best_result
+        state = re.sub(r"\s+", "", item.text)
+        count_result = self.ocr(image, (521, y + 87, 153, 46), [r"\d+\s*/\s*10"])
+        counts = set()
+        for entry in iter_recognition_results(count_result):
+            if match := re.search(r"(?<!\d)(10|[0-9])\s*/\s*10(?!\d)", normalized(entry.text)):
+                counts.add(int(match[1]))
+        count = next(iter(counts)) if len(counts) == 1 else None
+        return state, count, tuple(item.box)
+
+    def find_progress(self, image):
+        for up in (True, False):
+            start, end = ((415, 1102), (415, 819)) if up else ((415, 819), (415, 1102))
+            for _ in range(14):
+                if row := self.progress(image):
+                    return row
+                self.swipe(start, end)
+                after = self.frame()
+                changed, _ = self._image_changed(image, after, self.LIST, 22, 0.02)
+                image = after
+                if not changed:
+                    break
+        return self.progress(image)
+
+    def click_label(self, roi, text, timeout=10, *, ready=None):
+        box = None
+
+        def locate(frame):
+            nonlocal box
+            box = self.box(frame, roi, text) if ready is None or ready(frame) else None
+            return box
+
+        if self.wait(locate, timeout) is None:
+            raise FarmingError(f"未识别到{text.strip('^$')}")
+        self.click_box(box)
+
+    def current_map(self, image):
+        return (self.book(image) and not self.stage_panel(image)
+                and self.box(image, (500, 49, 154, 45), r"卷\s*[IⅠ1]\s*第\s*[一1]\s*章"))
+
+    def battle(self, *, first):
+        if first:
+            self.find_stage(self.KEY)
+        else:
+            image = self.frame()
+            candidates = list(self.map_boxes(image, self.KEY)) if self.current_map(image) else []
+            point = self.candidate_point(candidates[0], self.KEY) if candidates else None
+            if point is None or self.probe_detail(self.KEY, point, phase=1)[0] is None:
+                self.find_stage(self.KEY)
+        self.click_label((448, 805, 235, 76), "开始故事")
+        self.click_label((578, 52, 142, 65), "跳过")
+        self.click_label((374, 670, 240, 78), "^确定$", ready=lambda frame: self.box(
+            frame, (251, 563, 236, 65), "确定跳过对话"
+        ))
+        self.click_label((574, 1111, 146, 131), r"^套?\s*装$", 25)
+        before = self.wait(lambda frame: self.box(frame, (550, 17, 170, 63), "推荐排序")
+                           and self.box(frame, (582, 248, 138, 169), r"^[0-9]{3,}$"))
+        if before is None:
+            raise FarmingError("套装列表或第一套尚未就绪")
+        self.click((645, 310))
+        if self.wait(lambda frame: self._image_changed(
+            before, frame, (10, 157, 178, 49), 24, 0.025
+        )[0]) is None:
+            raise FarmingError("选择第一套后未确认搭配变化")
+        self.click_label((20, 1160, 250, 92), "下一步")
+        self.click_label((220, 1057, 288, 135), "^确定$")
+        score_roi = (247, 25, 473, 510)
+        score_box = skip_box = None
+
+        def find_battle_box(frame):
+            nonlocal score_box, skip_box
+            score_box = self.box(frame, score_roi, "战斗评分")
+            if score_box is not None:
+                return score_box
+            skip_box = self.box(frame, (0, 0, 435, 164), "跳过")
+            return skip_box
+
+        self.wait(find_battle_box, 20)
+        if skip_box is not None:
+            self.click_box(skip_box)
+        if score_box is not None:
+            self.click_box(score_box)
+        else:
+            self.click_label(score_roi, "战斗评分", 30)
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            image = self.frame()
+            if self.current_map(image):
+                return
+            if score := self.box(image, score_roi, "战斗评分"):
+                self.click_box(score)
+            time.sleep(0.25)
+        raise FarmingError("战斗评分关闭后未返回卷Ⅰ第一章")
+
+    def supplement(self):
+        image = self.wait(self.daily_page)
+        if image is None:
+            raise FarmingError("未确认每日任务页面")
+        gift = self.fifth_gift(image)
+        if gift == "pink":
+            return True
+        if gift != "gray":
+            raise FarmingError("未确认第五个活跃礼盒状态")
+        row = self.find_progress(image)
+        if row is None:
+            raise FarmingError("未找到主线搭配关卡日常任务")
+        state, completed, point_box = row
+        if state != "前往" or completed == self.TOTAL:
+            return True
+        if completed is None:
+            raise FarmingError("未识别到主线搭配任务的次数")
+        pending = self.TOTAL - completed
+        logger.info(f"一键领取：主线搭配已完成 {completed}/{self.TOTAL}，还需 {pending} 次")
+        self.click_box(point_box)
+        try:
+            if self.wait(self.book, 15) is None:
+                raise FarmingError("点击前往后未进入主线地图")
+            for index in range(pending):
+                self.battle(first=index == 0)
+        except RuntimeError as error:
+            if self.context.tasker.stopping:
+                return False
+            logger.warning(f"一键领取：补做中断，{error}")
+
+        image = self.wait(self.current_map, 15)
+        if image is None:
+            logger.warning("一键领取：未确认回到卷Ⅰ第一章地图")
+            return False
+        back = self.template(image, (0, 30, 110, 110), "back1.png", 0.72)
+        if back is None:
+            logger.warning("一键领取：未识别到第一章地图的返回按钮")
+            return False
+        self.click_box(back)
+        image = self.wait(self.daily_page, 15)
+        if image is None:
+            logger.warning("一键领取：点击返回后未确认每日任务页")
+            return False
+        result = self.context.run_task("点击一键领取", {"点击一键领取": {"next": []}})
+        if not result or not result.status.succeeded:
+            logger.warning("一键领取：补做后再次领取未完成")
+        return True
+
+
+@AgentServer.custom_action("claim_daily_main_stage")
+class ClaimDailyMainStageAction(CustomAction):
+    def run(self, context, argv):
+        params = json.loads(argv.custom_action_param or "{}") or {}
+        supplement = params.get("supplement", False)
+        catalog = FarmingCatalog(json.loads(CATALOG.read_text(encoding="utf-8"))) if supplement else None
+        session = DailyMainStageSession(context, catalog, False)
+        try:
+            if supplement and not session.supplement():
+                return False
+        except RuntimeError as error:
+            if context.tasker.stopping:
+                return False
+            logger.warning(f"一键领取：{error}，跳过补做")
+
+        try:
+            result = context.run_task("点击今日活跃")
+            if not result or not result.status.succeeded:
+                raise FarmingError("未能点击活跃礼盒并返回")
+            image = session.wait(session.daily_page)
+            if image is None:
+                raise FarmingError("未确认每日任务页面")
+        except RuntimeError as error:
+            if not context.tasker.stopping:
+                logger.error(f"一键领取：{error}")
+            return False
+
+        gift = session.fifth_gift(image)
+        if gift == "gray":
+            logger.info("今日活跃度不足")
+        elif gift == "pink":
+            logger.debug("第五个活跃礼盒已点亮")
+        else:
+            logger.warning("一键领取：未确认第五个活跃礼盒状态")
+
+        result = session.ocr(image, (449, 566, 166, 39), [r"^[0-9]+\s*/\s*[0-9]+$"])
+        if result and result.hit and result.best_result:
+            activity = re.sub(r"\s+", "", result.best_result.text)
+            logger.info(f"今日活跃度 {activity}")
+        else:
+            logger.warning("一键领取：未识别到今日活跃度")
+        return True
 
 
 @AgentServer.custom_action("claim_visible_rewards")
@@ -25,6 +245,7 @@ class ClaimVisibleRewardsAction(CustomAction):
         swipe_roi = params.get("swipe_roi", list_roi)
         expected = params.get("expected", ["^领取$", "领取"])
         exclude_pattern = params.get("exclude_pattern", "已领取|获得|获取")
+        gold_only = params.get("gold_only", False)
         max_swipes = self._as_int(params.get("max_swipes"), 8)
         max_clicks_per_page = self._as_int(params.get("max_clicks_per_page"), 20)
         ocr_threshold = self._as_float(params.get("ocr_threshold"), 0.3)
@@ -64,6 +285,7 @@ class ClaimVisibleRewardsAction(CustomAction):
                 click_delay,
                 close_delay,
                 max_clicks_per_page,
+                gold_only,
             )
             claimed += page_claimed
             logger.debug(
@@ -110,6 +332,7 @@ class ClaimVisibleRewardsAction(CustomAction):
         click_delay,
         close_delay,
         max_clicks,
+        gold_only,
     ):
         claimed = 0
         clicked_boxes = []
@@ -124,6 +347,7 @@ class ClaimVisibleRewardsAction(CustomAction):
                 exclude_pattern,
                 threshold,
                 clicked_boxes,
+                gold_only,
             )
             if not boxes:
                 break
@@ -148,6 +372,7 @@ class ClaimVisibleRewardsAction(CustomAction):
         exclude_pattern,
         threshold,
         clicked_boxes,
+        gold_only,
     ):
         result = context.run_recognition_direct(
             JRecognitionType.OCR,
@@ -167,12 +392,23 @@ class ClaimVisibleRewardsAction(CustomAction):
                 continue
 
             box = list(box)
+            if gold_only and (text != "领取" or not self._is_gold_button(image, box)):
+                continue
             if self._is_duplicate_box(box, boxes) or self._is_duplicate_box(box, clicked_boxes):
                 continue
             boxes.append(box)
 
         boxes.sort(key=lambda item: (item[1], item[0]))
         return boxes
+
+    def _is_gold_button(self, image, box):
+        x, y, w, h = box
+        background = image[y:y + h, max(0, x - 12):x + w + 12]
+        if not background.size:
+            return False
+        # BGR 范围取自话题任务和周好评礼包的黄色按钮底色。
+        gold = np.all((background >= [105, 150, 210]) & (background <= [155, 195, 245]), axis=2)
+        return gold.mean() >= 0.25
 
     def _iter_ocr_results(self, result):
         if not result or not getattr(result, "hit", False):

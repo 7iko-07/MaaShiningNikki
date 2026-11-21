@@ -1,0 +1,75 @@
+{
+    "红包处理入口": {
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "handle_red_packet"
+            }
+        },
+        "post_delay": 0
+    },
+    "红包提示图标": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "template": "红包提示.png",
+                "roi": [0, 0, 140, 1280],
+                "threshold": 0.85
+            }
+        }
+    },
+    "红包详情标题": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [130, 335, 470, 80],
+                "expected": ["的红包"]
+            }
+        }
+    },
+    "红包领取奖励层": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [200, 400, 330, 95],
+                "expected": ["恭喜"]
+            }
+        }
+    },
+    "红包感谢好友按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [240, 920, 240, 76],
+                "expected": ["感谢好友"]
+            }
+        }
+    },
+    "红包感谢对话框": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [260, 284, 200, 48],
+                "expected": ["感谢好友"]
+            }
+        }
+    },
+    "红包发送感谢按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [375, 908, 237, 78],
+                "expected": ["发送"]
+            }
+        }
+    },
+    "红包退出按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [240, 920, 240, 76],
+                "expected": ["退出"]
+            }
+        }
+    }
+}

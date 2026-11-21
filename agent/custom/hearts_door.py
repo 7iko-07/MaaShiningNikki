@@ -13,6 +13,7 @@ RESULT_NODE = "心之门点击分享"
 READY_NODE = "心之门感应按钮就绪"
 CLOSE_NODE = "点击谜之海-感应第一次-空白"
 DISPLAY_NODE = "心之门品质展示"
+DESIGNER_NODE = "心之门设计师展示"
 
 
 @AgentServer.custom_action("hearts_door")
@@ -32,8 +33,6 @@ class HeartsDoorAction(CustomAction):
             completed = 0
             if free:
                 for sea in ("绮海", "幻海", "谜海"):
-                    if completed == 2:
-                        break
                     self._select_sea(context, sea)
                     self._wait_page(context)
                     result = self._recognize(context, FREE_NODE, self._capture(context))
@@ -41,9 +40,9 @@ class HeartsDoorAction(CustomAction):
                         logger.debug(f"心之门：{sea}无免费次数，跳过")
                         continue
                     self._click_center(context, result.box)
-                    self._finish_draw(context, share and completed == 0)
+                    self._finish_draw(context, share and completed == 0, check_designer=sea != "谜海")
                     completed += 1
-                    logger.debug(f"心之门：{sea}免费感应成功，累计 {completed}/2 次")
+                    logger.debug(f"心之门：{sea}免费感应成功，累计 {completed} 次")
             free_completed = completed
             if mystery and completed < 2:
                 if not free:
@@ -87,20 +86,31 @@ class HeartsDoorAction(CustomAction):
             time.sleep(0.5)
         raise RuntimeError(f"查找{sea}超时")
 
-    def _finish_draw(self, context, share):
+    def _finish_draw(self, context, share, check_designer=False):
         self._wait_hit(context, RESULT_NODE)
         if share:
             self._check_stop(context)
             result = context.run_task(RESULT_NODE)
             if not result or not result.status.succeeded:
                 raise RuntimeError("分享失败，已停止感应")
-        self._wait_page(context, close_result=True)
+        self._wait_page(context, close_result=True, check_designer=check_designer)
 
-    def _wait_page(self, context, close_result=False):
+    def _wait_page(self, context, close_result=False, check_designer=False):
         deadline = time.monotonic() + 30
         closed = False
+        designer_seen = False
         while time.monotonic() < deadline:
             image = self._capture(context)
+            if check_designer:
+                if self._recognize(context, READY_NODE, image).hit:
+                    return
+                if not designer_seen and self._recognize(context, DESIGNER_NODE, image).hit:
+                    designer_seen = True
+                    logger.debug("心之门：识别到设计师展示，持续点击原关闭位置直到返回感应页面")
+                if designer_seen:
+                    self._close_popup(context)
+                    time.sleep(0.5)
+                    continue
             popup = self._recognize(context, RESULT_NODE, image)
             if popup.hit:
                 if close_result and not closed:

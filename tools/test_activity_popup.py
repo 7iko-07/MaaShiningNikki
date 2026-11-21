@@ -19,8 +19,9 @@ spec = importlib.util.spec_from_file_location(
 click_module = importlib.util.module_from_spec(spec)
 with patch.object(AgentServer, "register_custom_action", return_value=True):
     spec.loader.exec_module(click_module)
-PIPELINE = json.loads((ROOT / "assets/resource/pipeline/caged_song.json").read_text(encoding="utf-8"))
-PARAMS = PIPELINE["关闭笼中歌签到"]["action"]["param"]["custom_action_param"]
+PIPELINE = json.loads((ROOT / "assets/resource/pipeline/eternal_day_revelation.json").read_text(encoding="utf-8"))
+WAIT_NODE = "等待永昼启示录活动主页"
+PARAMS = PIPELINE[WAIT_NODE]["custom_action_param"]
 
 
 class ActivityPopupTests(unittest.TestCase):
@@ -56,13 +57,13 @@ class ActivityPopupTests(unittest.TestCase):
         return SimpleNamespace(hit=self.ready(node))
 
     def click(self, x, y):
-        self.assertEqual((x, y), (343, 142))
+        self.assertEqual((x, y), (342, 50))
         self.click_times.append(self.now)
         return Mock(wait=Mock(return_value=SimpleNamespace(succeeded=True)))
 
     def run_action(self):
         return click_module.ClickAndWaitChangeAction().run(self.context, SimpleNamespace(
-            custom_action_param=json.dumps(PARAMS), node_name="关闭笼中歌签到",
+            custom_action_param=json.dumps(PARAMS), node_name=WAIT_NODE,
         ))
 
     def test_no_popup_and_ready_page_does_not_click_blank(self):

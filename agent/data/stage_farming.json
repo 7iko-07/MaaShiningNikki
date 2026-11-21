@@ -1,0 +1,874 @@
+[
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 1,
+  "name": "启程",
+  "stages": [
+    {"id":"1-1","title":"相遇","drops":[],"anchor":{"left":0,"roi":[374,551,33,20],"point":[390,561],"image":"stage_farming/main_1_1-1_0.png"}},
+    {"id":"1-2","title":"穿越时空？！","drops":[],"anchor":{"left":0,"roi":[572,715,37,20],"point":[590,725],"image":"stage_farming/main_1_1-2_0.png"}},
+    {"id":"1-4","title":"梦境中的记忆","drops":["心事脉络"],"anchor":{"left":2,"roi":[581,394,38,20],"point":[600,404],"image":"stage_farming/main_1_1-4_0.png"}},
+    {"id":"1-5","title":"设计师之影","drops":["波点信物"],"anchor":{"left":3,"roi":[424,624,37,20],"point":[442,634],"image":"stage_farming/main_1_1-5_0.png"}},
+    {"id":"1-7","title":"注定的湮灭","drops":["旋转木马"],"anchor":{"left":4,"roi":[453,516,37,20],"point":[471,526],"image":"stage_farming/main_1_1-7_0.png"}},
+    {"id":"1-8","title":"抖落繁星","drops":["咧嘴笑"],"anchor":{"left":5,"roi":[442,389,37,20],"point":[460,399],"image":"stage_farming/main_1_1-8_0.png"}},
+    {"id":"1-10","title":"心之门","drops":["梦境花园"],"anchor":{"left":8,"roi":[216,398,52,20],"point":[242,408],"image":"stage_farming/main_1_1-10_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 2,
+  "name": "星之殇",
+  "stages": [
+    {"id":"2-1","title":"挑战资深评委","drops":["银色雪花"],"challenge":true,"anchor":{"left":6,"roi":[513,235,28,19],"point":[527,244],"image":"stage_farming/main_1_2-1_1.png"}},
+    {"id":"2-2","title":"时尚先锋兔","drops":["醇酒涟漪","喇叭裤·白蜡"],"challenge":true,"anchor":{"left":7,"roi":[542,306,34,19],"point":[559,315],"image":"stage_farming/main_1_2-2_1.png"}},
+    {"id":"2-2","title":"老乐师","drops":["暗金星星"],"anchor":{"left":3,"roi":[512,402,38,20],"point":[531,412],"image":"stage_farming/main_1_2-2_0.png"}},
+    {"id":"2-3","title":"登山少女","drops":["金粉腕表"],"challenge":true,"anchor":{"left":8,"roi":[488,368,34,20],"point":[505,378],"image":"stage_farming/main_1_2-3_1.png"}},
+    {"id":"2-3","title":"灰灰草是谁","drops":["暗金星星"],"anchor":{"left":4,"roi":[620,413,38,20],"point":[639,423],"image":"stage_farming/main_1_2-3_0.png"}},
+    {"id":"2-4","title":"偶像见面会","drops":["花丛铃声"],"challenge":true,"anchor":{"left":8,"roi":[485,553,36,19],"point":[503,562],"image":"stage_farming/main_1_2-4_1.png"}},
+    {"id":"2-4","title":"镜中碎影","drops":["萌黑猫"],"anchor":{"left":5,"roi":[569,394,38,19],"point":[588,403],"image":"stage_farming/main_1_2-4_0.png"}},
+    {"id":"2-5","title":"查无此人","drops":["气泡酒·青苹果","手有余香·暖"],"challenge":true,"anchor":{"left":8,"roi":[447,746,34,20],"point":[464,756],"image":"stage_farming/main_1_2-5_1.png"}},
+    {"id":"2-5","title":"星空下的舞台","drops":["醇黑"],"anchor":{"left":6,"roi":[620,459,38,20],"point":[639,469],"image":"stage_farming/main_1_2-5_0.png"}},
+    {"id":"2-6","title":"离奇的火灾","drops":["醇黑"],"anchor":{"left":6,"roi":[490,600,39,20],"point":[509,610],"image":"stage_farming/main_1_2-6_0.png"}},
+    {"id":"2-7","title":"谁是纵火犯","drops":["浅黄萌动"],"anchor":{"left":5,"roi":[601,691,39,20],"point":[620,701],"image":"stage_farming/main_1_2-7_0.png"}},
+    {"id":"2-8","title":"孤独的火焰","drops":["绵绵小兔"],"anchor":{"left":5,"roi":[452,750,39,20],"point":[471,760],"image":"stage_farming/main_1_2-8_0.png"}},
+    {"id":"2-9","title":"不值得的舞台","drops":["绵绵小兔"],"anchor":{"left":4,"roi":[466,768,38,20],"point":[485,778],"image":"stage_farming/main_1_2-9_0.png"}},
+    {"id":"2-11","title":"流星之羽","drops":["樱桃蝴蝶结"],"anchor":{"left":2,"roi":[467,761,50,20],"point":[492,771],"image":"stage_farming/main_1_2-11_0.png"}},
+    {"id":"2-12","title":"告别","drops":["樱桃蝴蝶结"],"anchor":{"left":2,"roi":[271,775,54,20],"point":[298,785],"image":"stage_farming/main_1_2-12_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 3,
+  "name": "英雄的旅程",
+  "stages": [
+    {"id":"3-1","title":"小海的呼唤","drops":["蓝黑墨水"],"challenge":true,"anchor":{"left":1,"roi":[688,395,28,19],"point":[702,404],"image":"stage_farming/main_1_3-1_1.png"}},
+    {"id":"3-1","title":"一张相片","drops":["牛仔荷叶边"],"anchor":{"left":0,"roi":[543,406,35,20],"point":[560,416],"image":"stage_farming/main_1_3-1_0.png"}},
+    {"id":"3-2","title":"出海旅航","drops":["优雅托特包","水钻交错"],"challenge":true,"anchor":{"left":2,"roi":[622,270,34,20],"point":[639,280],"image":"stage_farming/main_1_3-2_1.png"}},
+    {"id":"3-2","title":"奇怪的疾病","drops":[],"anchor":{"left":1,"roi":[424,639,39,20],"point":[443,649],"image":"stage_farming/main_1_3-2_0.png"}},
+    {"id":"3-3","title":"冰川","drops":["深红秋阳"],"challenge":true,"anchor":{"left":3,"roi":[574,285,34,20],"point":[591,295],"image":"stage_farming/main_1_3-3_1.png"}},
+    {"id":"3-3","title":"飞越流影河","drops":["牛仔荷叶边"],"anchor":{"left":1,"roi":[575,796,39,20],"point":[594,806],"image":"stage_farming/main_1_3-3_0.png"}},
+    {"id":"3-4","title":"魔法师的祝福","drops":["丁香色的你"],"challenge":true,"anchor":{"left":4,"roi":[512,316,36,20],"point":[530,326],"image":"stage_farming/main_1_3-4_1.png"}},
+    {"id":"3-4","title":"独立战争纪念区","drops":["白色短袖衫"],"anchor":{"left":2,"roi":[544,696,40,20],"point":[564,706],"image":"stage_farming/main_1_3-4_0.png"}},
+    {"id":"3-5","title":"印象纪念","drops":["图书馆邂逅","牛奶布丁"],"challenge":true,"anchor":{"left":5,"roi":[422,244,34,20],"point":[439,254],"image":"stage_farming/main_1_3-5_1.png"}},
+    {"id":"3-5","title":"危机来袭","drops":["跃动音符"],"anchor":{"left":3,"roi":[472,527,39,20],"point":[491,537],"image":"stage_farming/main_1_3-5_0.png"}},
+    {"id":"3-6","title":"不思议搭配之力","drops":["跃动音符"],"anchor":{"left":4,"roi":[440,555,39,20],"point":[459,565],"image":"stage_farming/main_1_3-6_0.png"}},
+    {"id":"3-7","title":"阴险的对手","drops":["中网袜"],"anchor":{"left":4,"roi":[676,576,40,20],"point":[696,586],"image":"stage_farming/main_1_3-7_0.png"}},
+    {"id":"3-8","title":"孤身一人的战场","drops":["冰糖薄荷"],"anchor":{"left":5,"roi":[568,795,39,20],"point":[587,805],"image":"stage_farming/main_1_3-8_0.png"}},
+    {"id":"3-9","title":"不灭的信念","drops":["冰糖薄荷"],"anchor":{"left":6,"roi":[498,656,39,20],"point":[517,666],"image":"stage_farming/main_1_3-9_0.png"}},
+    {"id":"3-11","title":"守护魔法","drops":["女王之征"],"anchor":{"left":8,"roi":[329,796,51,21],"point":[354,806],"image":"stage_farming/main_1_3-11_0.png"}},
+    {"id":"3-13","title":"不舍得离开","drops":["女王之征"],"anchor":{"left":8,"roi":[549,443,53,21],"point":[575,453],"image":"stage_farming/main_1_3-13_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 4,
+  "name": "苍白的春天",
+  "stages": [
+    {"id":"4-1","title":"自我修养","drops":["祈祷十字"],"challenge":true,"anchor":{"left":7,"roi":[467,532,59,39],"point":[496,551],"image":"stage_farming/main_1_4-1_1.png"}},
+    {"id":"4-1","title":"倾云城","drops":["草莓牛奶"],"anchor":{"left":0,"roi":[412,486,36,20],"point":[430,496],"image":"stage_farming/main_1_4-1_0.png"}},
+    {"id":"4-2","title":"宣传科科长","drops":["家庭教师","芝士"],"challenge":true,"anchor":{"left":6,"roi":[650,722,35,20],"point":[667,732],"image":"stage_farming/main_1_4-2_1.png"}},
+    {"id":"4-3","title":"尚衣使传人","drops":["黑夜南瓜裤"],"challenge":true,"anchor":{"left":7,"roi":[577,765,36,20],"point":[595,775],"image":"stage_farming/main_1_4-3_1.png"}},
+    {"id":"4-3","title":"突遇危机","drops":["香草"],"anchor":{"left":1,"roi":[415,607,40,20],"point":[435,617],"image":"stage_farming/main_1_4-3_0.png"}},
+    {"id":"4-4","title":"到底谁最厉害","drops":["职场必备"],"challenge":true,"anchor":{"left":8,"roi":[481,659,36,19],"point":[499,668],"image":"stage_farming/main_1_4-4_1.png"}},
+    {"id":"4-4","title":"秦衣的苦恼","drops":["香草"],"anchor":{"left":1,"roi":[608,671,40,20],"point":[628,681],"image":"stage_farming/main_1_4-4_0.png"}},
+    {"id":"4-5","title":"来应援吧","drops":["清爽短裤","牛奶糖"],"challenge":true,"anchor":{"left":8,"roi":[600,817,35,19],"point":[617,826],"image":"stage_farming/main_1_4-5_1.png"}},
+    {"id":"4-5","title":"冬日火锅","drops":["圣坛咒缚"],"anchor":{"left":2,"roi":[483,532,39,20],"point":[502,542],"image":"stage_farming/main_1_4-5_0.png"}},
+    {"id":"4-6","title":"玉兰的秘密","drops":["圣坛咒缚"],"anchor":{"left":2,"roi":[647,642,39,20],"point":[666,652],"image":"stage_farming/main_1_4-6_0.png"}},
+    {"id":"4-8","title":"繁花与春季","drops":[],"anchor":{"left":4,"roi":[347,969,40,20],"point":[367,979],"image":"stage_farming/main_1_4-8_0.png"}},
+    {"id":"4-9","title":"演出开始","drops":["芒果雪冰"],"anchor":{"left":4,"roi":[508,847,40,20],"point":[528,857],"image":"stage_farming/main_1_4-9_0.png"}},
+    {"id":"4-10","title":"新的设计师之影","drops":["凉风清夏"],"anchor":{"left":4,"roi":[637,747,54,21],"point":[664,757],"image":"stage_farming/main_1_4-10_0.png"}},
+    {"id":"4-11","title":"反转剧目","drops":["凉风清夏"],"anchor":{"left":5,"roi":[495,648,51,20],"point":[520,658],"image":"stage_farming/main_1_4-11_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 5,
+  "name": "机械之心",
+  "stages": [
+    {"id":"5-1","title":"虚拟世界","drops":["经典设计"],"challenge":true,"anchor":{"left":7,"roi":[487,544,28,19],"point":[501,553],"image":"stage_farming/main_1_5-1_1.png"}},
+    {"id":"5-1","title":"不速之客","drops":["复古打底裙"],"anchor":{"left":0,"roi":[413,486,35,20],"point":[430,496],"image":"stage_farming/main_1_5-1_0.png"}},
+    {"id":"5-2","title":"校服设计师","drops":["一见倾心·银","魔法协会·棕"],"challenge":true,"anchor":{"left":6,"roi":[651,722,33,20],"point":[667,732],"image":"stage_farming/main_1_5-2_1.png"}},
+    {"id":"5-2","title":"告别","drops":["复古打底裙"],"anchor":{"left":0,"roi":[598,437,38,20],"point":[617,447],"image":"stage_farming/main_1_5-2_0.png"}},
+    {"id":"5-3","title":"一只小海豹","drops":["灰白尖角"],"challenge":true,"anchor":{"left":7,"roi":[578,765,34,20],"point":[595,775],"image":"stage_farming/main_1_5-3_1.png"}},
+    {"id":"5-3","title":"生存法则","drops":["吊带牛仔裙"],"anchor":{"left":1,"roi":[416,607,39,20],"point":[435,617],"image":"stage_farming/main_1_5-3_0.png"}},
+    {"id":"5-4","title":"次元护卫队","drops":["红带蕾丝袜"],"challenge":true,"anchor":{"left":8,"roi":[482,659,35,19],"point":[499,668],"image":"stage_farming/main_1_5-4_1.png"}},
+    {"id":"5-4","title":"魔羊的工厂","drops":["吊带牛仔裙"],"anchor":{"left":1,"roi":[609,671,39,20],"point":[628,681],"image":"stage_farming/main_1_5-4_0.png"}},
+    {"id":"5-5","title":"黑暗摇滚","drops":["短网袜·白","咖啡糖"],"challenge":true,"anchor":{"left":8,"roi":[601,817,33,19],"point":[617,826],"image":"stage_farming/main_1_5-5_1.png"}},
+    {"id":"5-5","title":"机械森林","drops":["金扇蓝流苏耳坠"],"anchor":{"left":2,"roi":[484,532,39,20],"point":[503,542],"image":"stage_farming/main_1_5-5_0.png"}},
+    {"id":"5-6","title":"噩梦消散","drops":["金扇蓝流苏耳坠"],"anchor":{"left":2,"roi":[648,642,39,20],"point":[667,652],"image":"stage_farming/main_1_5-6_0.png"}},
+    {"id":"5-8","title":"属于自我的力量","drops":["雀羽·白"],"anchor":{"left":4,"roi":[348,969,39,20],"point":[367,979],"image":"stage_farming/main_1_5-8_0.png"}},
+    {"id":"5-9","title":"寻找机械之心","drops":["雀羽·白"],"anchor":{"left":4,"roi":[509,847,39,21],"point":[528,857],"image":"stage_farming/main_1_5-9_0.png"}},
+    {"id":"5-10","title":"再一次晚安","drops":["淡金海贝"],"anchor":{"left":6,"roi":[98,749,53,21],"point":[124,759],"image":"stage_farming/main_1_5-10_0.png"}},
+    {"id":"5-11","title":"魔羊的秘密","drops":["淡金海贝"],"anchor":{"left":5,"roi":[496,648,50,20],"point":[521,658],"image":"stage_farming/main_1_5-11_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 6,
+  "name": "血色洛登",
+  "stages": [
+    {"id":"6-1","title":"新锐设计师","drops":["黑白棋纹"],"challenge":true,"anchor":{"left":8,"roi":[521,235,27,19],"point":[534,244],"image":"stage_farming/main_1_6-1_1.png"}},
+    {"id":"6-2","title":"不一样的性感","drops":["街头少女","酒宴之约"],"challenge":true,"anchor":{"left":9,"roi":[462,363,33,20],"point":[478,373],"image":"stage_farming/main_1_6-2_1.png"}},
+    {"id":"6-2","title":"唯强者审判","drops":["炼金秘密"],"anchor":{"left":1,"roi":[516,355,38,20],"point":[535,365],"image":"stage_farming/main_1_6-2_0.png"}},
+    {"id":"6-3","title":"优雅的管理员","drops":["象牙白"],"challenge":true,"anchor":{"left":8,"roi":[477,477,34,20],"point":[494,487],"image":"stage_farming/main_1_6-3_1.png"}},
+    {"id":"6-3","title":"黑猫与玫瑰","drops":["炼金秘密"],"anchor":{"left":3,"roi":[88,536,39,20],"point":[107,546],"image":"stage_farming/main_1_6-3_0.png"}},
+    {"id":"6-4","title":"时尚的“意义”","drops":["居家南瓜裤"],"challenge":true,"anchor":{"left":9,"roi":[450,596,35,20],"point":[467,606],"image":"stage_farming/main_1_6-4_1.png"}},
+    {"id":"6-4","title":"计划进行时","drops":["黑色单鞋uu"],"anchor":{"left":3,"roi":[228,709,39,20],"point":[247,719],"image":"stage_farming/main_1_6-4_0.png"}},
+    {"id":"6-5","title":"海哲的梦想","drops":["星夜妖姬","白色信笺"],"challenge":true,"anchor":{"left":8,"roi":[582,796,34,20],"point":[599,806],"image":"stage_farming/main_1_6-5_1.png"}},
+    {"id":"6-5","title":"黑暗中的提示","drops":["黑色单鞋"],"anchor":{"left":3,"roi":[416,478,39,20],"point":[435,488],"image":"stage_farming/main_1_6-5_0.png"}},
+    {"id":"6-6","title":"神秘的房间","drops":["小饼干"],"anchor":{"left":3,"roi":[633,710,39,20],"point":[652,720],"image":"stage_farming/main_1_6-6_0.png"}},
+    {"id":"6-7","title":"新的警告","drops":["小饼干"],"anchor":{"left":4,"roi":[595,536,39,20],"point":[614,546],"image":"stage_farming/main_1_6-7_0.png"}},
+    {"id":"6-8","title":"最后一件藏品","drops":["麂皮长靴·红"],"anchor":{"left":5,"roi":[481,756,39,20],"point":[500,766],"image":"stage_farming/main_1_6-8_0.png"}},
+    {"id":"6-10","title":"真正的力量","drops":["晨光小调"],"anchor":{"left":6,"roi":[618,775,53,21],"point":[644,785],"image":"stage_farming/main_1_6-10_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 7,
+  "name": "光与暗",
+  "stages": [
+    {"id":"7-1","title":"挑战秘书小姐","drops":["阴雨鼓点"],"challenge":true,"anchor":{"left":7,"roi":[435,460,28,20],"point":[449,470],"image":"stage_farming/main_1_7-1_1.png"}},
+    {"id":"7-2","title":"甜美的定义","drops":["红夜","雅文"],"challenge":true,"anchor":{"left":7,"roi":[529,742,33,20],"point":[545,752],"image":"stage_farming/main_1_7-2_1.png"}},
+    {"id":"7-2α","title":"拍卖会的主人","drops":["时尚之眼"],"anchor":{"left":1,"roi":[500,301,54,20],"point":[527,311],"image":"stage_farming/main_1_7-2α_0.png"}},
+    {"id":"7-2β","title":"毁灭？！","drops":[],"anchor":{"left":1,"roi":[424,651,55,20],"point":[451,661],"image":"stage_farming/main_1_7-2β_0.png"}},
+    {"id":"7-3","title":"潜入粉丝群","drops":["暗红叛逆"],"challenge":true,"anchor":{"left":8,"roi":[482,468,34,19],"point":[499,477],"image":"stage_farming/main_1_7-3_1.png"}},
+    {"id":"7-3α","title":"危险的对峙","drops":["时尚之眼"],"anchor":{"left":2,"roi":[490,331,54,20],"point":[517,341],"image":"stage_farming/main_1_7-3α_0.png"}},
+    {"id":"7-3β","title":"记忆之海","drops":["海风"],"anchor":{"left":2,"roi":[406,742,54,20],"point":[433,752],"image":"stage_farming/main_1_7-3β_0.png"}},
+    {"id":"7-4","title":"神秘的杂志社","drops":["温柔心事"],"challenge":true,"anchor":{"left":8,"roi":[612,855,35,19],"point":[629,864],"image":"stage_farming/main_1_7-4_1.png"}},
+    {"id":"7-4α","title":"情况突转","drops":["云麓"],"anchor":{"left":3,"roi":[448,371,53,21],"point":[474,381],"image":"stage_farming/main_1_7-4α_0.png"}},
+    {"id":"7-4β","title":"深渊之门","drops":["海之光"],"anchor":{"left":2,"roi":[647,828,55,20],"point":[674,838],"image":"stage_farming/main_1_7-4β_0.png"}},
+    {"id":"7-5","title":"薇薇安的鼓励","drops":["烈焰蕾丝","灵魂节奏"],"challenge":true,"anchor":{"left":9,"roi":[541,508,34,19],"point":[558,517],"image":"stage_farming/main_1_7-5_1.png"}},
+    {"id":"7-5β","title":"遗忘的星光","drops":["海之光"],"anchor":{"left":3,"roi":[631,901,54,15],"point":[658,908],"image":"stage_farming/main_1_7-5β_0.png"}},
+    {"id":"7-6β","title":"走出幻境","drops":["流云舒"],"anchor":{"left":5,"roi":[332,881,55,20],"point":[359,891],"image":"stage_farming/main_1_7-6β_0.png"}},
+    {"id":"7-7","title":"新的开始","drops":[],"anchor":{"left":6,"roi":[252,673,39,20],"point":[271,683],"image":"stage_farming/main_1_7-7_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 8,
+  "name": "遗忘的歌声",
+  "stages": [
+    {"id":"8-1","title":"童谣的记忆","drops":["星落之音"],"challenge":true,"anchor":{"left":6,"roi":[566,538,29,19],"point":[580,547],"image":"stage_farming/main_1_8-1_1.png"}},
+    {"id":"8-2","title":"神秘的实验","drops":["黑色翻边袜","红黑棋盘"],"challenge":true,"anchor":{"left":5,"roi":[611,586,35,19],"point":[628,595],"image":"stage_farming/main_1_8-2_1.png"}},
+    {"id":"8-2","title":"陌生的自己","drops":["黑色抹胸裙"],"anchor":{"left":2,"roi":[603,405,39,20],"point":[622,415],"image":"stage_farming/main_1_8-2_0.png"}},
+    {"id":"8-3","title":"银月湖之夜","drops":["白月华"],"challenge":true,"anchor":{"left":4,"roi":[647,631,35,20],"point":[664,641],"image":"stage_farming/main_1_8-3_1.png"}},
+    {"id":"8-3","title":"不期而遇","drops":["豹纹耳钉"],"anchor":{"left":3,"roi":[590,335,39,20],"point":[609,345],"image":"stage_farming/main_1_8-3_0.png"}},
+    {"id":"8-4","title":"花朝节的真相","drops":["芒果布丁"],"challenge":true,"anchor":{"left":3,"roi":[676,718,37,20],"point":[694,728],"image":"stage_farming/main_1_8-4_1.png"}},
+    {"id":"8-4","title":"重回银月湖","drops":[],"anchor":{"left":4,"roi":[561,304,40,20],"point":[581,314],"image":"stage_farming/main_1_8-4_0.png"}},
+    {"id":"8-5","title":"回到起点","drops":["弹力牛仔裤","错位"],"challenge":true,"anchor":{"left":3,"roi":[425,822,35,19],"point":[442,831],"image":"stage_farming/main_1_8-5_1.png"}},
+    {"id":"8-5","title":"黑暗中的敌人","drops":["柠檬蜜瓜"],"anchor":{"left":5,"roi":[553,284,39,20],"point":[572,294],"image":"stage_farming/main_1_8-5_0.png"}},
+    {"id":"8-6","title":"强者驾驭力量","drops":["柠檬蜜瓜"],"anchor":{"left":6,"roi":[543,288,39,20],"point":[562,298],"image":"stage_farming/main_1_8-6_0.png"}},
+    {"id":"8-7","title":"改变的开始","drops":["可爱视线"],"anchor":{"left":7,"roi":[514,322,40,20],"point":[534,332],"image":"stage_farming/main_1_8-7_0.png"}},
+    {"id":"8-8","title":"阿欢的邀请","drops":[],"anchor":{"left":8,"roi":[456,374,39,21],"point":[475,384],"image":"stage_farming/main_1_8-8_0.png"}},
+    {"id":"8-9","title":"痛苦的噩梦","drops":["可爱视线"],"anchor":{"left":8,"roi":[580,516,39,20],"point":[599,526],"image":"stage_farming/main_1_8-9_0.png"}},
+    {"id":"8-11","title":"身边的陷阱","drops":["白兔糖"],"anchor":{"left":7,"roi":[619,788,50,20],"point":[644,798],"image":"stage_farming/main_1_8-11_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 9,
+  "name": "心之指引",
+  "stages": [
+    {"id":"9-1","title":"心急的大喵","drops":["格纹恋曲","Nukkil:时间之诗"],"challenge":true,"anchor":{"left":6,"roi":[429,702,28,20],"point":[443,712],"image":"stage_farming/main_1_9-1_1.png"}},
+    {"id":"9-1","title":"残酷的坦白","drops":["红心秘密"],"anchor":{"left":1,"roi":[336,584,35,20],"point":[353,594],"image":"stage_farming/main_1_9-1_0.png"}},
+    {"id":"9-2","title":"妮妮尔酒吧","drops":["夜深沉","低调性感"],"challenge":true,"anchor":{"left":5,"roi":[581,857,34,20],"point":[598,867],"image":"stage_farming/main_1_9-2_1.png"}},
+    {"id":"9-3","title":"八卦小游戏","drops":["杏叶纷飞","Nikkit时间之诗"],"challenge":true,"anchor":{"left":5,"roi":[437,702,34,20],"point":[454,712],"image":"stage_farming/main_1_9-3_1.png"}},
+    {"id":"9-3","title":"呼唤本心","drops":["红心秘密"],"anchor":{"left":3,"roi":[200,506,39,21],"point":[219,516],"image":"stage_farming/main_1_9-3_0.png"}},
+    {"id":"9-4","title":"巨剑雪原的传说","drops":["蓝色妖娆"],"challenge":true,"anchor":{"left":4,"roi":[562,843,36,20],"point":[580,853],"image":"stage_farming/main_1_9-4_1.png"}},
+    {"id":"9-5","title":"寻找传说之剑","drops":["素雅灰白","引爆全场"],"challenge":true,"anchor":{"left":3,"roi":[679,740,34,20],"point":[696,750],"image":"stage_farming/main_1_9-5_1.png"}},
+    {"id":"9-5","title":"内心的方向","drops":["雨霁"],"anchor":{"left":3,"roi":[676,467,39,21],"point":[695,477],"image":"stage_farming/main_1_9-5_0.png"}},
+    {"id":"9-7","title":"最终之战","drops":["雨霁"],"anchor":{"left":6,"roi":[453,508,38,20],"point":[472,518],"image":"stage_farming/main_1_9-7_0.png"}},
+    {"id":"9-9","title":"告一段落","drops":["幽紫悸动"],"anchor":{"left":8,"roi":[432,558,38,21],"point":[451,568],"image":"stage_farming/main_1_9-9_0.png"}},
+    {"id":"9-10","title":"勇气与力量","drops":["学生白袜"],"anchor":{"left":8,"roi":[558,695,53,20],"point":[584,705],"image":"stage_farming/main_1_9-10_0.png"}},
+    {"id":"9-11","title":"缺失的记忆","drops":["一字纯爱"],"anchor":{"left":8,"roi":[405,877,50,20],"point":[430,887],"image":"stage_farming/main_1_9-11_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 10,
+  "name": "失落的辉光",
+  "stages": [
+    {"id":"10-1","title":"前往信鸽森林","drops":["自然之镜"],"challenge":true,"anchor":{"left":5,"roi":[574,655,35,20],"point":[591,665],"image":"stage_farming/main_1_10-1_1.png"}},
+    {"id":"10-1","title":"咏光","drops":["洗净铅华"],"anchor":{"left":1,"roi":[509,869,48,21],"point":[533,879],"image":"stage_farming/main_1_10-1_0.png"}},
+    {"id":"10-2","title":"路人的提醒","drops":["命题","缤纷仙女棒"],"challenge":true,"anchor":{"left":5,"roi":[474,521,40,19],"point":[494,530],"image":"stage_farming/main_1_10-2_1.png"}},
+    {"id":"10-2","title":"辉光不再","drops":["洗净铅华"],"anchor":{"left":0,"roi":[627,653,52,21],"point":[653,663],"image":"stage_farming/main_1_10-2_0.png"}},
+    {"id":"10-3","title":"波瓦利湖玫瑰","drops":["半拖小蓝鞋"],"challenge":true,"anchor":{"left":5,"roi":[666,429,41,20],"point":[686,439],"image":"stage_farming/main_1_10-3_1.png"}},
+    {"id":"10-4","title":"咖啡店小意外","drops":["渐染晨光"],"challenge":true,"anchor":{"left":5,"roi":[473,329,42,19],"point":[494,338],"image":"stage_farming/main_1_10-4_1.png"}},
+    {"id":"10-4","title":"危险逼近","drops":["馨香"],"anchor":{"left":2,"roi":[239,353,53,21],"point":[265,363],"image":"stage_farming/main_1_10-4_0.png"}},
+    {"id":"10-5","title":"别致餐厅","drops":["昼隐","方格心事"],"challenge":true,"anchor":{"left":6,"roi":[401,218,40,20],"point":[421,228],"image":"stage_farming/main_1_10-5_1.png"}},
+    {"id":"10-6","title":"只是路过?","drops":["馨香"],"anchor":{"left":3,"roi":[440,582,52,20],"point":[466,592],"image":"stage_farming/main_1_10-6_0.png"}},
+    {"id":"10-7","title":"国立图书馆","drops":["岁之凝砂"],"anchor":{"left":3,"roi":[657,686,52,20],"point":[683,696],"image":"stage_farming/main_1_10-7_0.png"}},
+    {"id":"10-8","title":"古老卷宗","drops":["岁之凝砂"],"anchor":{"left":4,"roi":[612,776,53,20],"point":[638,786],"image":"stage_farming/main_1_10-8_0.png"}},
+    {"id":"10-10","title":"森林的月光","drops":["碧色眼眸"],"anchor":{"left":7,"roi":[278,927,76,32],"point":[316,943],"image":"stage_farming/main_1_10-10_0.png"}},
+    {"id":"10-11","title":"神秘的入口","drops":["烟雨倾城"],"anchor":{"left":8,"roi":[233,856,69,20],"point":[267,866],"image":"stage_farming/main_1_10-11_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 11,
+  "name": "最后的黄昏",
+  "stages": [
+    {"id":"11-1","title":"奇怪的占卜师","drops":["秋风画扇","Nikkl时间之诗"],"challenge":true,"anchor":{"left":7,"roi":[452,716,29,19],"point":[466,725],"image":"stage_farming/main_1_11-1_1.png"}},
+    {"id":"11-2","title":"贵族的花园","drops":["炼金的艺术","心之所属"],"challenge":true,"anchor":{"left":7,"roi":[537,892,35,20],"point":[554,902],"image":"stage_farming/main_1_11-2_1.png"}},
+    {"id":"11-3","title":"辉光祭司的预言","drops":["灿烂花语"],"challenge":true,"anchor":{"left":8,"roi":[430,740,36,20],"point":[448,750],"image":"stage_farming/main_1_11-3_1.png"}},
+    {"id":"11-3","title":"圣洁的祷告","drops":["心事手"],"anchor":{"left":2,"roi":[208,687,52,21],"point":[234,697],"image":"stage_farming/main_1_11-3_0.png"}},
+    {"id":"11-4","title":"儿时记忆","drops":["夺目宣言"],"challenge":true,"anchor":{"left":8,"roi":[490,953,37,19],"point":[508,962],"image":"stage_farming/main_1_11-4_1.png"}},
+    {"id":"11-5","title":"许久未见","drops":["粉语星愿","悠长旧曲"],"challenge":true,"anchor":{"left":8,"roi":[647,878,35,19],"point":[664,887],"image":"stage_farming/main_1_11-5_1.png"}},
+    {"id":"11-5","title":"辉光与圣晶","drops":["心事手账"],"anchor":{"left":4,"roi":[94,638,52,20],"point":[120,648],"image":"stage_farming/main_1_11-5_0.png"}},
+    {"id":"11-7","title":"精灵祷歌","drops":["银杏之约"],"anchor":{"left":5,"roi":[212,608,52,20],"point":[238,618],"image":"stage_farming/main_1_11-7_0.png"}},
+    {"id":"11-9","title":"夕阳下的咏光湖","drops":["宴会主角"],"anchor":{"left":7,"roi":[103,576,52,20],"point":[129,586],"image":"stage_farming/main_1_11-9_0.png"}},
+    {"id":"11-10","title":"可疑的侍从","drops":["今夜好梦"],"anchor":{"left":8,"roi":[14,395,69,22],"point":[48,406],"image":"stage_farming/main_1_11-10_0.png"}},
+    {"id":"11-11","title":"暗藏的危机","drops":["不见星"],"anchor":{"left":7,"roi":[511,541,68,20],"point":[545,551],"image":"stage_farming/main_1_11-11_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 1,
+  "chapter": 12,
+  "name": "狂欢前夜",
+  "stages": [
+    {"id":"12-1","title":"审判者军团","drops":["向心力"],"challenge":true,"anchor":{"left":8,"roi":[615,619,35,20],"point":[632,629],"image":"stage_farming/main_1_12-1_1.png"}},
+    {"id":"12-1","title":"前往妮妮尔","drops":["静夜"],"anchor":{"left":3,"roi":[225,867,49,20],"point":[249,877],"image":"stage_farming/main_1_12-1_0.png"}},
+    {"id":"12-2","title":"跨国企业","drops":["青钻流金","荆棘玫瑰"],"challenge":true,"anchor":{"left":8,"roi":[491,486,41,20],"point":[511,496],"image":"stage_farming/main_1_12-2_1.png"}},
+    {"id":"12-2","title":"女王竞选","drops":["静夜"],"anchor":{"left":1,"roi":[448,781,52,20],"point":[474,791],"image":"stage_farming/main_1_12-2_0.png"}},
+    {"id":"12-3","title":"献给女王的戏","drops":["甜橙花"],"challenge":true,"anchor":{"left":8,"roi":[667,429,41,20],"point":[687,439],"image":"stage_farming/main_1_12-3_1.png"}},
+    {"id":"12-3","title":"手稿与艺术家","drops":["灰羽绒球"],"anchor":{"left":1,"roi":[140,665,52,21],"point":[166,675],"image":"stage_farming/main_1_12-3_0.png"}},
+    {"id":"12-4","title":"采访者的难题","drops":["烈焰"],"challenge":true,"anchor":{"left":8,"roi":[485,269,75,42],"point":[522,290],"image":"stage_farming/main_1_12-4_1.png"}},
+    {"id":"12-4","title":"优雅宣传大使","drops":["甜心诱惑"],"anchor":{"left":1,"roi":[355,482,53,20],"point":[381,492],"image":"stage_farming/main_1_12-4_0.png"}},
+    {"id":"12-5","title":"唯一的丑陋","drops":["绯梦百褶裙","晴空赞歌"],"challenge":true,"anchor":{"left":9,"roi":[402,227,41,20],"point":[422,237],"image":"stage_farming/main_1_12-5_1.png"}},
+    {"id":"12-6","title":"源流之晶？！","drops":["凉意"],"anchor":{"left":3,"roi":[391,416,52,20],"point":[417,426],"image":"stage_farming/main_1_12-6_0.png"}},
+    {"id":"12-8","title":"熟悉的委托人","drops":["凉意"],"anchor":{"left":6,"roi":[180,452,52,20],"point":[206,462],"image":"stage_farming/main_1_12-8_0.png"}},
+    {"id":"12-9","title":"深渊与漩涡","drops":["蓝节拍"],"anchor":{"left":7,"roi":[177,494,52,20],"point":[203,504],"image":"stage_farming/main_1_12-9_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 1,
+  "name": "新的旅程",
+  "stages": [
+    {"id":"1-1","title":"小海的一天","drops":["玫果"],"challenge":true,"anchor":{"left":7,"roi":[493,533,22,20],"point":[504,543],"image":"stage_farming/main_2_1-1_1.png"}},
+    {"id":"1-1","title":"五色之光","drops":["碎晶星运"],"anchor":{"left":1,"roi":[393,582,34,20],"point":[410,592],"image":"stage_farming/main_2_1-1_0.png"}},
+    {"id":"1-2","title":"世界之镜","drops":["胜利之握","蜜桃吊带"],"challenge":true,"anchor":{"left":7,"roi":[592,364,28,20],"point":[606,374],"image":"stage_farming/main_2_1-2_1.png"}},
+    {"id":"1-2","title":"异常的波动","drops":["碎晶星运"],"anchor":{"left":1,"roi":[516,369,36,20],"point":[534,379],"image":"stage_farming/main_2_1-2_0.png"}},
+    {"id":"1-3","title":"女王的苏醒","drops":["粉色棒球帽"],"challenge":true,"anchor":{"left":8,"roi":[476,473,28,19],"point":[490,482],"image":"stage_farming/main_2_1-3_1.png"}},
+    {"id":"1-4","title":"设计师之影","drops":["运动时刻·红"],"challenge":true,"anchor":{"left":8,"roi":[555,320,30,20],"point":[570,330],"image":"stage_farming/main_2_1-4_1.png"}},
+    {"id":"1-4","title":"方舟列车","drops":[],"anchor":{"left":2,"roi":[579,428,37,20],"point":[597,438],"image":"stage_farming/main_2_1-4_0.png"}},
+    {"id":"1-5","title":"从方舟到妮妮尔","drops":["初雪痕迹","深红连帽衫"],"challenge":true,"anchor":{"left":8,"roi":[686,480,27,19],"point":[699,489],"image":"stage_farming/main_2_1-5_1.png"}},
+    {"id":"1-6","title":"时空回廊","drops":["草莓奶昔"],"anchor":{"left":3,"roi":[581,844,37,20],"point":[599,854],"image":"stage_farming/main_2_1-6_0.png"}},
+    {"id":"1-7","title":"海上风波","drops":["黑带蕾丝袜"],"anchor":{"left":4,"roi":[464,633,37,19],"point":[482,642],"image":"stage_farming/main_2_1-7_0.png"}},
+    {"id":"1-9","title":"新的使命","drops":["黑带蕾丝袜"],"anchor":{"left":5,"roi":[516,274,37,20],"point":[534,284],"image":"stage_farming/main_2_1-9_0.png"}},
+    {"id":"1-10","title":"彩虹之桥","drops":["石之痕"],"anchor":{"left":6,"roi":[414,456,52,21],"point":[440,466],"image":"stage_farming/main_2_1-10_0.png"}},
+    {"id":"1-11","title":"登陆妮妮尔","drops":["波点长袜"],"anchor":{"left":6,"roi":[535,704,48,19],"point":[559,713],"image":"stage_farming/main_2_1-11_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 2,
+  "name": "造梦之城",
+  "stages": [
+    {"id":"2-1","title":"出走的朵朵甜","drops":["条纹提花"],"challenge":true,"anchor":{"left":8,"roi":[475,597,28,20],"point":[489,607],"image":"stage_farming/main_2_2-1_1.png"}},
+    {"id":"2-1","title":"初访西西亚","drops":["胶片记忆"],"anchor":{"left":0,"roi":[456,450,35,20],"point":[473,460],"image":"stage_farming/main_2_2-1_0.png"}},
+    {"id":"2-2","title":"校史馆偶遇","drops":["同桌的她","海棠花园"],"challenge":true,"anchor":{"left":8,"roi":[579,401,34,19],"point":[596,410],"image":"stage_farming/main_2_2-2_1.png"}},
+    {"id":"2-3","title":"奇怪的兄妹","drops":["林下风眠"],"challenge":true,"anchor":{"left":7,"roi":[670,308,34,20],"point":[687,318],"image":"stage_farming/main_2_2-3_1.png"}},
+    {"id":"2-4","title":"公演在即","drops":["绒绒云朵"],"challenge":true,"anchor":{"left":8,"roi":[578,215,36,20],"point":[596,225],"image":"stage_farming/main_2_2-4_1.png"}},
+    {"id":"2-4","title":"似曾相识","drops":["小飞袖·黄"],"anchor":{"left":3,"roi":[289,480,39,20],"point":[308,490],"image":"stage_farming/main_2_2-4_0.png"}},
+    {"id":"2-5","title":"灰色少女","drops":["星球引力","草莓软糖"],"challenge":true,"anchor":{"left":9,"roi":[489,317,34,20],"point":[506,327],"image":"stage_farming/main_2_2-5_1.png"}},
+    {"id":"2-6","title":"西西亚学院","drops":["小飞袖·黄"],"anchor":{"left":4,"roi":[426,542,38,20],"point":[445,552],"image":"stage_farming/main_2_2-6_0.png"}},
+    {"id":"2-7","title":"传说之神","drops":["暖心陪伴"],"anchor":{"left":4,"roi":[634,555,39,20],"point":[653,565],"image":"stage_farming/main_2_2-7_0.png"}},
+    {"id":"2-8","title":"公演舞台","drops":["酒红舞鞋"],"anchor":{"left":5,"roi":[523,678,39,21],"point":[542,688],"image":"stage_farming/main_2_2-8_0.png"}},
+    {"id":"2-9","title":"签名与涂鸦","drops":["酒红舞鞋"],"anchor":{"left":6,"roi":[470,748,38,20],"point":[489,758],"image":"stage_farming/main_2_2-9_0.png"}},
+    {"id":"2-10","title":"偶像的品格","drops":["葡萄奶霜"],"anchor":{"left":6,"roi":[659,818,54,21],"point":[686,828],"image":"stage_farming/main_2_2-10_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 3,
+  "name": "摘星之夜",
+  "stages": [
+    {"id":"3-1","title":"永夜流星","drops":["浅紫星星"],"challenge":true,"anchor":{"left":8,"roi":[586,519,28,19],"point":[600,528],"image":"stage_farming/main_2_3-1_1.png"}},
+    {"id":"3-2","title":"学院奇遇","drops":["金晖雪绒花","清粉涟漪"],"challenge":true,"anchor":{"left":8,"roi":[476,385,34,20],"point":[493,395],"image":"stage_farming/main_2_3-2_1.png"}},
+    {"id":"3-2","title":"偶像总选","drops":["心情脉络"],"anchor":{"left":0,"roi":[574,692,39,20],"point":[593,702],"image":"stage_farming/main_2_3-2_0.png"}},
+    {"id":"3-3","title":"斯特兰奇","drops":["安梦魔法"],"challenge":true,"anchor":{"left":7,"roi":[669,240,34,20],"point":[686,250],"image":"stage_farming/main_2_3-3_1.png"}},
+    {"id":"3-3","title":"不速之客","drops":["心情脉络"],"anchor":{"left":1,"roi":[467,559,38,20],"point":[486,569],"image":"stage_farming/main_2_3-3_0.png"}},
+    {"id":"3-4","title":"灯与影","drops":["浅蓝校园"],"challenge":true,"anchor":{"left":8,"roi":[581,229,36,20],"point":[599,239],"image":"stage_farming/main_2_3-4_1.png"}},
+    {"id":"3-5","title":"新的道路","drops":["粉玉冰肌","青森奏鸣"],"challenge":true,"anchor":{"left":8,"roi":[677,383,34,20],"point":[694,393],"image":"stage_farming/main_2_3-5_1.png"}},
+    {"id":"3-5","title":"路见不平","drops":["麂皮长靴·黑"],"anchor":{"left":2,"roi":[556,496,39,20],"point":[575,506],"image":"stage_farming/main_2_3-5_0.png"}},
+    {"id":"3-7","title":"星光与黑幕","drops":["麂皮长靴·黑"],"anchor":{"left":3,"roi":[642,421,39,21],"point":[661,431],"image":"stage_farming/main_2_3-7_0.png"}},
+    {"id":"3-9","title":"摘星之梦","drops":["机械革命"],"anchor":{"left":6,"roi":[145,426,39,20],"point":[164,436],"image":"stage_farming/main_2_3-9_0.png"}},
+    {"id":"3-11","title":"幸运宝石","drops":["静夜之珠"],"anchor":{"left":7,"roi":[252,495,50,20],"point":[277,505],"image":"stage_farming/main_2_3-11_0.png"}},
+    {"id":"3-12","title":"拜访灰灰草","drops":["静夜之珠"],"anchor":{"left":7,"roi":[398,608,54,21],"point":[425,618],"image":"stage_farming/main_2_3-12_0.png"}},
+    {"id":"3-15","title":"新的考验","drops":["奶盐芝士"],"anchor":{"left":9,"roi":[440,655,54,21],"point":[467,665],"image":"stage_farming/main_2_3-15_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 4,
+  "name": "画境的山水",
+  "stages": [
+    {"id":"4-1","title":"山中清晨","drops":["活力护腕"],"challenge":true,"anchor":{"left":7,"roi":[638,570,30,19],"point":[653,579],"image":"stage_farming/main_2_4-1_1.png"}},
+    {"id":"4-1","title":"入京寻人","drops":["真心交错"],"anchor":{"left":0,"roi":[276,633,36,20],"point":[294,643],"image":"stage_farming/main_2_4-1_0.png"}},
+    {"id":"4-2","title":"等候多时","drops":["粉果蝴蝶结","夏日记号"],"challenge":true,"anchor":{"left":7,"roi":[508,466,35,20],"point":[525,476],"image":"stage_farming/main_2_4-2_1.png"}},
+    {"id":"4-3","title":"身后之人","drops":["千里秋"],"challenge":true,"anchor":{"left":8,"roi":[423,376,35,19],"point":[440,385],"image":"stage_farming/main_2_4-3_1.png"}},
+    {"id":"4-3","title":"初识鬼市","drops":["碎碎星"],"anchor":{"left":0,"roi":[669,700,39,21],"point":[688,710],"image":"stage_farming/main_2_4-3_0.png"}},
+    {"id":"4-4","title":"沧海桑田","drops":["碧野晴"],"challenge":true,"anchor":{"left":7,"roi":[478,292,37,19],"point":[496,301],"image":"stage_farming/main_2_4-4_1.png"}},
+    {"id":"4-5","title":"不速之客","drops":["炼金的秘密","温特蒙学院·红"],"challenge":true,"anchor":{"left":8,"roi":[366,213,35,19],"point":[383,222],"image":"stage_farming/main_2_4-5_1.png"}},
+    {"id":"4-5","title":"强买强卖","drops":["晴海之约"],"anchor":{"left":2,"roi":[552,489,40,20],"point":[572,499],"image":"stage_farming/main_2_4-5_0.png"}},
+    {"id":"4-6","title":"神笔月娘","drops":["晴海之约"],"anchor":{"left":3,"roi":[478,633,39,21],"point":[497,643],"image":"stage_farming/main_2_4-6_0.png"}},
+    {"id":"4-8","title":"山中隐士","drops":["女王之心"],"anchor":{"left":4,"roi":[534,608,40,21],"point":[554,618],"image":"stage_farming/main_2_4-8_0.png"}},
+    {"id":"4-11","title":"云水断山","drops":["灰夜"],"anchor":{"left":7,"roi":[248,462,50,20],"point":[273,472],"image":"stage_farming/main_2_4-11_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 5,
+  "name": "星渚的回声",
+  "stages": [
+    {"id":"5-1","title":"又见故人","drops":["粉紫爱心镜"],"challenge":true,"anchor":{"left":8,"roi":[530,484,27,20],"point":[543,494],"image":"stage_farming/main_2_5-1_1.png"}},
+    {"id":"5-2","title":"燕子回时","drops":["暗影幻紫","夜星"],"challenge":true,"anchor":{"left":7,"roi":[669,377,33,19],"point":[685,386],"image":"stage_farming/main_2_5-2_1.png"}},
+    {"id":"5-2","title":"画中蹊跷","drops":["冰莹雪花"],"anchor":{"left":1,"roi":[431,633,38,20],"point":[450,643],"image":"stage_farming/main_2_5-2_0.png"}},
+    {"id":"5-3","title":"山中夜宿","drops":["浅杏瓔珞"],"challenge":true,"anchor":{"left":8,"roi":[584,290,33,20],"point":[600,300],"image":"stage_farming/main_2_5-3_1.png"}},
+    {"id":"5-3","title":"以假换真","drops":["冰莹雪花"],"anchor":{"left":1,"roi":[667,678,38,21],"point":[686,688],"image":"stage_farming/main_2_5-3_0.png"}},
+    {"id":"5-4","title":"书香云大","drops":["答案"],"challenge":true,"anchor":{"left":8,"roi":[370,206,34,19],"point":[387,215],"image":"stage_farming/main_2_5-4_1.png"}},
+    {"id":"5-4","title":"夜访幕不落","drops":["金缠"],"anchor":{"left":2,"roi":[651,599,39,20],"point":[670,609],"image":"stage_farming/main_2_5-4_0.png"}},
+    {"id":"5-5","title":"暗流涌现","drops":["素白蕾丝袜","靛蓝打底裙"],"challenge":true,"anchor":{"left":8,"roi":[527,131,33,19],"point":[543,140],"image":"stage_farming/main_2_5-5_1.png"}},
+    {"id":"5-5","title":"螳螂捕蝉","drops":["金缠"],"anchor":{"left":3,"roi":[667,501,38,20],"point":[686,511],"image":"stage_farming/main_2_5-5_0.png"}},
+    {"id":"5-6","title":"黄雀在后","drops":["酒红吊带"],"anchor":{"left":4,"roi":[504,350,38,19],"point":[523,359],"image":"stage_farming/main_2_5-6_0.png"}},
+    {"id":"5-8","title":"雾中星光","drops":["粉金尖角"],"anchor":{"left":5,"roi":[500,671,39,20],"point":[519,681],"image":"stage_farming/main_2_5-8_0.png"}},
+    {"id":"5-10","title":"星流之渚","drops":["粉金尖角"],"anchor":{"left":7,"roi":[430,552,53,20],"point":[456,562],"image":"stage_farming/main_2_5-10_0.png"}},
+    {"id":"5-12","title":"云京偶遇","drops":["碧春粉云"],"anchor":{"left":8,"roi":[551,643,53,20],"point":[577,653],"image":"stage_farming/main_2_5-12_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 6,
+  "name": "新月初升",
+  "stages": [
+    {"id":"6-1","title":"小小庇护所","drops":["浅粉花苞"],"challenge":true,"anchor":{"left":8,"roi":[560,660,28,19],"point":[574,669],"image":"stage_farming/main_2_6-1_1.png"}},
+    {"id":"6-1","title":"森林驿站","drops":["酒红音符"],"anchor":{"left":0,"roi":[330,375,35,20],"point":[347,385],"image":"stage_farming/main_2_6-1_0.png"}},
+    {"id":"6-2","title":"花之仙子的讯息","drops":["罪恶封印","青灰打底裙"],"challenge":true,"anchor":{"left":9,"roi":[474,520,34,19],"point":[491,529],"image":"stage_farming/main_2_6-2_1.png"}},
+    {"id":"6-2","title":"斯兰特少爷","drops":["酒红音符"],"anchor":{"left":0,"roi":[479,569,38,20],"point":[498,579],"image":"stage_farming/main_2_6-2_0.png"}},
+    {"id":"6-3","title":"涌泉与浣熊","drops":["星夜猎手"],"challenge":true,"anchor":{"left":8,"roi":[594,426,34,19],"point":[611,435],"image":"stage_farming/main_2_6-3_1.png"}},
+    {"id":"6-3","title":"新朋友蘑咕咕","drops":["蓝白方格袜"],"anchor":{"left":0,"roi":[661,359,39,20],"point":[680,369],"image":"stage_farming/main_2_6-3_0.png"}},
+    {"id":"6-4","title":"残片上的颂歌","drops":["西柚珊瑚"],"challenge":true,"anchor":{"left":8,"roi":[428,251,35,20],"point":[445,261],"image":"stage_farming/main_2_6-4_1.png"}},
+    {"id":"6-4","title":"古老的森林","drops":["蓝白方格袜"],"anchor":{"left":1,"roi":[561,601,39,19],"point":[580,610],"image":"stage_farming/main_2_6-4_0.png"}},
+    {"id":"6-5","title":"探险者礼包","drops":["元气马尾","小甜蜜"],"challenge":true,"anchor":{"left":9,"roi":[369,175,34,19],"point":[386,184],"image":"stage_farming/main_2_6-5_1.png"}},
+    {"id":"6-7","title":"新月异象之谜","drops":["湛蓝青空"],"anchor":{"left":3,"roi":[557,405,39,20],"point":[576,415],"image":"stage_farming/main_2_6-7_0.png"}},
+    {"id":"6-8","title":"被放逐的精灵","drops":["商务托特包"],"anchor":{"left":4,"roi":[484,614,38,20],"point":[503,624],"image":"stage_farming/main_2_6-8_0.png"}},
+    {"id":"6-9","title":"火精灵的馈赠","drops":["商务托特包"],"anchor":{"left":4,"roi":[666,405,39,20],"point":[685,415],"image":"stage_farming/main_2_6-9_0.png"}},
+    {"id":"6-11","title":"女王的旨意","drops":["方格花笺"],"anchor":{"left":7,"roi":[197,406,50,20],"point":[222,416],"image":"stage_farming/main_2_6-11_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 7,
+  "name": "逐风的勇者",
+  "stages": [
+    {"id":"7-1","title":"集市清晨","drops":["蓝玉冰魄"],"challenge":true,"anchor":{"left":8,"roi":[565,660,28,19],"point":[579,669],"image":"stage_farming/main_2_7-1_1.png"}},
+    {"id":"7-1","title":"神迹指向","drops":["暗红十字"],"anchor":{"left":0,"roi":[330,375,35,20],"point":[347,385],"image":"stage_farming/main_2_7-1_0.png"}},
+    {"id":"7-2","title":"孩子的游戏","drops":["红香玉暖","校园街采"],"challenge":true,"anchor":{"left":9,"roi":[476,520,34,19],"point":[493,529],"image":"stage_farming/main_2_7-2_1.png"}},
+    {"id":"7-2","title":"初至荒原","drops":["暗红十字"],"anchor":{"left":0,"roi":[479,573,38,20],"point":[498,583],"image":"stage_farming/main_2_7-2_0.png"}},
+    {"id":"7-3","title":"伊飒的住所","drops":["红黑腕表"],"challenge":true,"anchor":{"left":8,"roi":[599,426,34,19],"point":[616,435],"image":"stage_farming/main_2_7-3_1.png"}},
+    {"id":"7-3","title":"神秘的占卜师","drops":["暗褐蕾丝袜"],"anchor":{"left":0,"roi":[661,359,39,20],"point":[680,369],"image":"stage_farming/main_2_7-3_0.png"}},
+    {"id":"7-4","title":"缇丝的房间","drops":["粉玉环坠"],"challenge":true,"anchor":{"left":8,"roi":[433,251,35,20],"point":[450,261],"image":"stage_farming/main_2_7-4_1.png"}},
+    {"id":"7-5","title":"临行占卜","drops":["气泡酒·黑莓","纯色风潮"],"challenge":true,"anchor":{"left":9,"roi":[372,175,33,19],"point":[388,184],"image":"stage_farming/main_2_7-5_1.png"}},
+    {"id":"7-5","title":"猎鹰大会","drops":["暗褐蕾丝袜"],"anchor":{"left":2,"roi":[474,405,38,20],"point":[493,415],"image":"stage_farming/main_2_7-5_0.png"}},
+    {"id":"7-6","title":"灵女缇丝","drops":["未知卡牌"],"anchor":{"left":2,"roi":[666,614,39,20],"point":[685,624],"image":"stage_farming/main_2_7-6_0.png"}},
+    {"id":"7-8","title":"风沙来袭","drops":["子母星"],"anchor":{"left":4,"roi":[489,614,38,20],"point":[508,624],"image":"stage_farming/main_2_7-8_0.png"}},
+    {"id":"7-10","title":"猎鹰勇者","drops":["子母星"],"anchor":{"left":5,"roi":[550,614,54,20],"point":[577,624],"image":"stage_farming/main_2_7-10_0.png"}},
+    {"id":"7-11","title":"风沙的踪迹","drops":["活力短裤"],"anchor":{"left":6,"roi":[472,405,50,20],"point":[497,415],"image":"stage_farming/main_2_7-11_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 8,
+  "name": "流沙之下",
+  "stages": [
+    {"id":"8-1","title":"探寻禁地","drops":["冰蓝雪绒花"],"challenge":true,"anchor":{"left":8,"roi":[444,663,29,19],"point":[458,672],"image":"stage_farming/main_2_8-1_1.png"}},
+    {"id":"8-1","title":"风沙的呼唤","drops":["杏叶碧翠"],"anchor":{"left":0,"roi":[353,569,35,20],"point":[370,579],"image":"stage_farming/main_2_8-1_0.png"}},
+    {"id":"8-2","title":"记忆之海","drops":["格纹夜曲","明黄格纹"],"challenge":true,"anchor":{"left":8,"roi":[625,522,35,20],"point":[642,532],"image":"stage_farming/main_2_8-2_1.png"}},
+    {"id":"8-2","title":"苍辰祭司","drops":["杏叶碧翠"],"anchor":{"left":0,"roi":[581,606,39,20],"point":[600,616],"image":"stage_farming/main_2_8-2_0.png"}},
+    {"id":"8-3","title":"诅咒降临","drops":["封禁欲望"],"challenge":true,"anchor":{"left":8,"roi":[478,428,36,20],"point":[496,438],"image":"stage_farming/main_2_8-3_1.png"}},
+    {"id":"8-4","title":"徒劳的祈祷","drops":["中网袜·紫"],"challenge":true,"anchor":{"left":7,"roi":[582,254,36,19],"point":[600,263],"image":"stage_farming/main_2_8-4_1.png"}},
+    {"id":"8-5","title":"最后的记录","drops":["棕红焦点","轻旋木马"],"challenge":true,"anchor":{"left":8,"roi":[521,180,35,20],"point":[538,190],"image":"stage_farming/main_2_8-5_1.png"}},
+    {"id":"8-5","title":"黑沙袭来","drops":["浅蓝短袜"],"anchor":{"left":2,"roi":[451,340,39,20],"point":[470,350],"image":"stage_farming/main_2_8-5_0.png"}},
+    {"id":"8-6","title":"流沙之下","drops":["浅蓝短袜"],"anchor":{"left":2,"roi":[644,606,39,20],"point":[663,616],"image":"stage_farming/main_2_8-6_0.png"}},
+    {"id":"8-8","title":"沉默的石碑","drops":["奶白野猫"],"anchor":{"left":4,"roi":[483,614,39,20],"point":[502,624],"image":"stage_farming/main_2_8-8_0.png"}},
+    {"id":"8-10","title":"苏醒的记忆","drops":["跳动音阶"],"anchor":{"left":7,"roi":[5,613,54,20],"point":[32,623],"image":"stage_farming/main_2_8-10_0.png"}},
+    {"id":"8-11","title":"追寻的真相","drops":["跳动音阶"],"anchor":{"left":6,"roi":[467,404,50,21],"point":[492,414],"image":"stage_farming/main_2_8-11_0.png"}},
+    {"id":"8-12","title":"蓝宝石信物","drops":["红莓糖"],"anchor":{"left":6,"roi":[649,557,54,21],"point":[676,567],"image":"stage_farming/main_2_8-12_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 9,
+  "name": "晚钟与新声",
+  "stages": [
+    {"id":"9-1","title":"乐都悲鸣","drops":["桃粉"],"challenge":true,"anchor":{"left":5,"roi":[630,970,28,19],"point":[644,979],"image":"stage_farming/main_2_9-1_1.png"}},
+    {"id":"9-1","title":"音乐之都","drops":["暗影血痕"],"anchor":{"left":0,"roi":[159,476,35,20],"point":[176,486],"image":"stage_farming/main_2_9-1_0.png"}},
+    {"id":"9-2","title":"失败的谏言","drops":["浅蓝千鸟","纯白回忆"],"challenge":true,"anchor":{"left":4,"roi":[679,877,34,19],"point":[696,886],"image":"stage_farming/main_2_9-2_1.png"}},
+    {"id":"9-2","title":"利兹合唱团","drops":[],"anchor":{"left":0,"roi":[398,549,39,20],"point":[417,559],"image":"stage_farming/main_2_9-2_0.png"}},
+    {"id":"9-3","title":"天平两端","drops":["蓝雾短袜"],"challenge":true,"anchor":{"left":4,"roi":[454,750,33,20],"point":[470,760],"image":"stage_farming/main_2_9-3_1.png"}},
+    {"id":"9-4","title":"黄昏哀歌","drops":["榛子布丁"],"challenge":true,"anchor":{"left":2,"roi":[667,806,35,19],"point":[684,815],"image":"stage_farming/main_2_9-4_1.png"}},
+    {"id":"9-4","title":"女王的赠礼","drops":["薄荷蝴蝶"],"anchor":{"left":1,"roi":[552,281,39,20],"point":[571,291],"image":"stage_farming/main_2_9-4_0.png"}},
+    {"id":"9-5","title":"投资的回报","drops":["踝铃","斑豹性感"],"challenge":true,"anchor":{"left":2,"roi":[392,963,34,20],"point":[409,973],"image":"stage_farming/main_2_9-5_1.png"}},
+    {"id":"9-5","title":"第二次预告","drops":["薄荷蝴蝶"],"anchor":{"left":2,"roi":[599,255,39,20],"point":[618,265],"image":"stage_farming/main_2_9-5_0.png"}},
+    {"id":"9-6","title":"会晤之期","drops":["浪漫夜曲"],"anchor":{"left":3,"roi":[531,379,39,20],"point":[550,389],"image":"stage_farming/main_2_9-6_0.png"}},
+    {"id":"9-9","title":"消失的音准","drops":["浪漫夜曲"],"anchor":{"left":7,"roi":[219,262,39,20],"point":[238,272],"image":"stage_farming/main_2_9-9_0.png"}},
+    {"id":"9-11","title":"少女的救援","drops":["紫晶交错"],"anchor":{"left":7,"roi":[659,357,50,20],"point":[684,367],"image":"stage_farming/main_2_9-11_0.png"}},
+    {"id":"9-12","title":"晚钟哀歌","drops":["紫晶交错"],"anchor":{"left":8,"roi":[663,312,54,20],"point":[690,322],"image":"stage_farming/main_2_9-12_0.png"}},
+    {"id":"9-14","title":"信使的新声","drops":["蓝白运动上衣"],"anchor":{"left":8,"roi":[594,608,54,20],"point":[621,618],"image":"stage_farming/main_2_9-14_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 10,
+  "name": "破茧的灰影",
+  "stages": [
+    {"id":"10-1","title":"女王的秘密","drops":["乐音艺术"],"challenge":true,"anchor":{"left":0,"roi":[216,298,35,20],"point":[233,308],"image":"stage_farming/main_2_10-1_1.png"}},
+    {"id":"10-2","title":"赴宴","drops":["米色印象","曲线魅力"],"challenge":true,"anchor":{"left":0,"roi":[341,426,41,19],"point":[361,435],"image":"stage_farming/main_2_10-2_1.png"}},
+    {"id":"10-2","title":"失联的灰灰草","drops":["心之属"],"anchor":{"left":7,"roi":[606,481,52,20],"point":[632,491],"image":"stage_farming/main_2_10-2_0.png"}},
+    {"id":"10-3","title":"震灾的真相","drops":["追梦繁星"],"challenge":true,"anchor":{"left":0,"roi":[264,601,40,20],"point":[284,611],"image":"stage_farming/main_2_10-3_1.png"}},
+    {"id":"10-4","title":"灵魂的色泽","drops":["飒爽玫瑰"],"challenge":true,"anchor":{"left":0,"roi":[104,735,42,20],"point":[125,745],"image":"stage_farming/main_2_10-4_1.png"}},
+    {"id":"10-4","title":"进入王宫","drops":["心之属"],"anchor":{"left":6,"roi":[645,678,53,20],"point":[671,688],"image":"stage_farming/main_2_10-4_0.png"}},
+    {"id":"10-5","title":"梦与童话","drops":["心事微澜","烟波轻泛"],"challenge":true,"anchor":{"left":0,"roi":[412,767,41,20],"point":[432,777],"image":"stage_farming/main_2_10-5_1.png"}},
+    {"id":"10-7","title":"厨房风波","drops":["网格潮流"],"anchor":{"left":5,"roi":[159,579,52,20],"point":[185,589],"image":"stage_farming/main_2_10-7_0.png"}},
+    {"id":"10-8","title":"寂静的寝宫","drops":["瑰夜"],"anchor":{"left":3,"roi":[487,561,52,21],"point":[513,571],"image":"stage_farming/main_2_10-8_0.png"}},
+    {"id":"10-10","title":"暂时的合作","drops":["环形轨道"],"anchor":{"left":3,"roi":[462,287,68,20],"point":[496,297],"image":"stage_farming/main_2_10-10_0.png"}},
+    {"id":"10-11","title":"雕塑之下","drops":["环形轨道"],"anchor":{"left":2,"roi":[521,217,68,20],"point":[555,227],"image":"stage_farming/main_2_10-11_0.png"}},
+    {"id":"10-12","title":"破碎的记忆","drops":["通勤风潮"],"anchor":{"left":1,"roi":[540,293,70,20],"point":[575,303],"image":"stage_farming/main_2_10-12_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 11,
+  "name": "未来之门",
+  "stages": [
+    {"id":"11-1","title":"寻路人","drops":["声之镌刻"],"challenge":true,"anchor":{"left":0,"roi":[636,868,29,20],"point":[650,878],"image":"stage_farming/main_2_11-1_1.png"}},
+    {"id":"11-1","title":"废墟开放日","drops":["浅金星星"],"anchor":{"left":6,"roi":[657,326,48,20],"point":[681,336],"image":"stage_farming/main_2_11-1_0.png"}},
+    {"id":"11-2","title":"合作者","drops":["纯棉短袜","泡泡南瓜"],"challenge":true,"anchor":{"left":0,"roi":[486,987,35,20],"point":[503,997],"image":"stage_farming/main_2_11-2_1.png"}},
+    {"id":"11-3","title":"同路客","drops":["烟玉"],"challenge":true,"anchor":{"left":0,"roi":[256,970,35,19],"point":[273,979],"image":"stage_farming/main_2_11-3_1.png"}},
+    {"id":"11-3","title":"增强装置?","drops":["浅金星星"],"anchor":{"left":12,"roi":[194,619,52,20],"point":[220,629],"image":"stage_farming/main_2_11-3_0.png"}},
+    {"id":"11-4","title":"异路同归","drops":["新蕊初夏"],"challenge":true,"anchor":{"left":0,"roi":[222,730,36,19],"point":[240,739],"image":"stage_farming/main_2_11-4_1.png"}},
+    {"id":"11-5","title":"领路者","drops":["职场精英","今宴"],"challenge":true,"anchor":{"left":0,"roi":[321,511,35,20],"point":[338,521],"image":"stage_farming/main_2_11-5_1.png"}},
+    {"id":"11-5","title":"潜入核心","drops":["小航海家"],"anchor":{"left":6,"roi":[487,851,52,20],"point":[513,861],"image":"stage_farming/main_2_11-5_0.png"}},
+    {"id":"11-6","title":"环塔实验室","drops":["小航海家"],"anchor":{"left":6,"roi":[135,863,52,20],"point":[161,873],"image":"stage_farming/main_2_11-6_0.png"}},
+    {"id":"11-7","title":"秩序之下","drops":["小小心机"],"anchor":{"left":5,"roi":[136,852,53,20],"point":[162,862],"image":"stage_farming/main_2_11-7_0.png"}},
+    {"id":"11-9","title":"赫斯提亚","drops":["猎魔之契"],"anchor":{"left":3,"roi":[533,514,52,20],"point":[559,524],"image":"stage_farming/main_2_11-9_0.png"}},
+    {"id":"11-10","title":"实验开始","drops":["猎魔之契"],"anchor":{"left":2,"roi":[570,425,68,20],"point":[604,435],"image":"stage_farming/main_2_11-10_0.png"}},
+    {"id":"11-12","title":"光幕之后","drops":["静音办公"],"anchor":{"left":0,"roi":[627,555,68,20],"point":[661,565],"image":"stage_farming/main_2_11-12_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 12,
+  "name": "冰封的锈痕",
+  "stages": [
+    {"id":"12-1","title":"冰川长梦","drops":["沉静步调"],"challenge":true,"anchor":{"left":2,"roi":[652,1001,35,20],"point":[669,1011],"image":"stage_farming/main_2_12-1_1.png"}},
+    {"id":"12-1","title":"黑水城郊","drops":["暗暗巧思"],"anchor":{"left":8,"roi":[554,594,49,20],"point":[578,604],"image":"stage_farming/main_2_12-1_0.png"}},
+    {"id":"12-2","title":"烈酒之味","drops":["经典蕾丝袜","电台面试"],"challenge":true,"anchor":{"left":2,"roi":[420,1066,41,19],"point":[440,1075],"image":"stage_farming/main_2_12-2_1.png"}},
+    {"id":"12-2","title":"雪山来客","drops":["暗暗巧思"],"anchor":{"left":8,"roi":[633,827,52,20],"point":[659,837],"image":"stage_farming/main_2_12-2_0.png"}},
+    {"id":"12-3","title":"隐秘的召唤","drops":["校园活力"],"challenge":true,"anchor":{"left":1,"roi":[477,981,41,20],"point":[497,991],"image":"stage_farming/main_2_12-3_1.png"}},
+    {"id":"12-4","title":"污浊之晶","drops":["铅灰牛仔裤"],"challenge":true,"anchor":{"left":1,"roi":[322,1072,42,20],"point":[343,1082],"image":"stage_farming/main_2_12-4_1.png"}},
+    {"id":"12-4","title":"赫尔斯往事","drops":["春桃璎珞"],"anchor":{"left":7,"roi":[451,835,53,20],"point":[477,845],"image":"stage_farming/main_2_12-4_0.png"}},
+    {"id":"12-5","title":"寂灭终局","drops":["墨铃","沉醉夜"],"challenge":true,"anchor":{"left":0,"roi":[464,833,41,20],"point":[484,843],"image":"stage_farming/main_2_12-5_1.png"}},
+    {"id":"12-6","title":"追踪魔羊","drops":["春桃瓔珞"],"anchor":{"left":5,"roi":[592,841,52,20],"point":[618,851],"image":"stage_farming/main_2_12-6_0.png"}},
+    {"id":"12-8","title":"车间幽影","drops":["往日回忆"],"anchor":{"left":5,"roi":[566,559,52,21],"point":[592,569],"image":"stage_farming/main_2_12-8_0.png"}},
+    {"id":"12-9","title":"诡秘紫晶","drops":["青木焦点"],"anchor":{"left":6,"roi":[499,428,63,32],"point":[530,444],"image":"stage_farming/main_2_12-9_0.png"}},
+    {"id":"12-11","title":"宝石的记忆","drops":["青木焦点"],"anchor":{"left":5,"roi":[307,265,68,20],"point":[341,275],"image":"stage_farming/main_2_12-11_0.png"}},
+    {"id":"12-13","title":"天光新雪","drops":["桂香涟漪"],"anchor":{"left":3,"roi":[388,312,67,35],"point":[421,329],"image":"stage_farming/main_2_12-13_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 13,
+  "name": "雪岭的呼唤",
+  "stages": [
+    {"id":"13-1","title":"寒夜降生","drops":["黄岫步摇"],"challenge":true,"anchor":{"left":2,"roi":[652,1001,36,20],"point":[670,1011],"image":"stage_farming/main_2_13-1_1.png"}},
+    {"id":"13-2","title":"十日宴","drops":["青色橄榄","鹅黄染柳"],"challenge":true,"anchor":{"left":2,"roi":[420,1066,41,19],"point":[440,1075],"image":"stage_farming/main_2_13-2_1.png"}},
+    {"id":"13-3","title":"冰湖之下","drops":["铜缠"],"challenge":true,"anchor":{"left":1,"roi":[477,981,41,20],"point":[497,991],"image":"stage_farming/main_2_13-3_1.png"}},
+    {"id":"13-3","title":"雪白之筵","drops":["水晶石"],"anchor":{"left":8,"roi":[430,983,52,21],"point":[456,993],"image":"stage_farming/main_2_13-3_0.png"}},
+    {"id":"13-4","title":"硝烟之上","drops":["粉积云"],"challenge":true,"anchor":{"left":1,"roi":[322,1072,43,20],"point":[343,1082],"image":"stage_farming/main_2_13-4_1.png"}},
+    {"id":"13-4","title":"雪雾罩临","drops":["水晶石"],"anchor":{"left":7,"roi":[451,835,53,20],"point":[477,845],"image":"stage_farming/main_2_13-4_0.png"}},
+    {"id":"13-5","title":"纷争再起","drops":["格纹荷叶边","小飞袖·粉"],"challenge":true,"anchor":{"left":0,"roi":[464,833,41,20],"point":[484,843],"image":"stage_farming/main_2_13-5_1.png"}},
+    {"id":"13-5","title":"厄礼峰顶","drops":["金色雪花"],"anchor":{"left":6,"roi":[516,962,52,21],"point":[542,972],"image":"stage_farming/main_2_13-5_0.png"}},
+    {"id":"13-7A","title":"星渚之忆","drops":["纯净之爱"],"anchor":{"left":5,"roi":[413,696,68,31],"point":[447,711],"image":"stage_farming/main_2_13-7A_0.png"}},
+    {"id":"13-7B","title":"钢之羽翼","drops":["轻羽绒球"],"anchor":{"left":5,"roi":[582,258,71,20],"point":[617,268],"image":"stage_farming/main_2_13-7B_0.png"}},
+    {"id":"13-8A","title":"冰川梦魇","drops":["轻羽绒球"],"anchor":{"left":5,"roi":[557,551,72,32],"point":[593,567],"image":"stage_farming/main_2_13-8A_0.png"}},
+    {"id":"13-8B","title":"寒冰根源","drops":["霞染"],"anchor":{"left":5,"roi":[303,265,73,20],"point":[339,275],"image":"stage_farming/main_2_13-8B_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 14,
+  "name": "城市之森",
+  "stages": [
+    {"id":"14-1","title":"灰色的相遇","drops":["月华清"],"challenge":true,"anchor":{"left":0,"roi":[309,510,36,20],"point":[327,520],"image":"stage_farming/main_2_14-1_1.png"}},
+    {"id":"14-2","title":"噩梦","drops":["清夏凉拖","日落往事pkkil"],"challenge":true,"anchor":{"left":0,"roi":[406,708,42,19],"point":[427,717],"image":"stage_farming/main_2_14-2_1.png"}},
+    {"id":"14-2","title":"德鲁伊组织","drops":["双星重奏"],"anchor":{"left":9,"roi":[430,469,52,20],"point":[456,479],"image":"stage_farming/main_2_14-2_0.png"}},
+    {"id":"14-3","title":"向圣树祈祷","drops":["柔心眷梦"],"challenge":true,"anchor":{"left":0,"roi":[279,924,43,19],"point":[300,933],"image":"stage_farming/main_2_14-3_1.png"}},
+    {"id":"14-3","title":"小狮子","drops":["双星重奏"],"anchor":{"left":8,"roi":[497,353,52,20],"point":[523,363],"image":"stage_farming/main_2_14-3_0.png"}},
+    {"id":"14-4","title":"岔路与悬崖","drops":["白露百合"],"challenge":true,"anchor":{"left":0,"roi":[510,1077,43,20],"point":[531,1087],"image":"stage_farming/main_2_14-4_1.png"}},
+    {"id":"14-4","title":"雷鸣喧嚣","drops":["暖绒喵"],"anchor":{"left":7,"roi":[561,324,52,21],"point":[587,334],"image":"stage_farming/main_2_14-4_0.png"}},
+    {"id":"14-6","title":"绿叶的指引","drops":["轻柠甜饼"],"anchor":{"left":7,"roi":[185,248,52,20],"point":[211,258],"image":"stage_farming/main_2_14-6_0.png"}},
+    {"id":"14-7","title":"来处与归途","drops":["粉格窗扉"],"anchor":{"left":6,"roi":[205,143,52,20],"point":[231,153],"image":"stage_farming/main_2_14-7_0.png"}},
+    {"id":"14-9","title":"集会的讯息","drops":["粉格窗扉"],"anchor":{"left":4,"roi":[310,395,52,20],"point":[336,405],"image":"stage_farming/main_2_14-9_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 15,
+  "name": "悬空的决议",
+  "stages": [
+    {"id":"15-1","title":"繁华与泥痕","drops":["心跳脉络"],"challenge":true,"anchor":{"left":0,"roi":[539,339,35,19],"point":[556,348],"image":"stage_farming/main_2_15-1_1.png"}},
+    {"id":"15-2","title":"时尚的狂澜","drops":["翩跹心蝶","青春短裤"],"challenge":true,"anchor":{"left":0,"roi":[299,574,41,20],"point":[319,584],"image":"stage_farming/main_2_15-2_1.png"}},
+    {"id":"15-2","title":"情报名录","drops":["星群列阵"],"anchor":{"left":7,"roi":[625,708,52,20],"point":[651,718],"image":"stage_farming/main_2_15-2_0.png"}},
+    {"id":"15-3","title":"唯一的宾客","drops":["青涩纪念"],"challenge":true,"anchor":{"left":0,"roi":[419,837,41,20],"point":[439,847],"image":"stage_farming/main_2_15-3_1.png"}},
+    {"id":"15-3","title":"徘徊的梦魇","drops":["星群列阵"],"anchor":{"left":8,"roi":[585,470,52,20],"point":[611,480],"image":"stage_farming/main_2_15-3_0.png"}},
+    {"id":"15-4","title":"驯服与反抗","drops":["软软甜梦"],"challenge":true,"anchor":{"left":0,"roi":[267,1064,42,19],"point":[288,1073],"image":"stage_farming/main_2_15-4_1.png"}},
+    {"id":"15-7","title":"不速之客","drops":["棋格回忆"],"anchor":{"left":6,"roi":[262,282,52,20],"point":[288,292],"image":"stage_farming/main_2_15-7_0.png"}},
+    {"id":"15-9","title":"最后的演说","drops":["甜粉运动派"],"anchor":{"left":5,"roi":[51,433,52,20],"point":[77,443],"image":"stage_farming/main_2_15-9_0.png"}},
+    {"id":"15-10","title":"与恶的距离","drops":["深红格调"],"anchor":{"left":3,"roi":[414,574,68,21],"point":[448,584],"image":"stage_farming/main_2_15-10_0.png"}},
+    {"id":"15-11","title":"蔓延","drops":["深红格调"],"anchor":{"left":3,"roi":[208,725,68,20],"point":[242,735],"image":"stage_farming/main_2_15-11_0.png"}},
+    {"id":"15-12","title":"病变与决断","drops":["漆夜风潮"],"anchor":{"left":2,"roi":[500,924,68,20],"point":[534,934],"image":"stage_farming/main_2_15-12_0.png"}}
+  ]
+},
+{
+  "mode": "main",
+  "volume": 2,
+  "chapter": 16,
+  "name": "旧日的门扉",
+  "stages": [
+    {"id":"16-1","title":"沉默的愿望","drops":["玫瑰夜语"],"challenge":true,"anchor":{"left":1,"roi":[388,470,35,20],"point":[405,480],"image":"stage_farming/main_2_16-1_1.png"}},
+    {"id":"16-1","title":"雾临","drops":["月曜星落"],"anchor":{"left":8,"roi":[615,999,48,20],"point":[639,1009],"image":"stage_farming/main_2_16-1_0.png"}},
+    {"id":"16-2","title":"流浪的信仰","drops":["铃语叮当","百搭格调"],"challenge":true,"anchor":{"left":0,"roi":[188,640,40,20],"point":[208,650],"image":"stage_farming/main_2_16-2_1.png"}},
+    {"id":"16-2","title":"森林的敌意","drops":["月曜星落"],"anchor":{"left":7,"roi":[620,837,52,20],"point":[646,847],"image":"stage_farming/main_2_16-2_0.png"}},
+    {"id":"16-3","title":"短暂的盟约","drops":["游鱼轻吻"],"challenge":true,"anchor":{"left":0,"roi":[533,836,41,20],"point":[553,846],"image":"stage_farming/main_2_16-3_1.png"}},
+    {"id":"16-4","title":"预谋的重逢","drops":["沁夏花海"],"challenge":true,"anchor":{"left":0,"roi":[219,998,42,20],"point":[240,1015],"image":"stage_farming/main_2_16-4_1.png"}},
+    {"id":"16-5","title":"月光的谎言","drops":["都市风景","自然呼唤"],"challenge":true,"anchor":{"left":0,"roi":[474,1128,51,21],"point":[499,1138],"image":"stage_farming/main_2_16-5_1.png"}},
+    {"id":"16-6","title":"旧日残章","drops":["珠光璀璨"],"anchor":{"left":7,"roi":[100,327,52,20],"point":[126,337],"image":"stage_farming/main_2_16-6_0.png"}},
+    {"id":"16-9","title":"歧路","drops":["牛奶黑巧"],"anchor":{"left":1,"roi":[594,320,52,21],"point":[620,330],"image":"stage_farming/main_2_16-9_0.png"}},
+    {"id":"16-10","title":"苏醒的笛音","drops":["蓝白微风"],"anchor":{"left":3,"roi":[236,581,68,20],"point":[270,591],"image":"stage_farming/main_2_16-10_0.png"}},
+    {"id":"16-12","title":"扭曲的信仰","drops":["蓝白微风"],"anchor":{"left":2,"roi":[636,998,68,20],"point":[670,1008],"image":"stage_farming/main_2_16-12_0.png"}},
+    {"id":"16-13","title":"重聚之时","drops":["碧海澄梦"],"anchor":{"left":5,"roi":[51,673,68,20],"point":[85,683],"image":"stage_farming/main_2_16-13_0.png"}}
+  ]
+},
+{
+  "mode": "maze",
+  "chapter": 1,
+  "name": "回忆的铁道",
+  "stages": [
+    {"id":"1-2","title":"踏入精神世界","drops":["涟漪层叠"],"anchor":{"left":3,"roi":[216,455,37,20],"point":[234,465],"image":"stage_farming/maze_1-2_0.png"}},
+    {"id":"1-3","title":"奇怪的预告信","drops":["刺绣护腕"],"anchor":{"left":4,"roi":[186,447,37,21],"point":[204,457],"image":"stage_farming/maze_1-3_0.png"}},
+    {"id":"1-4","title":"突然袭击","drops":["双子星"],"anchor":{"left":4,"roi":[426,483,38,20],"point":[445,493],"image":"stage_farming/maze_1-4_0.png"}},
+    {"id":"1-5","title":"正义裁决","drops":["圣诞雪","纯黑吊带"],"anchor":{"left":4,"roi":[666,490,37,21],"point":[684,500],"image":"stage_farming/maze_1-5_0.png"}},
+    {"id":"1-6","title":"消失的同伴","drops":["足铃"],"anchor":{"left":5,"roi":[636,521,37,20],"point":[654,531],"image":"stage_farming/maze_1-6_0.png"}},
+    {"id":"1-7","title":"燃烧的记忆","drops":["午茶时间"],"anchor":{"left":6,"roi":[606,452,37,20],"point":[624,462],"image":"stage_farming/maze_1-7_0.png"}},
+    {"id":"1-9","title":"不可思议的梦","drops":["米白阔腿裤","性感花篱"],"anchor":{"left":8,"roi":[546,383,36,20],"point":[564,393],"image":"stage_farming/maze_1-9_0.png"}}
+  ]
+},
+{
+  "mode": "maze",
+  "chapter": 2,
+  "name": "雾与星",
+  "stages": [
+    {"id":"2-2","title":"盛大的庆典","drops":["星月魔力"],"anchor":{"left":2,"roi":[442,456,38,20],"point":[461,466],"image":"stage_farming/maze_2-2_0.png"}},
+    {"id":"2-3","title":"湖中回忆","drops":["冰晶雪绒花","黑米"],"anchor":{"left":2,"roi":[634,448,38,20],"point":[653,458],"image":"stage_farming/maze_2-3_0.png"}},
+    {"id":"2-4","title":"亲情背后","drops":["银缠"],"anchor":{"left":3,"roi":[556,483,39,20],"point":[575,493],"image":"stage_farming/maze_2-4_0.png"}},
+    {"id":"2-6","title":"绝望灰烬","drops":["碧桃瓔珞","牛仔革命"],"anchor":{"left":5,"roi":[413,521,38,20],"point":[432,531],"image":"stage_farming/maze_2-6_0.png"}},
+    {"id":"2-7","title":"黑暗的力量","drops":["密林猎手"],"anchor":{"left":5,"roi":[526,452,39,20],"point":[545,462],"image":"stage_farming/maze_2-7_0.png"}},
+    {"id":"2-8","title":"永恒的幻想","drops":["黑色风格"],"anchor":{"left":6,"roi":[473,421,39,20],"point":[492,431],"image":"stage_farming/maze_2-8_0.png"}},
+    {"id":"2-9","title":"型艺加冕","drops":["甜心蝴蝶结","纯白网袜"],"anchor":{"left":8,"roi":[120,383,39,20],"point":[139,393],"image":"stage_farming/maze_2-9_0.png"}}
+  ]
+},
+{
+  "mode": "maze",
+  "chapter": 3,
+  "name": "生死恨·幻境",
+  "stages": [
+    {"id":"3-2","title":"哀婉之词","drops":["木纹耳钉","印象碎片·非凡"],"anchor":{"left":0,"roi":[445,796,39,21],"point":[464,806],"image":"stage_farming/maze_3-2_0.png"}},
+    {"id":"3-3","title":"无言之诺","drops":["木纹耳钉","印象碎片·非凡"],"anchor":{"left":0,"roi":[592,735,39,20],"point":[611,745],"image":"stage_farming/maze_3-3_0.png"}},
+    {"id":"3-4","title":"呜咽之声","drops":["木纹耳钉","辉光咒缚"],"anchor":{"left":1,"roi":[439,684,39,20],"point":[458,694],"image":"stage_farming/maze_3-4_0.png"}},
+    {"id":"3-7","title":"复仇之誓","drops":["燃情","印象碎片·非凡"],"anchor":{"left":2,"roi":[657,610,39,20],"point":[676,620],"image":"stage_farming/maze_3-7_0.png"}},
+    {"id":"3-8","title":"虚妄之咒","drops":["燃情","印象碎片·非凡"],"anchor":{"left":5,"roi":[53,671,39,20],"point":[72,681],"image":"stage_farming/maze_3-8_0.png"}},
+    {"id":"3-9","title":"孤冷之悼","drops":["桃心狙击","印象碎片·非凡"],"anchor":{"left":4,"roi":[495,676,39,20],"point":[514,686],"image":"stage_farming/maze_3-9_0.png"}},
+    {"id":"3-11","title":"终幕之辞","drops":["桃心狙击","迷彩风情"],"anchor":{"left":7,"roi":[188,1027,51,20],"point":[213,1037],"image":"stage_farming/maze_3-11_0.png"}}
+  ]
+},
+{
+  "mode": "maze",
+  "chapter": 4,
+  "name": "暴雨将至",
+  "stages": [
+    {"id":"4-1","title":"雨夜追击","drops":["摇滚节奏","印象碎片·非凡"],"anchor":{"left":1,"roi":[175,656,35,20],"point":[192,666],"image":"stage_farming/maze_4-1_0.png"}},
+    {"id":"4-2","title":"帮会首领","drops":["海之灵","轻松周末"],"anchor":{"left":2,"roi":[164,510,39,20],"point":[183,520],"image":"stage_farming/maze_4-2_0.png"}},
+    {"id":"4-3","title":"独家情报","drops":["一字诱惑","印象碎片·非凡"],"anchor":{"left":2,"roi":[423,428,39,20],"point":[442,438],"image":"stage_farming/maze_4-3_0.png"}},
+    {"id":"4-5","title":"无边的恐惧","drops":["秋实","街舞艺术"],"anchor":{"left":3,"roi":[671,388,39,20],"point":[690,398],"image":"stage_farming/maze_4-5_0.png"}},
+    {"id":"4-7","title":"港口火拼","drops":["格纹白袜","印象碎片·非凡"],"anchor":{"left":5,"roi":[657,453,39,20],"point":[676,463],"image":"stage_farming/maze_4-7_0.png"}},
+    {"id":"4-8","title":"恐惧的代价","drops":["字母卫衣","印象碎片·非凡"],"anchor":{"left":6,"roi":[646,518,39,20],"point":[665,528],"image":"stage_farming/maze_4-8_0.png"}},
+    {"id":"4-9","title":"暴雨停歇","drops":["乖白猫","青涩回忆"],"anchor":{"left":16,"roi":[98,559,39,20],"point":[117,569],"image":"stage_farming/maze_4-9_0.png"}}
+  ]
+},
+{
+  "mode": "maze",
+  "chapter": 5,
+  "name": "停驻之风",
+  "stages": [
+    {"id":"5-1","title":"雾起","drops":["星辰之轨","印象碎片·非凡"],"anchor":{"left":5,"roi":[625,756,35,20],"point":[642,766],"image":"stage_farming/maze_5-1_0.png"}},
+    {"id":"5-2","title":"榕树与调色板","drops":["挑战时刻","往日时光"],"anchor":{"left":4,"roi":[541,847,38,21],"point":[560,857],"image":"stage_farming/maze_5-2_0.png"}},
+    {"id":"5-3","title":"骤雨突袭","drops":["霜旦","印象碎片·非凡"],"anchor":{"left":2,"roi":[665,834,39,21],"point":[684,844],"image":"stage_farming/maze_5-3_0.png"}},
+    {"id":"5-4","title":"一夜入秋","drops":["蔷薇圆舞曲","印象碎片·非凡"],"anchor":{"left":1,"roi":[540,976,39,20],"point":[559,986],"image":"stage_farming/maze_5-4_0.png"}},
+    {"id":"5-6","title":"凝固的森","drops":["捕梦网","幽谷蓝雪"],"anchor":{"left":3,"roi":[199,398,38,20],"point":[218,408],"image":"stage_farming/maze_5-6_0.png"}},
+    {"id":"5-8","title":"遗忘与分离","drops":["休闲假日","印象碎片·非凡"],"anchor":{"left":4,"roi":[662,286,38,20],"point":[681,296],"image":"stage_farming/maze_5-8_0.png"}},
+    {"id":"5-9","title":"春天的小院子","drops":["几何乐章","蓝泡泡"],"anchor":{"left":5,"roi":[676,477,38,21],"point":[695,487],"image":"stage_farming/maze_5-9_0.png"}}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 3,
+  "chapter": 1,
+  "name": "夜珀之舞",
+  "image": "stage_farming/investigation_3_1.png",
+  "stages": [
+    {"id":"1-1","title":"浆果蝴蝶结","drops":["浆果蝴蝶结"],"section":1,"image":"stage_farming/investigation_3_1_1.png"},
+    {"id":"1-2","title":"日落玫瑰","drops":["日落玫瑰"],"section":2,"image":"stage_farming/investigation_3_1_2.png"},
+    {"id":"1-3","title":"墨影荷叶边","drops":["墨影荷叶边"],"section":3,"image":"stage_farming/investigation_3_1_3.png"},
+    {"id":"1-4","title":"碎巧饼干","drops":["碎巧饼干"],"section":4,"image":"stage_farming/investigation_3_1_4.png"},
+    {"id":"1-5","title":"暖冬遥想","drops":["暖冬遥想"],"section":5,"image":"stage_farming/investigation_3_1_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 3,
+  "chapter": 2,
+  "name": "王翼轻吻",
+  "image": "stage_farming/investigation_3_2.png",
+  "stages": [
+    {"id":"2-1","title":"薄荷反应","drops":["薄荷反应"],"section":1,"image":"stage_farming/investigation_3_2_1.png"},
+    {"id":"2-2","title":"深海梦呓","drops":["深海梦呓"],"section":2,"image":"stage_farming/investigation_3_2_2.png"},
+    {"id":"2-3","title":"中网袜·红","drops":["中网袜·红"],"section":3,"image":"stage_farming/investigation_3_2_3.png"},
+    {"id":"2-4","title":"优雅接待","drops":["优雅接待"],"section":4,"image":"stage_farming/investigation_3_2_4.png"},
+    {"id":"2-5","title":"方格迷局","drops":["方格迷局"],"section":5,"image":"stage_farming/investigation_3_2_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 3,
+  "chapter": 3,
+  "name": "夜访魔女",
+  "image": "stage_farming/investigation_3_3.png",
+  "stages": [
+    {"id":"3-1","title":"此间繁花","drops":["此间繁花"],"section":1,"image":"stage_farming/investigation_3_3_1.png"},
+    {"id":"3-2","title":"纯白构想","drops":["纯白构想"],"section":2,"image":"stage_farming/investigation_3_3_2.png"},
+    {"id":"3-3","title":"复古原木","drops":["复古原木"],"section":3,"image":"stage_farming/investigation_3_3_3.png"},
+    {"id":"3-4","title":"迷彩绘影","drops":["迷彩绘影"],"section":4,"image":"stage_farming/investigation_3_3_4.png"},
+    {"id":"3-5","title":"原野夏风","drops":["原野夏风"],"section":5,"image":"stage_farming/investigation_3_3_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 3,
+  "chapter": 4,
+  "name": "晴蓝誓言",
+  "image": "stage_farming/investigation_3_4.png",
+  "stages": [
+    {"id":"4-1","title":"浅咖木纹","drops":["浅咖木纹"],"section":1,"image":"stage_farming/investigation_3_4_1.png"},
+    {"id":"4-2","title":"蓝夜之梦","drops":["蓝夜之梦"],"section":2,"image":"stage_farming/investigation_3_4_2.png"},
+    {"id":"4-3","title":"此间素月","drops":["此间素月"],"section":3,"image":"stage_farming/investigation_3_4_3.png"},
+    {"id":"4-4","title":"酷黑运动派","drops":["酷黑运动派"],"section":4,"image":"stage_farming/investigation_3_4_4.png"},
+    {"id":"4-5","title":"月色昏黄","drops":["月色昏黄"],"section":5,"image":"stage_farming/investigation_3_4_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 3,
+  "chapter": 5,
+  "name": "银星启明",
+  "image": "stage_farming/investigation_3_5.png",
+  "stages": [
+    {"id":"5-1","title":"迷彩丛林","drops":["迷彩丛林"],"section":1,"image":"stage_farming/investigation_3_5_1.png"},
+    {"id":"5-2","title":"聚光风潮","drops":["聚光风潮"],"section":2,"image":"stage_farming/investigation_3_5_2.png"},
+    {"id":"5-3","title":"苍蓝木纹","drops":["苍蓝木纹"],"section":3,"image":"stage_farming/investigation_3_5_3.png"},
+    {"id":"5-4","title":"幽兰迷情","drops":["幽兰迷情"],"section":4,"image":"stage_farming/investigation_3_5_4.png"},
+    {"id":"5-5","title":"此间春晖","drops":["此间春晖"],"section":5,"image":"stage_farming/investigation_3_5_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 3,
+  "chapter": 6,
+  "name": "莽漠游人",
+  "image": "stage_farming/investigation_3_6.png",
+  "stages": [
+    {"id":"6-1","title":"元气短裤","drops":["元气短裤"],"section":1,"image":"stage_farming/investigation_3_6_1.png"},
+    {"id":"6-2","title":"静谧花园","drops":["静谧花园"],"section":2,"image":"stage_farming/investigation_3_6_2.png"},
+    {"id":"6-3","title":"莓果学院","drops":["莓果学院"],"section":3,"image":"stage_farming/investigation_3_6_3.png"},
+    {"id":"6-4","title":"梦色青春","drops":["梦色青春"],"section":4,"image":"stage_farming/investigation_3_6_4.png"},
+    {"id":"6-5","title":"织花蕾丝袜","drops":["织花蕾丝袜"],"section":5,"image":"stage_farming/investigation_3_6_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 3,
+  "chapter": 7,
+  "name": "苦艾夜曲",
+  "image": "stage_farming/investigation_3_7.png",
+  "stages": [
+    {"id":"7-1","title":"蜜桃雪冰","drops":["蜜桃雪冰"],"section":1,"image":"stage_farming/investigation_3_7_1.png"},
+    {"id":"7-2","title":"春之苔","drops":["春之苔"],"section":2,"image":"stage_farming/investigation_3_7_2.png"},
+    {"id":"7-3","title":"森绿玻璃袜","drops":["森绿玻璃袜"],"section":3,"image":"stage_farming/investigation_3_7_3.png"},
+    {"id":"7-4","title":"紫藤游梦","drops":["紫藤游梦"],"section":4,"image":"stage_farming/investigation_3_7_4.png"},
+    {"id":"7-5","title":"流银往事","drops":["流银往事"],"section":5,"image":"stage_farming/investigation_3_7_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 3,
+  "chapter": 8,
+  "name": "蚀羽记录",
+  "image": "stage_farming/investigation_3_8.png",
+  "stages": [
+    {"id":"8-1","title":"温柔珊瑚","drops":["温柔珊瑚"],"section":1,"image":"stage_farming/investigation_3_8_1.png"},
+    {"id":"8-2","title":"绞花毛线袜","drops":["绞花毛线袜"],"section":2,"image":"stage_farming/investigation_3_8_2.png"},
+    {"id":"8-3","title":"奶黄运动派","drops":["奶黄运动派"],"section":3,"image":"stage_farming/investigation_3_8_3.png"},
+    {"id":"8-4","title":"流月","drops":["流月"],"section":4,"image":"stage_farming/investigation_3_8_4.png"},
+    {"id":"8-5","title":"星河往事","drops":["星河往事"],"section":5,"image":"stage_farming/investigation_3_8_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 3,
+  "chapter": 9,
+  "name": "阴翳残羽",
+  "image": "stage_farming/investigation_3_9.png",
+  "stages": [
+    {"id":"9-1","title":"幻影流金","drops":["幻影流金"],"section":1,"image":"stage_farming/investigation_3_9_1.png"},
+    {"id":"9-2","title":"跃动短裤","drops":["跃动短裤"],"section":2,"image":"stage_farming/investigation_3_9_2.png"},
+    {"id":"9-3","title":"温特蒙学院·汐","drops":["温特蒙学院·汐"],"section":3,"image":"stage_farming/investigation_3_9_3.png"},
+    {"id":"9-4","title":"蜜糖格间","drops":["蜜糖格间"],"section":4,"image":"stage_farming/investigation_3_9_4.png"},
+    {"id":"9-5","title":"绵绵雪冰","drops":["绵绵雪冰"],"section":5,"image":"stage_farming/investigation_3_9_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 4,
+  "chapter": 1,
+  "name": "海韵信笺",
+  "image": "stage_farming/investigation_4_1.png",
+  "stages": [
+    {"id":"1-1","title":"果泡泡","drops":["果泡泡"],"section":1,"image":"stage_farming/investigation_4_1_1.png"},
+    {"id":"1-2","title":"步履晴天","drops":["步履晴天"],"section":2,"image":"stage_farming/investigation_4_1_2.png"},
+    {"id":"1-3","title":"波点漫舞","drops":["波点漫舞"],"section":3,"image":"stage_farming/investigation_4_1_3.png"},
+    {"id":"1-4","title":"星落拾光","drops":["星落拾光"],"section":4,"image":"stage_farming/investigation_4_1_4.png"},
+    {"id":"1-5","title":"银杏舞秋","drops":["银杏舞秋"],"section":5,"image":"stage_farming/investigation_4_1_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 4,
+  "chapter": 2,
+  "name": "倾心凝光",
+  "image": "stage_farming/investigation_4_2.png",
+  "stages": [
+    {"id":"2-1","title":"柔风圆舞曲","drops":["柔风圆舞曲"],"section":1,"image":"stage_farming/investigation_4_2_1.png"},
+    {"id":"2-2","title":"三角焦点","drops":["三角焦点"],"section":2,"image":"stage_farming/investigation_4_2_2.png"},
+    {"id":"2-3","title":"音符铭心","drops":["音符铭心"],"section":3,"image":"stage_farming/investigation_4_2_3.png"},
+    {"id":"2-4","title":"清夏玻璃袜","drops":["清夏玻璃袜"],"section":4,"image":"stage_farming/investigation_4_2_4.png"},
+    {"id":"2-5","title":"晚吟香","drops":["晚吟香"],"section":5,"image":"stage_farming/investigation_4_2_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 4,
+  "chapter": 3,
+  "name": "筑梦奇境",
+  "image": "stage_farming/investigation_4_3.png",
+  "stages": [
+    {"id":"3-1","title":"菱影构想","drops":["菱影构想"],"section":1,"image":"stage_farming/investigation_4_3_1.png"},
+    {"id":"3-2","title":"时之环","drops":["时之环"],"section":2,"image":"stage_farming/investigation_4_3_2.png"},
+    {"id":"3-3","title":"沉默往事","drops":["沉默往事"],"section":3,"image":"stage_farming/investigation_4_3_3.png"},
+    {"id":"3-4","title":"迷彩都市","drops":["迷彩都市"],"section":4,"image":"stage_farming/investigation_4_3_4.png"},
+    {"id":"3-5","title":"柔霭眷梦","drops":["柔霭眷梦"],"section":5,"image":"stage_farming/investigation_4_3_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 4,
+  "chapter": 4,
+  "name": "星月尺标",
+  "image": "stage_farming/investigation_4_4.png",
+  "stages": [
+    {"id":"4-1","title":"迷彩风暴","drops":["迷彩风暴"],"section":1,"image":"stage_farming/investigation_4_4_1.png"},
+    {"id":"4-2","title":"暖绵短袜","drops":["暖绵短袜"],"section":2,"image":"stage_farming/investigation_4_4_2.png"},
+    {"id":"4-3","title":"柔风雾影","drops":["柔风雾影"],"section":3,"image":"stage_farming/investigation_4_4_3.png"},
+    {"id":"4-4","title":"远野风景","drops":["远野风景"],"section":4,"image":"stage_farming/investigation_4_4_4.png"},
+    {"id":"4-5","title":"月船摇星","drops":["月船摇星"],"section":5,"image":"stage_farming/investigation_4_4_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 4,
+  "chapter": 5,
+  "name": "行见长日",
+  "image": "stage_farming/investigation_4_5.png",
+  "stages": [
+    {"id":"5-1","title":"棠梨璎珞","drops":["棠梨璎珞"],"section":1,"image":"stage_farming/investigation_4_5_1.png"},
+    {"id":"5-2","title":"冬莹雪花","drops":["冬莹雪花"],"section":2,"image":"stage_farming/investigation_4_5_2.png"},
+    {"id":"5-3","title":"浪漫之约","drops":["浪漫之约"],"section":3,"image":"stage_farming/investigation_4_5_3.png"},
+    {"id":"5-4","title":"舞台主宰","drops":["舞台主宰"],"section":4,"image":"stage_farming/investigation_4_5_4.png"},
+    {"id":"5-5","title":"心意结缘","drops":["心意结缘"],"section":5,"image":"stage_farming/investigation_4_5_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 4,
+  "chapter": 6,
+  "name": "青羽之歌",
+  "image": "stage_farming/investigation_4_6.png",
+  "stages": [
+    {"id":"6-1","title":"一字倾心","drops":["一字倾心"],"section":1,"image":"stage_farming/investigation_4_6_1.png"},
+    {"id":"6-2","title":"梦境繁星","drops":["梦境繁星"],"section":2,"image":"stage_farming/investigation_4_6_2.png"},
+    {"id":"6-3","title":"奇迹星","drops":["奇迹星"],"section":3,"image":"stage_farming/investigation_4_6_3.png"},
+    {"id":"6-4","title":"祝福雪绒花","drops":["祝福雪绒花"],"section":4,"image":"stage_farming/investigation_4_6_4.png"},
+    {"id":"6-5","title":"时光回眸","drops":["时光回眸"],"section":5,"image":"stage_farming/investigation_4_6_5.png"}
+  ]
+},
+{
+  "mode": "investigation",
+  "volume": 4,
+  "chapter": 7,
+  "name": "晨光假日",
+  "image": "stage_farming/investigation_4_7.png",
+  "stages": [
+    {"id":"7-1","title":"自由印象","drops":["自由印象"],"section":1,"image":"stage_farming/investigation_4_7_1.png"},
+    {"id":"7-2","title":"即刻出发","drops":["即刻出发"],"section":2,"image":"stage_farming/investigation_4_7_2.png"},
+    {"id":"7-3","title":"心之恋","drops":["心之恋"],"section":3,"image":"stage_farming/investigation_4_7_3.png"},
+    {"id":"7-4","title":"双重风情","drops":["双重风情"],"section":4,"image":"stage_farming/investigation_4_7_4.png"},
+    {"id":"7-5","title":"探索宣言","drops":["探索宣言"],"section":5,"image":"stage_farming/investigation_4_7_5.png"}
+  ]
+}
+]

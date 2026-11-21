@@ -348,6 +348,39 @@
         "timeout": 2000,
         "post_delay": 0
     },
+    "导航点击前往美甲采购": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [225, 409, 144, 58], "expected": ["前往采购"]}
+        },
+        "action": {
+            "type": "Custom",
+            "param": {
+                "custom_action": "navigation_click",
+                "custom_action_param": {
+                    "source_nodes": ["导航在美甲页面"],
+                    "target_nodes": ["导航在美甲采购页面"]
+                }
+            }
+        },
+        "post_delay": 0,
+        "timeout": 15000,
+        "next": ["导航在美甲采购页面"]
+    },
+    "导航在美甲采购页面": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "美甲采购点击设计专区",
+                    {"recognition": {"type": "OCR", "param": {
+                        "roi": [232, 150, 171, 58], "expected": ["独家推荐"]
+                    }}}
+                ]
+            }
+        },
+        "post_delay": 0
+    },
     "导航点击我的店铺": {
         "recognition": {
             "type": "OCR",
@@ -549,7 +582,8 @@
                     ],
                     "target_nodes": [
                         "导航旅程页面已打开"
-                    ]
+                    ],
+                    "click_center": true
                 }
             }
         },

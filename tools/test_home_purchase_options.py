@@ -163,8 +163,9 @@ class HomePurchaseOptionTests(unittest.TestCase):
                     for name, fields in case.get("pipeline_override", {}).items():
                         pipeline[name].update(fields)
                     ready_path(pipeline.__getitem__)
+                    study_next = "stop" if case["name"] == "No" else "点击暖心传音"
                     self.assertEqual(pipeline[EXIT]["next"],
-                                     ["stop"] if case["name"] == "No" else ["点击暖心传音"])
+                                     ["[JumpBack]点击收起日程表", study_next])
 
     def test_each_product_is_selected_by_text_center_before_gold_purchase(self):
         for _, _, selection, purchase, _, _ in PRODUCTS:

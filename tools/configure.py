@@ -12,7 +12,8 @@ def configure_ocr_model():
         exit(1)
 
     ocr_dir = assets_dir / "resource" / "model" / "ocr"
-    if not ocr_dir.exists():   # copy default OCR model only if dir does not exist
+    # Named models can already be present before the default model is installed.
+    if not all((ocr_dir / name).is_file() for name in ("det.onnx", "rec.onnx", "keys.txt")):
         shutil.copytree(
             assets_dir / "MaaCommonAssets" / "OCR" / "ppocr_v5" / "zh_cn",
             ocr_dir,

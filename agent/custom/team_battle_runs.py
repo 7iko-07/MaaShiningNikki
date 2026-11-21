@@ -7,7 +7,7 @@ from maa.context import Context
 from maa.custom_action import CustomAction
 from maa.pipeline import JActionType, JClick, JOCR, JRecognitionType
 
-from utils import debug_exception, extract_ocr_text, logger
+from utils import debug_exception, extract_ocr_text, logger, read_ocr_fraction
 
 
 @AgentServer.custom_action("team_battle_set_runs")
@@ -17,7 +17,7 @@ class TeamBattleSetRunsAction(CustomAction):
     FIELDS = {
         "选中次数": SELECTED,
         "剩余次数": ([0, 1205, 220, 60], r"(\d+)\s*[/／]\s*\d+"),
-        "体力": ([95, 0, 120, 40], r"(\d+)\s*[/／]\s*\d+"),
+        "体力": ([95, 0, 120, 40], None),
         "每次体力消耗": ([280, 1205, 190, 60], r"(\d+)"),
     }
 
@@ -103,14 +103,18 @@ class TeamBattleSetRunsAction(CustomAction):
                 raise RuntimeError("截图失败")
             image = controller.cached_image
             for name, (roi, pattern) in fields.items():
-                result = context.run_recognition_direct(
-                    JRecognitionType.OCR, JOCR(roi=roi, expected=[pattern]), image
-                )
-                text = extract_ocr_text(result)
-                match = re.search(pattern, text)
-                logger.debug(f"结伴刷取：{name} OCR={text!r}")
-                if match:
-                    values[name] = int(match.group(1))
+                if pattern is None:
+                    value = read_ocr_fraction(context, image, roi)
+                else:
+                    result = context.run_recognition_direct(
+                        JRecognitionType.OCR, JOCR(roi=roi, expected=[pattern]), image
+                    )
+                    text = extract_ocr_text(result)
+                    match = re.search(pattern, text)
+                    value = int(match.group(1)) if match else None
+                    logger.debug(f"结伴刷取：{name} OCR={text!r}")
+                if value is not None:
+                    values[name] = value
                 else:
                     values.pop(name, None)
             if len(values) == len(fields):

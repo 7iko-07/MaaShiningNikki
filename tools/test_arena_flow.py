@@ -21,6 +21,7 @@ from tools.test_arena_weekly import ROOT, arena, load_action
 from tools.validate_schema import load_jsonc
 
 navigation = load_action("page_navigation")
+click_wait = load_action("click_and_wait_change")
 ARENA = json.loads((ROOT / "assets/resource/pipeline/arena.json").read_text(encoding="utf-8"))
 
 
@@ -636,6 +637,8 @@ class ArenaPipelineTests(unittest.TestCase):
         self.assertTrue(self.tasker.bind(self.resource, self.controller))
         self.assertTrue(self.resource.register_custom_recognition("screen", ScreenRecognition(self.controller)))
         self.assertTrue(self.resource.register_custom_action("screen_action", ScreenAction(self.advance)))
+        self.assertTrue(self.resource.register_custom_action(
+            "click_and_wait_change", click_wait.ClickAndWaitChangeAction()))
         self.transitions = {}
         self.executed = []
         self.nodes = {}
@@ -746,7 +749,7 @@ class ArenaPipelineTests(unittest.TestCase):
         self.assertFalse(self.execute("竞技场挑战结果处理").status.succeeded)
         self.assertNotIn("在加载页面", self.executed)
 
-    def test_outfit_next_waits_for_popup_while_next_remains_visible(self):
+    def test_outfit_next_waits_for_popup_before_retrying(self):
         for index in (1, 2, 3):
             with self.subTest(index=index):
                 self.executed.clear()
@@ -762,23 +765,41 @@ class ArenaPipelineTests(unittest.TestCase):
                             self.controller.screen = popup
                 self.controller.on_capture = capture
                 overrides = {
-                    # 下一步始终可识别，弹窗出现后也不会消失。
-                    entry: {"recognition": "DirectHit", "action": ARENA[entry]["action"]},
+                    "test_parent": {"next": [entry]},
+                    entry: {"action": ARENA[entry]["action"]},
                     popup: {"next": []},
                 }
-                self.assertTrue(self.execute(entry, overrides).status.succeeded)
+                self.assertTrue(self.execute("test_parent", overrides).status.succeeded)
                 self.assertEqual(len(clicks), 1)
                 self.assertEqual(self.executed, [popup])
                 self.assertGreaterEqual(captures[0], 3)
 
-    def test_outfit_missing_popup_fails_without_reclicking_next(self):
+    def test_outfit_missing_popup_retries_until_total_timeout(self):
         entry = "确认推荐搭配下一步1"
         self.controller.screen = entry
+        now = 0.0
         clicks = []
-        self.controller.on_click = lambda: clicks.append(True)
-        overrides = {entry: {"recognition": "DirectHit", "action": ARENA[entry]["action"]}}
-        self.assertFalse(self.execute(entry, overrides).status.succeeded)
-        self.assertEqual(len(clicks), 1)
+
+        def click():
+            clicks.append(now)
+            self.controller.screen = "unknown"
+
+        def sleep(seconds):
+            nonlocal now
+            now += seconds
+
+        self.controller.on_click = click
+        overrides = {
+            "test_parent": {"next": [entry]},
+            entry: {"action": ARENA[entry]["action"]},
+        }
+        with patch.object(click_wait, "time", SimpleNamespace(monotonic=lambda: now, sleep=sleep)):
+            self.assertFalse(self.execute("test_parent", overrides).status.succeeded)
+        self.assertEqual(clicks[0], 0)
+        self.assertEqual(len(clicks), 10)
+        self.assertTrue(all(later - earlier >= 3 for earlier, later in zip(clicks, clicks[1:])))
+        self.assertLess(clicks[-1], 30)
+        self.assertEqual(now, 30)
         self.assertNotIn("确定竞技场影召1", self.executed)
 
     def test_result_pages_finish_at_arena(self):

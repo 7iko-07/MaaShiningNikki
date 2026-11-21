@@ -145,7 +145,7 @@ class BenefitsWaitReadyTests(unittest.TestCase):
             "点击感叹号所在位置", "点击活跃度感叹号所在位置", "退出签到",
         ])
         self.assertEqual(PIPELINE["签到页面就绪"]["recognition"]["param"], {
-            "roi": [0, 590, 550, 690], "expected": ["月卡", "特权卡"],
+            "roi": [0, 590, 550, 690], "expected": ["月卡", "特权卡", "^金币$", "^粉钻$"],
         })
         self.assertNotIn("on_error", PIPELINE["等待签到页面就绪"])
 

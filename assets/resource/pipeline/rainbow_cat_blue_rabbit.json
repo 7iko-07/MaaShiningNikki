@@ -1,0 +1,25 @@
+{
+    "虹猫蓝兔任务链入口": {
+        "action": "Custom",
+        "custom_action": "page_navigate",
+        "custom_action_param": {"target": "主页面"},
+        "next": ["打开虹猫蓝兔"]
+    },
+    "打开虹猫蓝兔": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "roi": [3, 122, 112, 695],
+                "expected": ["虹猫蓝兔"]
+            },
+            {
+                "recognition": "TemplateMatch",
+                "roi": [3, 122, 112, 695],
+                "template": "rainbow_cat_blue_rabbit/home_icon.png",
+                "threshold": 0.85
+            }
+        ],
+        "action": "Click"
+    }
+}

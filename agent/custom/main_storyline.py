@@ -8,7 +8,7 @@ from maa.custom_action import CustomAction
 from maa.context import Context
 from maa.pipeline import JActionType, JOCR, JRecognitionType, JSwipe
 
-from utils import extract_ocr_text, logger, read_number_from_controller
+from utils import extract_ocr_text, logger, read_fraction_from_controller, read_number_from_controller
 from utils.stage_number import read_stage_candidates
 
 
@@ -57,6 +57,20 @@ class _MainStorylineBase:
         if len(values) != 4:
             return None
         return [int(value) for value in values]
+
+    def _stage_candidates(self, image, box):
+        x, y, w, h = box
+        candidates = read_stage_candidates(image[y:y + h, x:x + w])
+        for candidate in candidates:
+            candidate.box[0] += x
+            candidate.box[1] += y
+        return candidates
+
+    def _boxes_overlap(self, a, b):
+        return (
+            a[0] < b[0] + b[2] and b[0] < a[0] + a[2]
+            and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]
+        )
 
     def _click_box_and_wait_change(
         self,
@@ -581,14 +595,6 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
 
         return None
 
-    def _stage_candidates(self, image, box):
-        x, y, w, h = box
-        candidates = read_stage_candidates(image[y:y + h, x:x + w])
-        for candidate in candidates:
-            candidate.box[0] += x
-            candidate.box[1] += y
-        return candidates
-
     def _verify_stage_candidate(self, context, image, candidate, target, raw, threshold):
         reason = candidate.check_target(target)
         local = ""
@@ -604,12 +610,6 @@ class MainStorylineFindStageAction(_MainStorylineBase, CustomAction):
         if re.fullmatch(r"[0-9]+", text):
             return text == target.replace("-", "")
         return bool(re.fullmatch(r"[0-9]{1,2}-[0-9]{1,2}", text)) and text == target
-
-    def _boxes_overlap(self, a, b):
-        return (
-            a[0] < b[0] + b[2] and b[0] < a[0] + a[2]
-            and a[1] < b[1] + b[3] and b[1] < a[1] + a[3]
-        )
 
     def _read_stage_crop(self, context, image, box, threshold):
         x, y, w, h = box
@@ -753,17 +753,12 @@ class MainStorylineChallengeAction(_MainStorylineBase, CustomAction):
         challenged = 0
         try:
             for round_index in range(max_rounds):
-                stamina = read_number_from_controller(
-                    context,
-                    controller,
-                    stamina_roi,
-                    "_main_storyline_stamina_ocr",
-                    [r"\d+\s*/\s*\d+"],
-                    retry=retry,
-                    retry_delay=retry_delay,
-                    log_prefix="主线快捷挑战",
-                    retry_label="体力",
+                stamina = read_fraction_from_controller(
+                    context, controller, stamina_roi, retry, retry_delay,
                 )
+                if stamina is None:
+                    logger.error("主线：无法识别体力，停止挑战")
+                    return False
                 stamina_cost = read_number_from_controller(
                     context,
                     controller,
@@ -775,7 +770,7 @@ class MainStorylineChallengeAction(_MainStorylineBase, CustomAction):
                     log_prefix="主线快捷挑战",
                     retry_label="每次消耗体力",
                 )
-                if stamina is None or stamina_cost is None or stamina_cost <= 0:
+                if stamina_cost is None or stamina_cost <= 0:
                     logger.debug(
                         "主线快捷挑战：未识别到快捷挑战面板，当前关卡可能不支持快捷挑战"
                     )
@@ -803,19 +798,12 @@ class MainStorylineChallengeAction(_MainStorylineBase, CustomAction):
                 self._click_roi(controller, popup_close_roi)
                 time.sleep(popup_close_delay)
 
-                new_stamina = read_number_from_controller(
-                    context,
-                    controller,
-                    stamina_roi,
-                    "_main_storyline_stamina_after_ocr",
-                    [r"\d+\s*/\s*\d+"],
-                    retry=retry,
-                    retry_delay=retry_delay,
-                    log_prefix="主线快捷挑战",
-                    retry_label="挑战后体力",
+                new_stamina = read_fraction_from_controller(
+                    context, controller, stamina_roi, retry, retry_delay,
                 )
                 if new_stamina is None:
-                    return True
+                    logger.error("主线：无法识别挑战后体力，停止挑战")
+                    return False
 
                 consumed = before_stamina - new_stamina
                 if consumed <= 0:

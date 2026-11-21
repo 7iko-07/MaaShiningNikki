@@ -1,0 +1,194 @@
+{
+    "永昼启示录任务链入口": {
+        "action": "Custom",
+        "custom_action": "page_navigate",
+        "custom_action_param": {"target": "主页面"},
+        "next": ["打开永昼启示录", "查找永昼启示录入口"]
+    },
+    "查找永昼启示录入口": {
+        "action": "Swipe",
+        "begin": [54, 604],
+        "end": [58, 285],
+        "max_hit": 3,
+        "post_delay": 500,
+        "next": ["打开永昼启示录", "查找永昼启示录入口"]
+    },
+    "打开永昼启示录": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "roi": [3, 122, 112, 695],
+                "expected": ["永昼启示录"]
+            },
+            {
+                "recognition": "TemplateMatch",
+                "roi": [3, 122, 112, 695],
+                "template": "eternal_day_revelation/home_icon.png",
+                "threshold": 0.85
+            }
+        ],
+        "action": "Click",
+        "next": ["等待永昼启示录活动主页"]
+    },
+    "等待永昼启示录活动主页": {
+        "action": "Custom",
+        "custom_action": "click_and_wait_change",
+        "custom_action_param": {
+            "target": [332, 41, 21, 18],
+            "popup_node": "永昼启示录签到弹窗",
+            "ready_nodes": ["进入永昼启示录挑战关卡"]
+        },
+        "next": ["进入永昼启示录挑战关卡"],
+        "focus": {"Node.Action.Failed": "永昼启示录：活动主页未就绪"}
+    },
+    "永昼启示录签到弹窗": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "roi": [237, 204, 255, 92],
+                "expected": ["活动签到"]
+            },
+            {
+                "recognition": "TemplateMatch",
+                "roi": [237, 204, 255, 92],
+                "template": "eternal_day_revelation/sign_in_title.png",
+                "threshold": 0.85
+            }
+        ]
+    },
+    "进入永昼启示录挑战关卡": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "And",
+                "all_of": [
+                    {
+                        "recognition": "OCR",
+                        "roi": [70, 980, 148, 71],
+                        "expected": ["挑战关卡"]
+                    },
+                    {
+                        "recognition": "OCR",
+                        "roi": [205, 10, 305, 75],
+                        "expected": ["永[昼宣]启示录"]
+                    }
+                ]
+            },
+            {
+                "recognition": "TemplateMatch",
+                "roi": [70, 980, 148, 71],
+                "template": [
+                    "eternal_day_revelation/challenge_gold.png",
+                    "eternal_day_revelation/challenge_blue.png"
+                ],
+                "threshold": 0.85
+            }
+        ],
+        "action": "Click",
+        "next": ["永昼启示录挑战次数用尽", "永昼启示录批量挑战", "永昼启示录开始首通"],
+        "timeout": 15000
+    },
+    "永昼启示录挑战次数用尽": {
+        "recognition": "OCR",
+        "roi": [0, 1226, 297, 54],
+        "expected": ["0/5"],
+        "next": ["返回永昼启示录活动主页"],
+        "focus": {"Node.Action.Succeeded": "永昼启示录：今日挑战次数已用完"}
+    },
+    "永昼启示录开始首通": {
+        "recognition": "OCR",
+        "roi": [439, 1109, 281, 171],
+        "expected": ["开始挑战"],
+        "action": "Click",
+        "next": ["永昼启示录推荐搭配"],
+        "timeout": 30000,
+        "focus": {"Node.Action.Starting": "永昼启示录：开始首通"}
+    },
+    "永昼启示录推荐搭配": {
+        "recognition": "OCR",
+        "roi": [439, 1109, 281, 171],
+        "expected": ["推荐搭配"],
+        "action": "Custom",
+        "custom_action": "click_and_wait_change",
+        "custom_action_param": {
+            "compare_roi": [212, 258, 300, 754],
+            "max_retries": 1
+        },
+        "next": ["永昼启示录代理评选"]
+    },
+    "永昼启示录代理评选": {
+        "recognition": "OCR",
+        "roi": [0, 1034, 276, 246],
+        "expected": ["代理评选", "理评"],
+        "action": "Click",
+        "next": ["永昼启示录确认搭配"]
+    },
+    "永昼启示录确认搭配": {
+        "recognition": "OCR",
+        "roi": [0, 1034, 276, 246],
+        "expected": ["下一步"],
+        "action": "Click",
+        "next": ["永昼启示录确认影召"],
+        "timeout": 30000
+    },
+    "永昼启示录确认影召": {
+        "recognition": "OCR",
+        "roi": [0, 946, 720, 334],
+        "expected": ["确定"],
+        "action": "Click",
+        "next": ["永昼启示录跳过比拼"],
+        "timeout": 120000
+    },
+    "永昼启示录跳过比拼": {
+        "recognition": "OCR",
+        "roi": [0, 49, 309, 169],
+        "expected": ["跳过"],
+        "action": "Click",
+        "post_delay": 1000,
+        "next": ["永昼启示录关闭首通结算"]
+    },
+    "永昼启示录关闭首通结算": {
+        "action": "Custom",
+        "custom_action": "click_and_wait_change",
+        "custom_action_param": {
+            "target": [589, 39, 24, 15],
+            "ready_nodes": ["永昼启示录挑战次数用尽", "永昼启示录批量挑战"],
+            "click_interval": 2000,
+            "timeout": 8000
+        },
+        "next": ["永昼启示录挑战次数用尽", "永昼启示录批量挑战"]
+    },
+    "永昼启示录批量挑战": {
+        "recognition": "OCR",
+        "roi": [0, 1135, 444, 145],
+        "expected": ["挑战.次"],
+        "index": -1,
+        "action": "Click",
+        "post_delay": 1000,
+        "next": ["永昼启示录关闭批量结算"],
+        "focus": {"Node.Action.Starting": "永昼启示录：批量挑战剩余次数"}
+    },
+    "永昼启示录关闭批量结算": {
+        "action": "Custom",
+        "custom_action": "click_and_wait_change",
+        "custom_action_param": {
+            "target": [589, 39, 24, 15],
+            "ready_nodes": ["永昼启示录挑战次数用尽"],
+            "click_interval": 2000,
+            "timeout": 8000
+        },
+        "next": ["永昼启示录挑战次数用尽"]
+    },
+    "返回永昼启示录活动主页": {
+        "recognition": "Or",
+        "any_of": ["点击返回"],
+        "action": "Click",
+        "next": ["已返回永昼启示录活动主页"]
+    },
+    "已返回永昼启示录活动主页": {
+        "recognition": "Or",
+        "any_of": ["进入永昼启示录挑战关卡"]
+    }
+}

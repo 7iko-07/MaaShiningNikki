@@ -982,7 +982,7 @@
             "type": "TemplateMatch",
             "param": {
                 "roi": [800, 570, 480, 150],
-                "template": ["七日成衣分享.png"]
+                "template": ["七日成衣分享.png", "七日成衣分享_浅色.png"]
             }
         }
     },
@@ -1013,21 +1013,12 @@
             }
         }
     },
-    "七日分享QQ新用户": {
-        "recognition": {
-            "type": "OCR",
-            "param": {
-                "roi": [0, 450, 1280, 200],
-                "expected": ["^新用户$"]
-            }
-        }
-    },
     "七日分享QQ登录": {
         "recognition": {
             "type": "OCR",
             "param": {
                 "roi": [0, 450, 1280, 200],
-                "expected": ["^登录$"]
+                "expected": ["^新用户$", "^登录$", "^账号管理$", "^一键登录$"]
             }
         }
     },

@@ -30,9 +30,10 @@ DEFAULT_PAGES = {
     "任务": ["导航在任务页面"],
     "竞技场": ["导航在竞技场页面"],
     "搭配评选赛": ["导航在搭配评选赛页面"],
+    "美甲采购": ["导航在美甲采购页面"],
     "美甲我的店铺": ["导航在美甲我的店铺页面"],
     "美甲评价": ["导航在美甲评价页面"],
-    "此刻投稿": ["导航在美甲此刻投稿页面"],
+    "美甲投稿征集": ["导航在美甲此刻投稿页面"],
     "商城": ["导航在商城页面"],
     "心阶": ["导航在心阶页面"],
     "心之门": ["导航在心之门页面"],
@@ -76,16 +77,20 @@ DEFAULT_ROUTES = [
         "to": "搭配评选赛",
         "tasks": ["导航点击搭配评选赛"],
     },
+    {"from": "美甲", "to": "美甲采购", "tasks": ["导航点击前往美甲采购"]},
+    {"from": "美甲采购", "to": "美甲", "tasks": ["导航点击返回"]},
     {"from": "美甲", "to": "美甲我的店铺", "tasks": ["导航点击我的店铺"]},
     {"from": "美甲我的店铺", "to": "美甲", "tasks": ["导航点击返回"]},
     {"from": "美甲", "to": "美甲评价", "tasks": ["导航点击此刻投稿", "导航点击浏览点赞"]},
-    {"from": "美甲", "to": "此刻投稿", "tasks": ["导航点击此刻投稿"]},
+    {"from": "美甲", "to": "美甲投稿征集", "tasks": ["导航点击此刻投稿"]},
+    {"from": "美甲投稿征集", "to": "美甲", "tasks": ["导航点击返回"]},
     {"from": "美甲", "to": "设计中心", "tasks": ["导航点击返回"]},
     {"from": "制衣", "to": "设计中心", "tasks": ["导航点击返回"]},
     {"from": "情报屋", "to": "设计中心", "tasks": ["导航点击返回"]},
 ]
 
 DEFAULT_ALIASES = {
+    "此刻投稿": "美甲投稿征集",
     "首页": "主页面",
     "主页": "主页面",
     "主界面": "主页面",
@@ -140,6 +145,14 @@ class PageNavigateAction(CustomAction):
 
     def _navigate(self, context, argv):
         params = json.loads(argv.custom_action_param) if argv.custom_action_param else {}
+        if params.get("ignore_background_download"):
+            context = context.clone()
+            if not context.override_pipeline({
+                "在加载页面": {
+                    "recognition": {"type": "Or", "param": {"any_of": ["在阻塞加载页面"]}},
+                },
+            }):
+                return False
         target_page = self._normalize_page(
             self._get_first_param(params, "target", "target_page", "目标页面"),
             params,
@@ -848,7 +861,10 @@ class NavigationClickAction(CustomAction):
                                 logger.debug(f"navigation_click: invalid button box node={argv.node_name}")
                                 logger.error("页面切换：无法定位目标按钮")
                                 return False
-                            target = [box.x, box.y, box.w, box.h]
+                            if params.get("click_center"):
+                                target = (box.x + box.w // 2, box.y + box.h // 2)
+                            else:
+                                target = [box.x, box.y, box.w, box.h]
                         action = context.run_action_direct("Click", JClick(target=target))
                         clicks += 1
                         next_click = checked_at + 1 if wait_landscape else time.monotonic() + 1.5

@@ -168,6 +168,53 @@ class FindTests(unittest.TestCase):
         self.context.run_action.assert_called_once()
 
 
+class InvestigationReturnTests(unittest.TestCase):
+    def setUp(self):
+        self.action = house.InformationHouseAutoInvestigateAction()
+        self.context = Mock()
+        self.context.tasker.stopping = False
+        self.controller = self.context.tasker.controller
+        self.controller.post_screencap.return_value.wait.return_value.succeeded = True
+        self.controller.post_click.return_value.wait.return_value.succeeded = True
+        self.miss = SimpleNamespace(hit=False)
+        self.hit = SimpleNamespace(hit=True, box=Rect(24, 70, 36, 37))
+        self.now = 0
+        for item in (patch.object(house.time, "monotonic", side_effect=lambda: self.now),
+                     patch.object(house.time, "sleep", side_effect=self.advance)):
+            item.start()
+            self.addCleanup(item.stop)
+
+    def advance(self, seconds):
+        self.now += seconds
+
+    def test_waits_for_travel_then_returns_and_confirms_investigation(self):
+        self.context.run_recognition_direct.side_effect = [self.miss, self.hit, self.miss]
+        self.context.run_recognition.side_effect = [self.miss, self.hit, self.hit]
+        self.assertTrue(self.action._return_to_investigation(self.context, self.controller))
+        self.controller.post_click.assert_called_once_with(42, 88)
+        self.assertEqual([call.args[0] for call in self.context.run_recognition.call_args_list],
+                         ["点击调查中", "导航点击返回", "点击调查中"])
+        params = self.context.run_recognition.call_args.kwargs["pipeline_override"]
+        self.assertEqual(params["点击调查中"]["recognition"]["param"]["expected"], ["调查中"])
+
+    def test_retry_clicks_only_while_travel_is_recognized(self):
+        self.context.run_recognition_direct.side_effect = lambda *_: self.hit if self.now < 2 else self.miss
+        self.context.run_recognition.side_effect = lambda node, *_args, **_kwargs: (
+            self.hit if node == "导航点击返回" or self.now >= 3 else self.miss
+        )
+        clicks = []
+        click = self.controller.post_click
+        click.side_effect = lambda *_: clicks.append(self.now) or click.return_value
+        self.assertTrue(self.action._return_to_investigation(self.context, self.controller))
+        self.assertEqual(clicks, [0, 1.5])
+
+    def test_unknown_page_times_out_without_clicking(self):
+        self.context.run_recognition_direct.return_value = self.miss
+        self.context.run_recognition.return_value = self.miss
+        self.assertFalse(self.action._return_to_investigation(self.context, self.controller))
+        self.controller.post_click.assert_not_called()
+
+
 class OptionTests(unittest.TestCase):
     def test_all_17_choices_are_distinct_full_title_matches(self):
         names = {

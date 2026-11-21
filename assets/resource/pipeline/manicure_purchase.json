@@ -1,0 +1,129 @@
+{
+    "美甲采购美甲券": {
+        "action": {"type": "Custom", "param": {"custom_action": "manicure_purchase"}},
+        "next": ["点击我的店铺"]
+    },
+    "美甲采购前往采购页": {
+        "action": {"type": "Custom", "param": {
+            "custom_action": "page_navigate",
+            "custom_action_param": {"target": "美甲采购"}
+        }},
+        "next": ["美甲采购设计专区就绪", "美甲采购点击设计专区"],
+        "timeout": 15000
+    },
+    "美甲采购点击设计专区": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [18, 150, 182, 58], "expected": ["设计专区"]}
+        },
+        "action": "Click",
+        "next": ["美甲采购设计专区就绪"],
+        "timeout": 15000
+    },
+    "美甲采购设计专区就绪": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    {"recognition": {"type": "OCR", "param": {
+                        "roi": [245, 246, 273, 50], "expected": ["特别专供包裹"]
+                    }}},
+                    {"recognition": {"type": "ColorMatch", "param": {
+                        "roi": [33, 211, 136, 6],
+                        "lower": [245, 133, 166],
+                        "upper": [255, 154, 191],
+                        "count": 250
+                    }}}
+                ]
+            }
+        },
+        "post_delay": 0
+    },
+    "美甲采购免费领取": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [545, 284, 27, 42],
+                "lower": [213, 153, 104],
+                "upper": [241, 192, 149],
+                "count": 480
+            }
+        },
+        "action": "Click",
+        "next": ["美甲采购恭喜获得"],
+        "timeout": 15000
+    },
+    "美甲采购免费冷却": {
+        "recognition": {
+            "type": "ColorMatch",
+            "param": {
+                "roi": [545, 284, 27, 42],
+                "lower": [176, 151, 137],
+                "upper": [207, 188, 176],
+                "count": 480
+            }
+        }
+    },
+    "美甲采购本周限购": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [248, 520, 205, 76], "expected": ["本周限购"]}
+        }
+    },
+    "美甲采购时尚礼券兑换": {
+        "recognition": {
+            "type": "And",
+            "param": {
+                "all_of": [
+                    "美甲采购本周限购",
+                    {"recognition": {"type": "OCR", "param": {
+                        "roi": "美甲采购本周限购",
+                        "roi_offset": [251, -20, 76, 38],
+                        "expected": ["^6$"]
+                    }}}
+                ]
+            }
+        },
+        "action": {"type": "Click", "param": {"target_offset": [285, 0, 0, 0]}},
+        "next": ["美甲采购增加兑换数量"],
+        "timeout": 10000
+    },
+    "美甲采购增加兑换数量": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [130, 718, 185, 64], "expected": ["本周剩余"]}
+        },
+        "action": {"type": "Click", "param": {"target": [528, 749]}},
+        "repeat": 6,
+        "repeat_delay": 250,
+        "next": ["美甲采购确认兑换"],
+        "timeout": 10000
+    },
+    "美甲采购确认兑换": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [297, 796, 126, 68], "expected": ["^兑换$"]}
+        },
+        "action": "Click",
+        "next": ["美甲采购恭喜获得"],
+        "timeout": 15000
+    },
+    "美甲采购恭喜获得": {
+        "recognition": {
+            "type": "OCR",
+            "param": {"roi": [185, 399, 355, 94], "expected": ["恭[喜響]获得"]}
+        },
+        "post_delay": 0
+    },
+    "美甲采购关闭弹窗": {
+        "action": {"type": "Click", "param": {"target": [150, 125]}},
+        "repeat_delay": 450,
+        "post_delay": 500
+    },
+    "美甲采购返回工作间": {
+        "action": {"type": "Custom", "param": {
+            "custom_action": "page_navigate",
+            "custom_action_param": {"target": "美甲"}
+        }}
+    }
+}

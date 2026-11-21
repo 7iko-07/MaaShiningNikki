@@ -1,0 +1,136 @@
+{
+    "美甲投稿与点赞分流": {
+        "action": {"type": "Custom", "param": {"custom_action": "manicure_submission_dispatch"}},
+        "timeout": 15000
+    },
+    "美甲投稿打开我的投稿": {
+        "enabled": false,
+        "recognition": {"type": "And", "param": {"all_of": ["美甲话题页面就绪"]}},
+        "action": "Click",
+        "next": ["美甲投稿已有作品", "美甲投稿开始编辑"],
+        "timeout": 15000
+    },
+    "美甲投稿已有作品": {
+        "recognition": {"type": "And", "param": {"all_of": ["美甲投稿上传成功"]}},
+        "focus": {"Node.Action.Starting": "美甲投稿：本期已有作品"},
+        "next": ["美甲投稿返回征集"],
+        "timeout": 10000
+    },
+    "美甲投稿开始编辑": {
+        "recognition": {
+            "type": "And",
+            "param": {"all_of": [
+                {"recognition": {"type": "OCR", "param": {"roi": [238, 925, 247, 89], "expected": ["^投稿$"]}}},
+                {"recognition": {"type": "TemplateMatch", "param": {
+                    "template": "manicure_submission/empty_work.png", "roi": [217, 431, 286, 288]
+                }}}
+            ]}
+        },
+        "action": "Click",
+        "next": ["美甲投稿打开套装列表"],
+        "timeout": 15000
+    },
+    "美甲投稿编辑页": {
+        "recognition": {"type": "OCR", "param": {"roi": [321, 34, 225, 49], "expected": ["本期投稿征集"]}}
+    },
+    "美甲投稿打开套装列表": {
+        "recognition": {
+            "type": "And",
+            "param": {"all_of": [
+                {"recognition": {"type": "OCR", "param": {"roi": [180, 990, 180, 56], "expected": ["^套装$"]}}},
+                "美甲投稿编辑页"
+            ]}
+        },
+        "action": "Click",
+        "post_wait_freezes": {"time": 800, "target": [0, 990, 720, 290], "timeout": 10000},
+        "next": ["美甲投稿首格为空", "美甲投稿选择首个套装"],
+        "timeout": 10000
+    },
+    "美甲投稿套装列表就绪": {
+        "recognition": {"type": "TemplateMatch", "param": {
+            "template": "manicure_submission/selected_tab.png", "roi": [175, 985, 191, 66], "threshold": 0.93
+        }}
+    },
+    "美甲投稿首格为空": {
+        "recognition": {
+            "type": "And",
+            "param": {"all_of": [
+                "美甲投稿套装列表就绪",
+                {"recognition": {"type": "ColorMatch", "param": {
+                    "roi": [30, 1098, 125, 122],
+                    "lower": [249, 242, 241], "upper": [255, 254, 253], "count": 14800
+                }}}
+            ]}
+        },
+        "focus": {"Node.Action.Starting": "美甲投稿：请先在游戏里设置一套美甲套装"},
+        "next": ["美甲投稿退出编辑"],
+        "timeout": 10000
+    },
+    "美甲投稿选择首个套装": {
+        "recognition": {"type": "And", "param": {"all_of": ["美甲投稿套装列表就绪"]}},
+        "action": {"type": "Click", "param": {"target": [30, 1098, 125, 122]}},
+        "next": ["美甲投稿完成设计"],
+        "timeout": 10000
+    },
+    "美甲投稿完成设计": {
+        "recognition": {"type": "OCR", "param": {"roi": [29, 895, 205, 68], "expected": ["^完成设计$"]}},
+        "action": "Click",
+        "next": ["美甲投稿拍照"],
+        "timeout": 30000
+    },
+    "美甲投稿拍照": {
+        "recognition": {"type": "TemplateMatch", "param": {
+            "template": "manicure_submission/shutter.png", "roi": [283, 1045, 155, 147]
+        }},
+        "action": {"type": "Click", "param": {"target": [344, 1108, 21, 14]}},
+        "next": ["美甲投稿保存并上传"],
+        "timeout": 15000
+    },
+    "美甲投稿保存并上传": {
+        "recognition": {"type": "OCR", "param": {"roi": [0, 1138, 253, 96], "expected": ["^保存并上传$"]}},
+        "action": "Click",
+        "next": ["美甲投稿确认上传"],
+        "timeout": 15000
+    },
+    "美甲投稿确认上传": {
+        "recognition": {"type": "OCR", "param": {"roi": [370, 879, 245, 85], "expected": ["^确认上传$"]}},
+        "action": "Click",
+        "next": ["美甲投稿确认"],
+        "timeout": 15000
+    },
+    "美甲投稿确认": {
+        "recognition": {"type": "OCR", "param": {"roi": [0, 404, 720, 472], "expected": ["^确认$"]}},
+        "action": "Click",
+        "next": ["美甲投稿上传成功"],
+        "timeout": 30000
+    },
+    "美甲投稿上传成功": {
+        "recognition": {"type": "TemplateMatch", "param": {
+            "template": "manicure_submission/comment.png", "roi": [31, 906, 73, 55]
+        }},
+        "action": {"type": "Custom", "param": {"custom_action": "manicure_submission_record"}},
+        "next": ["美甲投稿返回征集"],
+        "timeout": 10000
+    },
+    "美甲投稿退出编辑": {
+        "recognition": {"type": "And", "param": {"all_of": ["导航点击返回", "美甲投稿编辑页"]}},
+        "action": "Click",
+        "next": ["美甲投稿征集已返回", "美甲投稿返回征集"],
+        "timeout": 15000
+    },
+    "美甲投稿返回征集": {
+        "recognition": {
+            "type": "And",
+            "param": {"all_of": [
+                "导航点击返回",
+                {"recognition": {"type": "Or", "param": {"any_of": ["美甲投稿上传成功", "美甲投稿开始编辑"]}}}
+            ]}
+        },
+        "action": "Click",
+        "next": ["美甲投稿征集已返回"],
+        "timeout": 15000
+    },
+    "美甲投稿征集已返回": {
+        "recognition": {"type": "And", "param": {"all_of": ["美甲话题页面就绪"]}}
+    }
+}

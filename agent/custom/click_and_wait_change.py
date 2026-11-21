@@ -38,8 +38,8 @@ class ClickAndWaitChangeAction(CustomAction):
             logger.error("无法定位点击目标")
             return False
 
-        if params.get("popup_node"):
-            return self._wait_popup(context, params, target)
+        if params.get("ready_nodes"):
+            return self._wait_ready(context, params, target)
 
         controller = context.tasker.controller
         before = self._screencap(controller)
@@ -100,12 +100,22 @@ class ClickAndWaitChangeAction(CustomAction):
 
         return not fail_on_timeout
 
-    def _wait_popup(self, context, params, target):
+    def _wait_ready(self, context, params, target):
         controller = context.tasker.controller
         probe = context.clone()
+        popup_node = params.get("popup_node")
+        click_interval = params.get("click_interval", 500) / 1000.0
+        click_x, click_y = self._target_center(target)
         deadline = time.monotonic() + params.get("timeout", 30000) / 1000.0
         next_click = 0.0
-        click_x, click_y = self._target_center(target)
+        if not popup_node:
+            if context.tasker.stopping:
+                return False
+            if not controller.post_click(click_x, click_y).wait().succeeded:
+                logger.error("页面切换：点击按钮失败")
+                return False
+            next_click = time.monotonic() + click_interval
+
         while time.monotonic() < deadline:
             if context.tasker.stopping:
                 return False
@@ -114,12 +124,15 @@ class ClickAndWaitChangeAction(CustomAction):
             if image is None:
                 logger.error("页面切换：获取画面失败")
                 return False
-            popup = probe.run_recognition(params["popup_node"], image)
-            if popup is None:
-                logger.error("页面切换：无法识别弹窗")
-                return False
+            popup_visible = False
+            if popup_node:
+                popup = probe.run_recognition(popup_node, image)
+                if popup is None:
+                    logger.error("页面切换：无法识别弹窗")
+                    return False
+                popup_visible = popup.hit
             ready = False
-            if not popup.hit:
+            if not popup_visible:
                 for node in params["ready_nodes"]:
                     # 就绪检测不受任务勾选影响，覆盖仅留在识别用的独立 Context。
                     result = probe.run_recognition(node, image, pipeline_override={node: {"enabled": True}})
@@ -135,13 +148,13 @@ class ClickAndWaitChangeAction(CustomAction):
                 break
             if ready:
                 return True
-            if popup.hit and time.monotonic() >= next_click:
+            if (not popup_node or popup_visible) and time.monotonic() >= next_click:
                 if not controller.post_click(click_x, click_y).wait().succeeded:
-                    logger.error("页面切换：点击空白失败")
+                    logger.error("页面切换：点击空白失败" if popup_node else "页面切换：点击按钮失败")
                     return False
-                next_click = time.monotonic() + 0.5
+                next_click = time.monotonic() + click_interval
             time.sleep(min(0.2, max(0, deadline - time.monotonic())))
-        logger.error("页面切换：等待无弹窗页面超时")
+        logger.error("页面切换：等待无弹窗页面超时" if popup_node else "页面切换：等待目标页面超时")
         return False
 
     def _before_click(self, context, argv):

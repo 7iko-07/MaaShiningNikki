@@ -126,7 +126,7 @@
     "启动闪暖":{
 		"post_delay": 10000,
 		"timeout": 2000,
-		"next": ["资源更新","点击开始", "[JumpBack]嗯等"]
+		"next": ["资源更新", "[JumpBack]关闭启动公告", "点击开始", "[JumpBack]嗯等"]
 	},
 	"资源更新":{
 		"recognition": {
@@ -141,7 +141,7 @@
 			"param": {}
 		},
 		"post_delay": 3000,
-		"next": ["点击开始","[JumpBack]在资源更新页面","[JumpBack]嗯等"],
+		"next": ["[JumpBack]关闭启动公告", "点击开始", "[JumpBack]在资源更新页面", "[JumpBack]嗯等"],
 		"timeout": 4000
 	},
 	"在资源更新页面":{
@@ -170,6 +170,20 @@
 		"post_delay": 5000,
 		"timeout": 2000
 	},
+    "关闭启动公告": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "expected": ["公告", "维护更新期间", "【新增内容】"],
+                "roi": [72, 300, 576, 520]
+            }
+        },
+        "action": {
+            "type": "Click",
+            "param": {"target": [362, 1099]}
+        },
+        "post_delay": 1000
+    },
 	"点击开始": {
 		"recognition": {
 			"type": "OCR",
