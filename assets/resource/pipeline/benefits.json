@@ -60,7 +60,7 @@
         },
         "rate_limit": 300,
         "timeout": 30000,
-        "next": ["点击感叹号所在位置", "点击活跃度感叹号所在位置", "退出签到"]
+        "next": ["点击感叹号所在位置", "退出签到"]
     },
     "签到页面就绪": {
         "recognition": {
@@ -91,19 +91,31 @@
 		"post_delay": 500,
 		"timeout": 2000
     },
-	"退出签到":{
-        "recognition": {
-            "type": "DirectHit",
-            "param": {}
-        },
+    "退出签到": {
         "action": {
-            "type": "Click",
+            "type": "Custom",
             "param": {
-                "target": [555, 177, 165, 95]
+                "custom_action": "click_and_wait_change",
+                "custom_action_param": {
+                    "target": [650, 85],
+                    "popup_node": "签到奖励弹窗",
+                    "ready_nodes": ["签到页面就绪"],
+                    "click_interval": 2000,
+                    "timeout": 5000
+                }
             }
-        },	
+        },
         "next": ["点击活跃度感叹号所在位置", "查找方舟补给", "[JumpBack]左划福利菜单"],
 		"timeout": 2000
+    },
+    "签到奖励弹窗": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [200, 400, 330, 95],
+                "expected": ["恭喜获得"]
+            }
+        }
     },
 	"点击活跃度感叹号所在位置": {
         "recognition": {

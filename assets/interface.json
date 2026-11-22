@@ -6,8 +6,8 @@
     "license": "MIT",
     "welcome": "# 公告\n\n**闪现吧暖暖不会修改任何游戏数据，仅通过视觉算法与模拟键鼠运行，理论上不会被封号。**\n\n**但本质仍属于第三方程序，有被检测到的风险，后果请自行承担**",
     "github": "https://github.com/7iko-07/MaaShiningNikki",
-    "version": "v0.0.18-nightly.20261121",
-    "title": "闪现吧暖暖v0.0.18#11.21 - 虹猫蓝兔#11.19",
+    "version": "v0.0.19-nightly.20261122",
+    "title": "闪现吧暖暖v0.0.19#11.22 - 虹猫蓝兔#11.19",
     "icon": "logo.ico",
     "mirrorchyan_rid": "MaaShiningNikki",
     "mirrorchyan_multiplatform": true,
@@ -232,7 +232,7 @@
             "label": "🐇 活动：虹猫蓝兔",
             "entry": "虹猫蓝兔任务链入口",
             "default_check": false,
-            "description": "打开虹猫蓝兔活动。要自动推进剧情，请先手动进入剧情页面，再使用「[size:14][color:red][b]添加任务 → 辅助工具 → 剧情自动点击[/b][/color][/size]」。"
+            "description": "自动进入寻心问剑并点击一键扫荡。要自动推进剧情，请先手动进入剧情页面，再使用「[size:14][color:red][b]添加任务 → 辅助工具 → 剧情自动点击[/b][/color][/size]」。"
         },
         {
             "name": "活动：永昼启示录",
@@ -446,16 +446,14 @@
         },
         "机密任务刷取上限": {
             "type": "input",
-            "label": "刷取上限（分钟）",
-            "description": "到达上限仍未刷到时，按「到时没刷到也继续」的设置处理。",
             "inputs": [
                 {
                     "name": "burst_minutes",
                     "label": "刷取上限（分钟）",
-                    "default": "60",
-                    "pipeline_type": "int",
-                    "verify": "^[1-9][0-9]*$",
-                    "pattern_msg": "请输入正整数分钟"
+                    "description": "留空或填 0 直接执行多次。",
+                    "default": "30",
+                    "verify": "^[0-9]*$",
+                    "pattern_msg": "请输入非负整数分钟"
                 }
             ],
             "pipeline_override": {
@@ -1307,7 +1305,7 @@
         "一键领取补足活跃": {
             "type": "switch",
             "label": "今日活跃不足时补做",
-            "description": "第五个活跃礼盒未点亮时，通过每日任务前往卷Ⅰ 1-1，补齐主线搭配的10次进度并返回领取。",
+            "description": "今日活跃度低于 120 时，通过每日任务前往卷Ⅰ 1-1，补齐主线搭配的 10 次进度并返回领取。",
             "default_case": "No",
             "cases": [
                 {
@@ -1851,7 +1849,7 @@
                                 "area_b": [
                                     [8, 1047, 227, 29],
                                     [248, 1042, 222, 38],
-                                    [492, 1043, 217, 42]
+                                    [488, 1043, 232, 36]
                                 ],
                                 "refresh": [153, 1114, 89, 27],
                                 "max_rounds": "{max_rounds}",
@@ -1869,7 +1867,7 @@
                             "custom_action_param": {
                                 "area_a": [171, 675, 316, 26],
                                 "area_b": [
-                                    [492, 1043, 217, 42]
+                                    [488, 1043, 232, 36]
                                 ],
                                 "refresh": [153, 1114, 89, 27],
                                 "max_rounds": "{max_rounds}",

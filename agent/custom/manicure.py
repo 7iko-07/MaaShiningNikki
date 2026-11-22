@@ -1,15 +1,18 @@
-"""美甲采购、投稿与话题任务分流。"""
+"""美甲采购、投稿、评价与话题任务分流。"""
 
 import json
 import sqlite3
 import time
 from datetime import timedelta
 
+import numpy as np
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.pipeline import JWaitFreezes
 from utils import logger
 from utils import arena_state as state
+
+from .click_and_wait_change import ClickAndWaitChangeAction
 
 
 FREE = "美甲采购免费领取"
@@ -18,6 +21,40 @@ READY = "美甲采购设计专区就绪"
 SUBMISSION = "美甲投稿"
 SUBMISSION_DISPATCH = "美甲投稿与点赞分流"
 OPEN_SUBMISSION = "美甲投稿打开我的投稿"
+
+
+@AgentServer.custom_action("manicure_review_click")
+class ManicureReviewClickAction(ClickAndWaitChangeAction):
+    def _additional_image_change(self, context, before, after):
+        previous = self._name_masks(context, before)
+        if previous is None:
+            return False
+        current = self._name_masks(context, after)
+        if current is None:
+            return False
+
+        for label, old, new in zip(("昵称", "下排文字"), previous, current):
+            if min(np.count_nonzero(old), np.count_nonzero(new)) < 12:
+                continue
+            difference = np.count_nonzero(old ^ new) / np.count_nonzero(old | new)
+            if difference >= 0.20:
+                logger.debug(f"美甲评价：{label}字形已变化，差异比例 {difference:.3f}")
+                return True
+        return False
+
+    @staticmethod
+    def _name_masks(context, image):
+        report = context.run_recognition("美甲评价举报按钮", image)
+        if not report or not report.hit or report.box is None:
+            return None
+
+        # 两行各自保留固定的右端；上排左边随着举报按钮位置变化。
+        nickname = image[30:65, 110:560].astype(np.int16)
+        lower = image[68:98, 250:591].astype(np.int16)
+        nickname_ink = np.max(np.abs(nickname - (102, 98, 169)), axis=2) <= 12
+        nickname_ink[:, :report.box.x + report.box.w + 4 - 110] = False
+        lower_ink = np.max(np.abs(lower - (146, 146, 162)), axis=2) <= 12
+        return nickname_ink, lower_ink
 
 
 def next_manicure_refresh(item, now):

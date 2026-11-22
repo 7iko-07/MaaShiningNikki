@@ -73,18 +73,15 @@ def extract_number_before_slash(text):
     return int(num_str) if num_str else None
 
 
-def read_ocr_text(context, image, node_name, roi, expected, log_prefix="ocr"):
+def read_ocr_text(context, image, node_name, roi, expected, log_prefix="ocr", *, model=None):
+    node = {"recognition": "OCR", "roi": roi, "expected": expected}
+    if model is not None:
+        node["model"] = model
     try:
         result = context.run_recognition(
             node_name,
             image,
-            pipeline_override={
-                node_name: {
-                    "recognition": "OCR",
-                    "roi": roi,
-                    "expected": expected,
-                }
-            },
+            pipeline_override={node_name: node},
         )
         return extract_ocr_text(result)
     except Exception as e:
@@ -92,8 +89,8 @@ def read_ocr_text(context, image, node_name, roi, expected, log_prefix="ocr"):
         return ""
 
 
-def read_ocr_number(context, image, node_name, roi, expected, log_prefix="ocr"):
-    text = read_ocr_text(context, image, node_name, roi, expected, log_prefix)
+def read_ocr_number(context, image, node_name, roi, expected, log_prefix="ocr", *, model=None):
+    text = read_ocr_text(context, image, node_name, roi, expected, log_prefix, model=model)
     return extract_number_before_slash(text) if text else None
 
 
@@ -203,13 +200,13 @@ def _fraction_value(result, label=""):
     return None
 
 
-def read_ocr_fraction(context, image, roi, label=""):
+def read_ocr_fraction(context, image, roi, label="", *, model=""):
     """Read the numerator, retrying the same region as a single line if needed."""
     from maa.pipeline import JOCR, JRecognitionType
 
     for only_rec in (False, True):
         result = context.run_recognition_direct(JRecognitionType.OCR, JOCR(
-            roi=tuple(roi), expected=[".*"], only_rec=only_rec,
+            roi=tuple(roi), expected=[".*"], only_rec=only_rec, model=model,
         ), image)
         value = _fraction_value(result, label)
         if value is not None:

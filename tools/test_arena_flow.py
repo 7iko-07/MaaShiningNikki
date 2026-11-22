@@ -17,7 +17,7 @@ from maa.define import MaaStatusEnum, Status, TaskDetail, LoggingLevelEnum
 from maa.resource import Resource
 from maa.tasker import Tasker
 
-from tools.test_arena_weekly import ROOT, arena, load_action
+from tools.test_arena_weekly import ROOT, arena, beijing, load_action, weekly
 from tools.validate_schema import load_jsonc
 
 navigation = load_action("page_navigation")
@@ -41,6 +41,7 @@ class ArenaActionTests(unittest.TestCase):
         self.controller.post_screencap.return_value.wait.return_value.succeeded = True
         self.controller.post_click.return_value.wait.return_value.succeeded = True
         self.context.run_recognition.return_value = SimpleNamespace(hit=False)
+        self.context.run_recognition_direct.return_value = SimpleNamespace(hit=False)
         self.context.run_task.return_value = task_detail(True)
         for patcher in (patch.object(arena, "in_settlement", return_value=False),
                         patch.object(arena.time, "sleep")):
@@ -95,6 +96,24 @@ class ArenaActionTests(unittest.TestCase):
                     self.assertEqual(self.run_action(), expected)
                 self.controller.post_click.assert_not_called()
                 self.context.run_task.assert_not_called()
+
+    def test_player_power_masks_the_detected_hint_without_changing_the_roi_or_frame(self):
+        frame = np.zeros((1280, 720, 3), dtype=np.uint8)
+        frame[676:699, 451:475] = 255
+        self.controller.cached_image = frame
+        self.context.run_recognition_direct.return_value = SimpleNamespace(
+            hit=True, box=(451, 676, 24, 23),
+        )
+        roi = self.params["area_a"]
+        with patch.object(arena, "read_ocr_number", return_value=1612853) as read:
+            value, original = self.action._read_player_power(self.context, self.controller, roi, 1, 0)
+        self.assertEqual(value, 1612853)
+        self.assertIs(original, frame)
+        self.assertEqual(read.call_args.args[3], roi)
+        self.assertEqual(read.call_args.kwargs["model"], "ppocr_v6")
+        self.assertFalse(read.call_args.args[1].any())
+        self.assertTrue(frame[676:699, 451:475].all())
+        self.assertTrue(self.context.run_recognition_direct.call_args.args[1].green_mask)
 
     def test_override_failure_is_not_success_on_any_normal_exit(self):
         self.context.override_next.return_value = False
@@ -885,6 +904,32 @@ class ArenaPipelineTests(unittest.TestCase):
         self.controller.screen = "unknown"
         self.assertFalse(self.execute("竞技场每周页面处理").status.succeeded)
         self.assertNotIn("竞技场搭配分流", self.executed)
+
+    def test_skip_outfit_closes_theme_popup_before_challenge(self):
+        popup = "竞技场本周搭配主题页面"
+        self.controller.screen = popup
+        clicks = []
+
+        def close_popup():
+            clicks.append(self.controller.screen)
+            self.controller.screen = "竞技场挑战返回页面"
+
+        self.controller.on_click = close_popup
+        self.assertTrue(self.resource.register_custom_action("arena_weekly", weekly.ArenaWeekly()))
+        overrides = {
+            "竞技场任务链入口": {"action": ARENA["竞技场任务链入口"]["action"]},
+            "竞技场搭配分流": {"action": ARENA["竞技场搭配分流"]["action"]},
+            "点击前往搭配": {"recognition": {"type": "Or", "param": {"any_of": [popup]}}},
+            popup: {"action": ARENA[popup]["action"]},
+            "竞技场挑战策略分流": {"next": []},
+        }
+        with patch.object(weekly.state, "take_account", return_value=None), patch.object(
+            weekly.state, "now_beijing", return_value=beijing("2026-11-23T10:00:00")
+        ):
+            self.assertTrue(self.execute("竞技场任务链入口", overrides).status.succeeded)
+        self.assertEqual(clicks, [popup])
+        self.assertIn("竞技场挑战策略分流", self.executed)
+        self.assertNotIn("点击前往搭配", self.executed)
 
     def test_navigation_hands_off_each_weekly_page_before_closing_it(self):
         self.assertTrue(self.resource.register_custom_action("page_navigate", navigation.PageNavigateAction()))

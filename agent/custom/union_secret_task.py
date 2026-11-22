@@ -339,14 +339,18 @@ BURST_PARTS = {
     "鞋袜": "鞋袜",
 }
 BURST_PART_PATTERN = "^[一-龥]{1,6}评分$"
+OUTFIT_CONFIRM_NODE = "点击竞技场-确定影召"
+BATTLE_READY_NODE = "等待机密任务比拼中"
+RETURN_TO_ALLIANCE_NODE = "返回联盟页面"
 BURST_START_OVERRIDE = {
     "联盟机密任务入口分流": {"next": ["点击开始执行"]},
-    "等待机密任务比拼中": {"next": []},
+    BATTLE_READY_NODE: {"next": []},
+    RETURN_TO_ALLIANCE_NODE: {"next": []},
     **{
         node: {"recognition": {"param": {"model": BURST_MODEL}}}
         for node in (
             "点击开始执行", "点击竞技场-推荐搭配", "点击竞技场-代理评选",
-            "点击竞技场-下一步", "点击竞技场-确定影召",
+            "点击竞技场-下一步", OUTFIT_CONFIRM_NODE,
         )
     },
 }
@@ -362,6 +366,12 @@ def secret_task_week_key(now):
     return monday.isoformat()
 
 
+def normalize_burst_minutes(value):
+    if isinstance(value, str) and (not value or re.fullmatch(r"[0-9]+", value)):
+        return int(value or "0")
+    return value
+
+
 def secret_task_settings(context, mode):
     settings = {"mode": mode}
     if mode == "burst":
@@ -369,7 +379,7 @@ def secret_task_settings(context, mode):
         settings.update(
             total=options["total"],
             required=sorted(part for part in BURST_PARTS if options.get(part)),
-            minutes=options["minutes"],
+            minutes=normalize_burst_minutes(options["minutes"]),
             continue_on_timeout=options.get("continue_on_timeout", False),
         )
     return json.dumps(settings, ensure_ascii=False, sort_keys=True)
@@ -447,6 +457,86 @@ class UnionSecretTaskWeeklyAction(CustomAction):
         return False
 
 
+@AgentServer.custom_action("union_secret_task_outfit_next")
+class UnionSecretTaskOutfitNextAction(CustomAction):
+    def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
+        try:
+            return self._advance(context, argv.node_name)
+        except ValueError as error:
+            if not context.tasker.stopping:
+                logger.error(f"联盟机密任务：{error}")
+            return False
+
+    def _advance(self, context, node):
+        controller = context.tasker.controller
+        deadline = time.monotonic() + 15
+        retry_at = 0.0
+        while not context.tasker.stopping and time.monotonic() < deadline:
+            if not controller.post_screencap().wait().succeeded:
+                raise ValueError("截图失败")
+            image = controller.cached_image
+            if image is None:
+                raise ValueError("截图失败")
+            confirm = self._recognize(context, OUTFIT_CONFIRM_NODE, image)
+            now = time.monotonic()
+            button = None
+            if (not confirm.hit and retry_at <= now < deadline
+                    and not self._recognize(context, "在加载页面", image).hit):
+                button = self._recognize(context, node, image)
+                if button.hit and retry_at:
+                    # 单行 OCR 只读取成功日志里「确定」文字所在的区域。
+                    single_line = {OUTFIT_CONFIRM_NODE: {"recognition": {"param": {
+                        "roi": [308, 1086, 104, 48], "only_rec": True,
+                    }}}}
+                    confirm = self._recognize(context.clone(), OUTFIT_CONFIRM_NODE, image, single_line)
+
+            if context.tasker.stopping or time.monotonic() >= deadline:
+                break
+            if confirm.hit:
+                return self._confirm(context, node, confirm.box)
+            if button is not None and button.hit:
+                x, y, w, h = self._button_box(button.box)
+                point = (x + w // 2, y + h // 2)
+                if not controller.post_click(*point).wait().succeeded:
+                    raise ValueError("点击下一步失败")
+                retry_at = time.monotonic() + 2.2
+                logger.debug(f"联盟机密任务：点击下一步，坐标 {point}")
+            time.sleep(min(0.2, max(0, deadline - time.monotonic())))
+
+        if context.tasker.stopping:
+            return False
+        logger.warning("联盟机密任务：等待影召确认超时，结束机密任务并尝试返回联盟")
+        return context.override_next(node, [RETURN_TO_ALLIANCE_NODE])
+
+    @staticmethod
+    def _recognize(context, node, image, override=None):
+        result = context.run_recognition(node, image, override)
+        if result is None:
+            logger.debug(f"联盟机密任务识别失败：{node}")
+            raise ValueError("无法识别搭配页面")
+        return result
+
+    @staticmethod
+    def _button_box(box):
+        if not box or box[2] <= 0 or box[3] <= 0:
+            raise ValueError("无法定位搭配按钮")
+        return box
+
+    def _confirm(self, context, node, box):
+        if context.tasker.stopping:
+            return False
+        target = list(self._button_box(box))
+        # 已经确认按钮位置，复用原点击动作，子任务只执行这一节点。
+        task = context.clone().run_task(OUTFIT_CONFIRM_NODE, {OUTFIT_CONFIRM_NODE: {
+            "recognition": "DirectHit",
+            "action": {"param": {"target": target}},
+            "pre_delay": 0,
+        }})
+        if not task or not task.status.succeeded:
+            raise ValueError("点击确定失败")
+        return context.override_next(node, [BATTLE_READY_NODE])
+
+
 @AgentServer.custom_action("union_secret_task_burst")
 class UnionSecretTaskBurstAction(CustomAction):
     def run(self, context: Context, argv: CustomAction.RunArg) -> bool:
@@ -461,9 +551,11 @@ class UnionSecretTaskBurstAction(CustomAction):
 
     def _run(self, context, argv):
         options = context.get_node_data(argv.node_name)["attach"]
-        minutes = options["minutes"]
-        if type(minutes) is not int or minutes < 1:
-            raise ValueError("刷取上限须为正整数分钟")
+        minutes = normalize_burst_minutes(options["minutes"])
+        if type(minutes) is not int or minutes < 0:
+            raise ValueError("刷取上限须为非负整数分钟")
+        if minutes == 0:
+            return context.override_next(argv.node_name, ["点击执行多次"])
         total = options["total"]
         if total not in (2, 3):
             raise ValueError("请选择双爆或三爆")
@@ -491,9 +583,17 @@ class UnionSecretTaskBurstAction(CustomAction):
             attempts += 1
             logger.info(f"联盟机密任务：第 {attempts} 场")
             task = context.clone().run_task("联盟机密任务入口分流", BURST_START_OVERRIDE)
-            if not task or not task.status.succeeded:
-                if context.tasker.stopping:
-                    return False
+            if context.tasker.stopping:
+                return False
+            if not task or not task.node_id_list:
+                raise ValueError("未能进入机密比拼，请检查游戏画面")
+            last_node = context.tasker.get_node_detail(task.node_id_list[-1])
+            if last_node and last_node.name == RETURN_TO_ALLIANCE_NODE:
+                if not task.status.succeeded or not last_node.completed:
+                    raise ValueError("未能返回联盟页面，请检查游戏画面")
+                return context.override_next(argv.node_name, ["点击联盟捐献"])
+            if (not task.status.succeeded or not last_node or not last_node.completed
+                    or last_node.name != BATTLE_READY_NODE):
                 raise ValueError("未能进入机密比拼，请检查游戏画面")
 
             outcome = self._watch(context, required, total, deadline)
@@ -501,10 +601,10 @@ class UnionSecretTaskBurstAction(CustomAction):
                 return False
             if outcome == "matched":
                 logger.info(f"联盟机密任务：第 {attempts} 场达标，等待结算")
-                return context.override_next(argv.node_name, ["等待机密任务比拼中"])
+                return context.override_next(argv.node_name, [BATTLE_READY_NODE])
             if outcome == "limit" and continue_on_timeout:
                 logger.info("联盟机密任务：已到刷取上限，打完本场后执行剩余次数")
-                return context.override_next(argv.node_name, ["等待机密任务比拼中"])
+                return context.override_next(argv.node_name, [BATTLE_READY_NODE])
 
             if not self._exit_battle(context, progress):
                 return False

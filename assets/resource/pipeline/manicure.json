@@ -534,8 +534,8 @@
 		"action": {
 			"type": "Custom",
 			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action": "manicure_review_click",
+				"custom_action_param": {"compare_roi": [606, 27, 72, 61]}
 			}
 		},
 		"pre_delay": 500,
@@ -553,8 +553,8 @@
 		"action": {
 			"type": "Custom",
 			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action": "manicure_review_click",
+				"custom_action_param": {"compare_roi": [606, 27, 72, 61]}
 			}
 		},
 		"pre_delay": 500,
@@ -572,8 +572,8 @@
 		"action": {
 			"type": "Custom",
 			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action": "manicure_review_click",
+				"custom_action_param": {"compare_roi": [606, 27, 72, 61]}
 			}
 		},
 		"pre_delay": 500,
@@ -591,8 +591,8 @@
 		"action": {
 			"type": "Custom",
 			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action": "manicure_review_click",
+				"custom_action_param": {"compare_roi": [606, 27, 72, 61]}
 			}
 		},
 		"pre_delay": 500,
@@ -610,13 +610,23 @@
 		"action": {
 			"type": "Custom",
 			"param": {
-				"custom_action": "click_and_wait_change",
-				"custom_action_param": {}
+				"custom_action": "manicure_review_click",
+				"custom_action_param": {"compare_roi": [606, 27, 72, 61]}
 			}
 		},
 		"pre_delay": 500,
 		"next": ["[JumpBack]在阻塞加载页面","点击返回点赞美甲页面", "[JumpBack]在接受投稿页面", "[JumpBack]导航在空白页面"],
 		"timeout": 2000
+    },
+    "美甲评价举报按钮": {
+        "recognition": {
+            "type": "TemplateMatch",
+            "param": {
+                "roi": [110, 25, 452, 44],
+                "template": ["manicure_submission/report_button.png"],
+                "threshold": 0.85
+            }
+        }
     },
     "点击返回点赞美甲页面": {
         "recognition": {

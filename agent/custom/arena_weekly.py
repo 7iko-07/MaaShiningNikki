@@ -65,7 +65,11 @@ class ArenaWeekly(CustomAction):
                 next_nodes = ["点击前往搭配", "我的搭配"]
             else:
                 logger.info("竞技场本次跳过搭配，继续挑战")
-                next_nodes = ["[JumpBack]点击OK-竞技场", "竞技场挑战策略分流"]
+                next_nodes = [
+                    "[JumpBack]点击OK-竞技场",
+                    "[JumpBack]竞技场本周搭配主题页面",
+                    "竞技场挑战策略分流",
+                ]
         elif operation == "complete":
             run = self._runs.get(device)
             if not run or run["task_id"] != argv.task_detail.task_id or not run["dressing"]:

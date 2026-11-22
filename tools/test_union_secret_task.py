@@ -311,7 +311,7 @@ class UnionSecretTaskTests(unittest.TestCase):
             (ROOT / "assets/resource/pipeline/union.json").read_text(encoding="utf-8")
         )
         self.assertEqual(
-            pipeline["点击竞技场-确定影召"]["next"], ["等待机密任务比拼中"]
+            pipeline["点击竞技场-下一步"]["next"], ["等待机密任务比拼中"]
         )
         wait = pipeline["等待机密任务比拼中"]
         self.assertEqual(wait["next"], ["等待竞技场比拼结束"])
@@ -476,11 +476,17 @@ class SecretTaskBurstTests(unittest.TestCase):
         context = MagicMock()
         context.get_node_data.return_value = {"attach": options}
         context.tasker.stopping = False
-        context.clone.return_value.run_task.return_value.status.succeeded = True
+        context.override_next.return_value = True
+        start_task = context.clone.return_value.run_task.return_value
+        start_task.status.succeeded = True
+        start_task.node_id_list = [123]
+        context.tasker.get_node_detail.return_value = SimpleNamespace(
+            name="等待机密任务比拼中", completed=True,
+        )
         return action, context, SimpleNamespace(node_name="机密任务刷爆发")
 
     def test_user_limit_exits_once_and_does_not_enter_settlement(self):
-        action, context, argv = self.make_runner(total=2, minutes=37)
+        action, context, argv = self.make_runner(total=2, minutes="37")
         with patch.object(action, "_wait_progress", return_value=(5, 5)), \
              patch.object(action, "_watch", return_value="limit") as watch, \
              patch.object(action, "_exit_battle", return_value=True) as exit_battle, \
@@ -490,6 +496,16 @@ class SecretTaskBurstTests(unittest.TestCase):
         exit_battle.assert_called_once_with(context, (5, 5))
         context.clone.return_value.run_task.assert_called_once()
         context.override_next.assert_called_once_with(argv.node_name, [])
+
+    def test_empty_or_zero_limit_executes_remaining_without_farming(self):
+        for minutes in ("", "0", 0):
+            with self.subTest(minutes=minutes):
+                action, context, argv = self.make_runner(total=2, minutes=minutes)
+                with patch.object(action, "_wait_progress") as wait_progress:
+                    self.assertTrue(action.run(context, argv))
+                wait_progress.assert_not_called()
+                context.clone.assert_not_called()
+                context.override_next.assert_called_once_with(argv.node_name, ["点击执行多次"])
 
     def test_timeout_continue_hands_current_battle_to_settlement(self):
         action, context, argv = self.make_runner(total=3, minutes=1, continue_on_timeout=True)
@@ -520,6 +536,24 @@ class SecretTaskBurstTests(unittest.TestCase):
             self.assertFalse(action.run(context, argv))
         exit_battle.assert_not_called()
         context.override_next.assert_not_called()
+
+    def test_outfit_timeout_resumes_donation_only_after_return(self):
+        for recovered in (True, False):
+            with self.subTest(recovered=recovered):
+                action, context, argv = self.make_runner(total=2, minutes=1, continue_on_timeout=True)
+                context.clone.return_value.run_task.return_value.status.succeeded = recovered
+                context.tasker.get_node_detail.return_value = SimpleNamespace(
+                    name="返回联盟页面", completed=recovered,
+                )
+                with patch.object(action, "_wait_progress", return_value=(5, 5)), \
+                     patch.object(action, "_watch") as watch:
+                    self.assertEqual(action.run(context, argv), recovered)
+                watch.assert_not_called()
+                context.clone.return_value.run_task.assert_called_once()
+                if recovered:
+                    context.override_next.assert_called_once_with(argv.node_name, ["点击联盟捐献"])
+                else:
+                    context.override_next.assert_not_called()
 
     def test_unavailable_part_exits_without_starting_another_battle(self):
         action, context, argv = self.make_runner(total=3, minutes=60, 发型=True)
@@ -581,6 +615,79 @@ class SecretTaskBurstTests(unittest.TestCase):
         self.assertEqual([call.args[1].target for call in calls],
                          [(47, 124), (47, 124), (488, 703)])
         self.assertTrue(all(len(call.args) == 2 for call in calls))
+
+
+class SecretTaskOutfitNextTests(unittest.TestCase):
+    def setUp(self):
+        self.action = union_secret_task.UnionSecretTaskOutfitNextAction()
+        self.context = MagicMock()
+        self.context.tasker.stopping = False
+        self.controller = self.context.tasker.controller
+        self.controller.post_screencap.return_value.wait.return_value.succeeded = True
+        self.context.clone.return_value.run_task.return_value.status.succeeded = True
+        self.context.run_recognition.side_effect = self.recognize
+        self.context.clone.return_value.run_recognition.side_effect = self.recognize
+        self.controller.post_click.side_effect = self.click_next
+        self.node = "点击竞技场-下一步"
+        self.now = 0.0
+        self.next_clicks = []
+        self.confirm_at = float("inf")
+        self.single_line_at = float("inf")
+        self.loading_at = float("inf")
+
+    def recognize(self, node, image, override):
+        if node == union_secret_task.OUTFIT_CONFIRM_NODE:
+            if override:
+                self.assertTrue(override[node]["recognition"]["param"]["only_rec"])
+            at = self.single_line_at if override else self.confirm_at
+            return SimpleNamespace(hit=self.now >= at, box=(323, 1091, 73, 39))
+        if node == self.node:
+            return SimpleNamespace(hit=True, box=(62, 1180, 158, 45))
+        self.assertEqual(node, "在加载页面")
+        return SimpleNamespace(hit=self.now >= self.loading_at)
+
+    def click_next(self, x, y):
+        self.assertEqual((x, y), (141, 1202))
+        self.next_clicks.append(self.now)
+        return self.controller.post_screencap.return_value
+
+    def run_action(self):
+        with patch.object(union_secret_task.time, "monotonic", side_effect=lambda: self.now), \
+             patch.object(union_secret_task.time, "sleep", side_effect=self.sleep):
+            return self.action.run(self.context, SimpleNamespace(node_name=self.node))
+
+    def sleep(self, seconds):
+        self.now += seconds
+
+    def test_confirm_takes_priority_without_waiting_for_retry(self):
+        self.confirm_at = 0.6
+        self.assertTrue(self.run_action())
+        self.assertEqual(self.next_clicks, [0])
+        self.assertLess(self.now, 2.2)
+        self.context.override_next.assert_called_once_with(self.node, ["等待机密任务比拼中"])
+
+    def test_single_line_confirm_prevents_retry_even_when_next_is_visible(self):
+        self.single_line_at = 2
+        self.assertTrue(self.run_action())
+        self.assertEqual(self.next_clicks, [0])
+        self.assertGreaterEqual(self.now, 2.2)
+        confirm, override = self.context.clone.return_value.run_task.call_args.args
+        self.assertEqual(confirm, "点击竞技场-确定影召")
+        self.assertEqual(override[confirm]["action"]["param"]["target"], [323, 1091, 73, 39])
+
+    def test_missed_click_retries_after_grace_period(self):
+        self.confirm_at = 2.6
+        self.assertTrue(self.run_action())
+        self.assertEqual(len(self.next_clicks), 2)
+        self.assertGreaterEqual(self.next_clicks[1] - self.next_clicks[0], 2.2)
+
+    def test_loading_pauses_clicks_and_timeout_routes_to_alliance(self):
+        self.loading_at = 0.2
+        self.assertTrue(self.run_action())
+        self.assertEqual(self.next_clicks, [0])
+        self.assertEqual(self.now, 15)
+        self.context.clone.return_value.run_task.assert_not_called()
+        self.context.override_next.assert_called_once_with(self.node, ["返回联盟页面"])
 
 
 class SecretTaskWeeklyTests(unittest.TestCase):
@@ -703,6 +810,12 @@ class SecretTaskWeeklyTests(unittest.TestCase):
                          {"operation": "complete"})
         self.assertIn("点击执行多次", pipeline["机密任务比拼完成记录"]["next"])
         self.assertEqual(union_secret_task.BURST_START_OVERRIDE["等待机密任务比拼中"]["next"], [])
+
+    def test_outfit_return_stops_inside_burst_but_normally_continues_to_donation(self):
+        pipeline = json.loads((ROOT / "assets/resource/pipeline/union.json").read_text(encoding="utf-8"))
+        self.assertEqual(pipeline["返回联盟页面"]["next"], ["点击联盟捐献"])
+        self.assertEqual(union_secret_task.BURST_START_OVERRIDE["返回联盟页面"]["next"], [])
+        self.assertNotIn("next", pipeline["点击竞技场-确定影召"])
 
 
 if __name__ == "__main__":

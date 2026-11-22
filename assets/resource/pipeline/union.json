@@ -138,7 +138,7 @@
                 "custom_action": "union_secret_task_burst"
             }
         },
-        "attach": {"total": 2, "minutes": 60},
+        "attach": {"total": 2, "minutes": 30},
         "next": ["等待机密任务比拼中"]
     },
     "点击开始执行": {
@@ -225,23 +225,15 @@
         },
         "action": {
             "type": "Custom",
-            "param": {
-                "custom_action": "click_and_wait_change",
-                "custom_action_param": {
-                    "compare_roi": [20, 250, 680, 920],
-                    "pixel_threshold": 30,
-                    "change_threshold": 0.35
-                }
-            }
+            "param": {"custom_action": "union_secret_task_outfit_next"}
         },
-        "next": ["[JumpBack]在加载页面", "点击竞技场-确定影召"],
-        "timeout": 5000
+        "next": ["等待机密任务比拼中"]
     },
     "点击竞技场-确定影召": {
         "recognition": {
             "type": "OCR",
             "param": {
-                "expected": ["确定"],
+                "expected": ["^确定$"],
                 "roi": [223, 1083, 277, 102]
             }
         },
@@ -255,9 +247,7 @@
                     "change_threshold": 0.35
                 }
             }
-        },
-        "next": ["等待机密任务比拼中"],
-        "timeout": 5000
+        }
     },
     "等待机密任务比拼中": {
         "recognition": "DirectHit",
@@ -530,7 +520,7 @@
                 }
             }
         },
-        "next": ["点击联盟捐献", "[JumpBack]返回联盟页面"],
+        "next": ["点击联盟捐献", "返回联盟页面"],
         "timeout": 5000
     },
     "点击联盟捐献": {
@@ -676,24 +666,26 @@
     },
     "联盟福利奖励弹窗": {
         "recognition": {
-            "type": "Or",
+            "type": "And",
             "param": {
-                "any_of": [
+                "all_of": [
+                    "点击领取联盟福利",
                     {
                         "recognition": {
-                            "type": "OCR",
+                            "type": "Or",
                             "param": {
-                                "roi": [180, 300, 380, 100],
-                                "expected": ["恭喜获得"]
-                            }
-                        }
-                    },
-                    {
-                        "recognition": {
-                            "type": "OCR",
-                            "param": {
-                                "roi": [50, 530, 620, 280],
-                                "expected": ["金币", "粉?钻", "体力"]
+                                "any_of": [
+                                    {
+                                        "recognition": "OCR",
+                                        "roi": [180, 300, 380, 100],
+                                        "expected": ["恭喜获得"]
+                                    },
+                                    {
+                                        "recognition": "OCR",
+                                        "roi": [50, 530, 620, 280],
+                                        "expected": ["金币", "粉?钻", "体力"]
+                                    }
+                                ]
                             }
                         }
                     }
@@ -705,7 +697,6 @@
             "param": {
                 "custom_action": "click_and_wait_change",
                 "custom_action_param": {
-                    "target": [245, 940, 235, 85],
                     "compare_roi": [80, 350, 560, 450],
                     "pixel_threshold": 30,
                     "change_threshold": 0.12
@@ -758,10 +749,13 @@
             "param": {
                 "custom_action": "page_navigate",
                 "custom_action_param": {
-                    "target": "联盟"
+                    "target": "联盟",
+                    "fallback_steps": ["导航点击返回"],
+                    "max_steps": 4
                 }
             }
         },
-        "timeout": 30000
+        "next": ["点击联盟捐献"],
+        "timeout": 5000
     }
 }

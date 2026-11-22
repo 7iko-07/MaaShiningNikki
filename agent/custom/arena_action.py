@@ -4,6 +4,7 @@ from enum import Enum, auto
 from maa.agent.agent_server import AgentServer
 from maa.custom_action import CustomAction
 from maa.context import Context
+from maa.pipeline import JRecognitionType, JTemplateMatch
 from utils import logger, read_ocr_number
 from utils.arena_state import in_settlement
 
@@ -414,7 +415,7 @@ class ArenaCompareAction(CustomAction):
             if context.tasker.stopping:
                 return None
             power = read_ocr_number(context, image, "_arena_ocr", roi,
-                                    [r"\d[\d,]*"], "arena_compare")
+                                    [r"\d[\d,]*"], "arena_compare", model="ppocr_v6")
             if power is not None:
                 return power
             if attempt < 2:
@@ -446,11 +447,12 @@ class ArenaCompareAction(CustomAction):
 
             player_power = read_ocr_number(
                 context,
-                last_img,
+                self._mask_player_power_hint(context, last_img, area_a),
                 "_arena_ocr",
                 area_a,
                 [r"\d[\d,]*"],
                 "arena_compare",
+                model="ppocr_v6",
             )
             if player_power is not None:
                 return player_power, last_img
@@ -463,6 +465,24 @@ class ArenaCompareAction(CustomAction):
                 time.sleep(retry_delay)
 
         return None, last_img
+
+    @staticmethod
+    def _mask_player_power_hint(context, image, roi):
+        if image is None:
+            return image
+        hint = context.run_recognition_direct(
+            JRecognitionType.TemplateMatch,
+            JTemplateMatch(roi=tuple(roi), template=["竞技场战力提示.png"],
+                           green_mask=True, method=10001, threshold=[0.9]),
+            image,
+        )
+        if not hint or not hint.hit or not hint.box:
+            return image
+        x, y, w, h = hint.box
+        masked = image.copy()
+        background_x = min(x + w, image.shape[1] - 1)
+        masked[y:y + h, x:x + w] = image[y:y + h, background_x:background_x + 1]
+        return masked
 
     def _handle_optional_ok_popup(self, context, controller, ok_node, delay):
         if delay > 0:

@@ -142,8 +142,16 @@ class BenefitsWaitReadyTests(unittest.TestCase):
     def test_pipeline_gate_keeps_reward_branches_after_waiting(self):
         self.assertEqual(PIPELINE["点击每日签到"]["next"], ["等待签到页面就绪"])
         self.assertEqual(PIPELINE["等待签到页面就绪"]["next"], [
-            "点击感叹号所在位置", "点击活跃度感叹号所在位置", "退出签到",
+            "点击感叹号所在位置", "退出签到",
         ])
+        self.assertEqual(PIPELINE["点击感叹号所在位置"]["next"], ["退出签到"])
+        exit_node = PIPELINE["退出签到"]
+        self.assertEqual(exit_node["next"][0], "点击活跃度感叹号所在位置")
+        action = exit_node["action"]["param"]
+        self.assertEqual(action["custom_action"], "click_and_wait_change")
+        params = action["custom_action_param"]
+        self.assertEqual(params["popup_node"], "签到奖励弹窗")
+        self.assertEqual(params["ready_nodes"], ["签到页面就绪"])
         self.assertEqual(PIPELINE["签到页面就绪"]["recognition"]["param"], {
             "roi": [0, 590, 550, 690], "expected": ["月卡", "特权卡", "^金币$", "^粉钻$"],
         })

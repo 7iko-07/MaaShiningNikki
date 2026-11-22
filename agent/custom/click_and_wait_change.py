@@ -43,6 +43,7 @@ class ClickAndWaitChangeAction(CustomAction):
 
         controller = context.tasker.controller
         before = self._screencap(controller)
+        initial_image = before
         click_x, click_y = self._target_center(target)
 
         guarded = self._before_click(context, argv)
@@ -73,6 +74,8 @@ class ClickAndWaitChangeAction(CustomAction):
                 )
                 if changed:
                     logger.debug(f"click_and_wait_change 检测到画面变化，变化比例: {last_ratio:.6f}")
+                    return True
+                if self._additional_image_change(context, initial_image, after):
                     return True
 
                 if time.monotonic() >= deadline:
@@ -159,6 +162,9 @@ class ClickAndWaitChangeAction(CustomAction):
 
     def _before_click(self, context, argv):
         return None
+
+    def _additional_image_change(self, context, before, after):
+        return False
 
     def _get_target(self, params, argv):
         target = params.get("target")

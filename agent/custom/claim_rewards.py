@@ -8,30 +8,33 @@ from maa.custom_action import CustomAction
 from maa.context import Context
 from maa.pipeline import JActionType, JRecognitionType, JOCR, JSwipe
 from utils import logger
-from utils.ocr import iter_recognition_results
+from utils.ocr import iter_recognition_results, read_ocr_fraction
 
-from .stage_farming import CATALOG, FarmingCatalog, FarmingError, StageFarmingSession, normalized
+from .stage_farming import CATALOG, OCR, FarmingCatalog, FarmingError, StageFarmingSession, normalized
 
 
 class DailyMainStageSession(StageFarmingSession):
     KEY = ("main", 1, 1, "1-1", False)
     LIST = (20, 730, 680, 460)
     TOTAL = 10
+    ACTIVITY_TARGET = 120
 
     def daily_page(self, image):
         return self.box(image, (452, 508, 161, 35), "今日活跃") and self.box(
             image, (53, 635, 235, 58), "每日任务"
         )
 
-    @staticmethod
-    def fifth_gift(image):
-        pixels = image[542:564, 580:601].astype(np.int16)
-        b, g, r = pixels.transpose(2, 0, 1)
-        if ((r - g >= 35) & (r - b >= 22)).mean() >= 0.18:
-            return "pink"
-        if ((b <= 228) & (g <= 228) & (r <= 228) & (np.ptp(pixels, axis=2) <= 20)).mean() >= 0.18:
-            return "gray"
-        return None
+    def read_activity(self, image):
+        for attempt in range(2):
+            if attempt:
+                time.sleep(0.25)
+                image = self.frame()
+                if not self.daily_page(image):
+                    break
+            value = read_ocr_fraction(self.context, image, (449, 566, 166, 39), model=OCR)
+            if value is not None:
+                return value, image
+        return None, image
 
     def progress(self, image):
         result = self.ocr(image, (27, 730, 404, 451), [r"主\s*线\s*搭\s*配\s*关\s*卡\s*10"])
@@ -40,26 +43,31 @@ class DailyMainStageSession(StageFarmingSession):
         y = result.box[1]
         if y + 133 > 1190:
             return None
-        state_result = self.ocr(image, (446, y - 1, 201, 94), [r"^\s*(前\s*往|已\s*领取|领\s*取)\s*$"])
-        if not state_result or not state_result.hit or not state_result.best_result:
-            return None
-        item = state_result.best_result
-        state = re.sub(r"\s+", "", item.text)
+        button_roi = (446, y - 1, 201, 94)
+        button = self.template(image, button_roi, "stage_farming/daily_main_stage_go.png", 0.88)
+        state = "前往"
+        if button is None:
+            state_result = self.ocr(image, button_roi, [r"^\s*(已\s*领取|领\s*取)\s*$"])
+            if not state_result or not state_result.hit or not state_result.best_result:
+                return None
+            item = state_result.best_result
+            state = re.sub(r"\s+", "", item.text)
+            button = tuple(item.box)
         count_result = self.ocr(image, (521, y + 87, 153, 46), [r"\d+\s*/\s*10"])
         counts = set()
         for entry in iter_recognition_results(count_result):
             if match := re.search(r"(?<!\d)(10|[0-9])\s*/\s*10(?!\d)", normalized(entry.text)):
                 counts.add(int(match[1]))
         count = next(iter(counts)) if len(counts) == 1 else None
-        return state, count, tuple(item.box)
+        return state, count, button
 
     def find_progress(self, image):
-        for up in (True, False):
-            start, end = ((415, 1102), (415, 819)) if up else ((415, 819), (415, 1102))
+        upper, lower = (360, 733, 1, 1), (360, 1050, 1, 1)
+        for start, end in ((lower, upper), (upper, lower)):
             for _ in range(14):
                 if row := self.progress(image):
                     return row
-                self.swipe(start, end)
+                self._swipe(self.context, start, [end], end_hold=[500])
                 after = self.frame()
                 changed, _ = self._image_changed(image, after, self.LIST, 22, 0.02)
                 image = after
@@ -141,11 +149,11 @@ class DailyMainStageSession(StageFarmingSession):
         image = self.wait(self.daily_page)
         if image is None:
             raise FarmingError("未确认每日任务页面")
-        gift = self.fifth_gift(image)
-        if gift == "pink":
+        activity, image = self.read_activity(image)
+        if activity is None:
+            raise FarmingError("未识别到今日活跃度")
+        if activity >= self.ACTIVITY_TARGET:
             return True
-        if gift != "gray":
-            raise FarmingError("未确认第五个活跃礼盒状态")
         row = self.find_progress(image)
         if row is None:
             raise FarmingError("未找到主线搭配关卡日常任务")
@@ -208,25 +216,18 @@ class ClaimDailyMainStageAction(CustomAction):
             image = session.wait(session.daily_page)
             if image is None:
                 raise FarmingError("未确认每日任务页面")
+            activity, _ = session.read_activity(image)
         except RuntimeError as error:
             if not context.tasker.stopping:
                 logger.error(f"一键领取：{error}")
             return False
 
-        gift = session.fifth_gift(image)
-        if gift == "gray":
-            logger.info("今日活跃度不足")
-        elif gift == "pink":
-            logger.debug("第五个活跃礼盒已点亮")
-        else:
-            logger.warning("一键领取：未确认第五个活跃礼盒状态")
-
-        result = session.ocr(image, (449, 566, 166, 39), [r"^[0-9]+\s*/\s*[0-9]+$"])
-        if result and result.hit and result.best_result:
-            activity = re.sub(r"\s+", "", result.best_result.text)
-            logger.info(f"今日活跃度 {activity}")
-        else:
+        if activity is None:
             logger.warning("一键领取：未识别到今日活跃度")
+        elif activity < session.ACTIVITY_TARGET:
+            logger.info(f"今日活跃度 {activity}，未达 {session.ACTIVITY_TARGET}")
+        else:
+            logger.info(f"今日活跃度 {activity}")
         return True
 
 

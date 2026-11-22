@@ -520,7 +520,8 @@
         "recognition": {
             "type": "TemplateMatch",
             "param": {
-                "template": ["订单完成对号.png"]
+                "template": ["订单完成对号.png"],
+                "green_mask": true
             }
         }
     },

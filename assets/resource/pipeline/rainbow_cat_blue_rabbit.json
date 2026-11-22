@@ -20,6 +20,44 @@
                 "threshold": 0.85
             }
         ],
+        "action": "Click",
+        "next": ["进入寻心问剑"]
+    },
+    "进入寻心问剑": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "roi": [551, 817, 120, 77],
+                "expected": ["问剑"],
+                "model": "ppocr_v6"
+            },
+            {
+                "recognition": "TemplateMatch",
+                "roi": [520, 790, 180, 120],
+                "template": "rainbow_cat_blue_rabbit/sword_quest.png",
+                "threshold": 0.85
+            }
+        ],
+        "action": "Click",
+        "next": ["寻心问剑一键扫荡"]
+    },
+    "寻心问剑一键扫荡": {
+        "recognition": "Or",
+        "any_of": [
+            {
+                "recognition": "OCR",
+                "roi": [284, 943, 151, 47],
+                "expected": ["键扫荡"],
+                "model": "ppocr_v6"
+            },
+            {
+                "recognition": "TemplateMatch",
+                "roi": [247, 925, 246, 82],
+                "template": "rainbow_cat_blue_rabbit/quick_sweep.png",
+                "threshold": 0.85
+            }
+        ],
         "action": "Click"
     }
 }
