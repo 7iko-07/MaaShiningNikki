@@ -494,12 +494,12 @@
 			"type": "OCR",
 			"param": {
 				"roi": [273, 900, 175, 88],
-				"expected": ["确定"]
+				"expected": ["确定", "^心意币$"]
 			}
 		},
 		"action": {
-			"type": "Click",
-			"param": {}
+			"type": "Custom",
+			"param": {"custom_action": "manicure_cycle_reward_click"}
 		},
 		"post_delay": 2000,
 		"timeout": 2000

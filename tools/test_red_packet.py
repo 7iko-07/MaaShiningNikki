@@ -29,16 +29,17 @@ class RedPacketTest(unittest.TestCase):
         context.tasker.controller.cached_image = SimpleNamespace(size=100)
         return context
 
-    def run_popup(self, *, send_stuck=False, original_reward=False):
+    def run_popup(self, stages=None, *, send_stuck=False, original_reward=False):
         context = self.context()
-        stages = [
-            {module.ICON},
-            {module.HEADER, module.REWARD, module.THANK},
-            {module.HEADER, module.THANK},
-            {module.HEADER, module.DIALOG, module.SEND},
-            {module.HEADER, module.EXIT},
-            set(),
-        ]
+        if stages is None:
+            stages = [
+                {module.ICON},
+                {module.HEADER, module.REWARD, module.THANK},
+                {module.HEADER, module.THANK},
+                {module.HEADER, module.DIALOG, module.SEND},
+                {module.HEADER, module.EXIT},
+                set(),
+            ]
         if original_reward:
             stages[-1] = {module.REWARD}
         stage = 0
@@ -47,24 +48,27 @@ class RedPacketTest(unittest.TestCase):
         runner.frame = lambda: stage
 
         def recognize(name, image):
-            return SimpleNamespace(hit=name in stages[image], box=Rect(10, 20, 30, 40))
+            visible = stages[image]
+            title = module.PERSONAL_TITLE if module.PERSONAL_TITLE in visible else "来自好友的红包"
+            return SimpleNamespace(hit=name in visible, box=Rect(10, 20, 30, 40),
+                                   best_result=SimpleNamespace(text=title) if name == module.HEADER else None)
 
-        def click(action, params):
+        def click(x, y):
             nonlocal stage
             clicks.append(stage)
             if not (stage == 3 and send_stuck):
                 stage += 1
-            return SimpleNamespace(success=True)
+            return Mock(wait=Mock(return_value=SimpleNamespace(succeeded=True)))
 
         context.run_recognition.side_effect = recognize
-        context.run_action_direct.side_effect = click
+        context.tasker.controller.post_click.side_effect = click
         return runner, clicks
 
     def test_reward_then_default_thanks_sent_once_and_exit(self):
         runner, clicks = self.run_popup()
         self.assertTrue(runner.run())
         self.assertEqual(clicks, [0, 1, 2, 3, 4])
-        self.assertEqual(runner.context.run_action_direct.call_args.args[1].target, (10, 20, 30, 40))
+        self.assertEqual(runner.controller.post_click.call_args.args, (25, 40))
 
     def test_send_timeout_does_not_send_again(self):
         runner, clicks = self.run_popup(send_stuck=True)
@@ -81,18 +85,49 @@ class RedPacketTest(unittest.TestCase):
         self.assertTrue(runner.run())
         self.assertEqual(clicks, [0, 1, 2, 3, 4])
 
+    def test_personal_packet_confirms_once_or_twice_without_clicking_next_page(self):
+        personal = {module.HEADER, module.PERSONAL_TITLE, module.CONFIRM}
+        for count in (1, 2):
+            with self.subTest(count=count), patch.object(module.time, "sleep"):
+                runner, clicks = self.run_popup([{module.ICON}, *[personal] * count, {module.CONFIRM}])
+                self.assertTrue(runner.run())
+                self.assertEqual(clicks, list(range(count + 1)))
+
+    def test_personal_packet_keeps_waiting_when_header_is_visible_without_confirm(self):
+        runner, clicks = self.run_popup([{module.ICON}, {module.HEADER, module.PERSONAL_TITLE}])
+        runner.deadline = 10
+        with patch.object(module.time, "monotonic", side_effect=range(100)), patch.object(module.time, "sleep"):
+            with self.assertRaisesRegex(RuntimeError, "等待个人红包确定按钮超时"):
+                runner.run()
+        self.assertEqual(clicks, [0])
+
+    def test_stuck_personal_packet_stops_after_two_confirms(self):
+        personal = {module.HEADER, module.PERSONAL_TITLE, module.CONFIRM}
+        runner, clicks = self.run_popup([{module.ICON}, personal, personal, personal])
+        runner.deadline = 30
+        with patch.object(module.time, "monotonic", side_effect=range(100)), patch.object(module.time, "sleep"):
+            with self.assertRaisesRegex(RuntimeError, "等待个人红包关闭超时"):
+                runner.run()
+        self.assertEqual(clicks, [0, 1, 2])
+
     def test_manual_stop_does_not_click(self):
         context = self.context()
         context.tasker.stopping = True
         with self.assertRaises(InterruptedError):
             module.RedPacketRunner(context).run()
-        context.run_action_direct.assert_not_called()
+        context.tasker.controller.post_click.assert_not_called()
 
     def test_invalid_box_does_not_click(self):
         context = self.context()
         with self.assertRaisesRegex(RuntimeError, "点击位置"):
             module.RedPacketRunner(context).click(SimpleNamespace(box=Rect(10, 20, 0, 40)))
-        context.run_action_direct.assert_not_called()
+        context.tasker.controller.post_click.assert_not_called()
+
+    def test_click_failure_is_reported(self):
+        context = self.context()
+        context.tasker.controller.post_click.return_value.wait.return_value.succeeded = False
+        with self.assertRaisesRegex(RuntimeError, "点击失败"):
+            module.RedPacketRunner(context).click(SimpleNamespace(box=Rect(10, 20, 30, 40)))
 
     def test_sink_reentry_and_one_second_check_interval(self):
         sink = module.RedPacketSink()
@@ -138,7 +173,14 @@ def native_resume():
 
     Tasker.set_stdout_level(LoggingLevelEnum.Off)
     events = []
-    monitor = module.RedPacketSink()
+
+    class Monitor(module.RedPacketSink):
+        def on_raw_notification(self, context, msg, details):
+            if msg == "Node.Action.Starting" and not details.get("name"):
+                events.append("unnamed action")
+            super().on_raw_notification(context, msg, details)
+
+    monitor = Monitor()
 
     class Screen(ScreenController):
         phase = 5
@@ -178,7 +220,7 @@ def native_resume():
     nodes[module.ENTRY] = {"action": {"type": "Custom", "param": {"custom_action": "handle_red_packet"}},
                            "post_delay": 0}
     nodes.update({name: {"action": {"type": "Custom", "param": {"custom_action": "business"}}, "post_delay": 0}
-                  for name in ("Before", "After")})
+                  for name in ("Before", "After", "NextTask")})
     nodes["Before"]["next"] = ["After"]
     assert resource.override_pipeline(nodes)
     assert screen.post_connection().wait().succeeded
@@ -186,11 +228,12 @@ def native_resume():
     assert tasker.bind(resource, screen)
     assert tasker.add_context_sink(monitor) is not None
     assert tasker.post_task("Before").wait().succeeded
-    assert events == ["Before", "click0", "click1", "click2", "click3", "click4", "After"], events
+    assert tasker.post_task("NextTask").wait().succeeded
+    assert events == ["Before", "click0", "click1", "click2", "click3", "click4", "After", "NextTask"], events
 
 
 class NativeResumeTest(unittest.TestCase):
-    def test_native_sink_handles_popup_and_resumes_without_restarting(self):
+    def test_native_sink_handles_popup_without_unnamed_action_events(self):
         code = (
             "from maa.library import Library; Library.version(); "
             "from tools.test_red_packet import native_resume; native_resume()"

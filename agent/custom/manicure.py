@@ -11,6 +11,7 @@ from maa.custom_action import CustomAction
 from maa.pipeline import JWaitFreezes
 from utils import logger
 from utils import arena_state as state
+from utils.ocr import extract_ocr_text
 
 from .click_and_wait_change import ClickAndWaitChangeAction
 
@@ -21,6 +22,22 @@ READY = "美甲采购设计专区就绪"
 SUBMISSION = "美甲投稿"
 SUBMISSION_DISPATCH = "美甲投稿与点赞分流"
 OPEN_SUBMISSION = "美甲投稿打开我的投稿"
+
+
+@AgentServer.custom_action("manicure_cycle_reward_click")
+class ManicureCycleRewardClickAction(CustomAction):
+    def run(self, context, argv):
+        text = extract_ocr_text(argv.reco_detail)
+        if text == "心意币":
+            point = (491, 55)  # 美甲投稿征集标题
+        elif "确定" in text:
+            box = argv.box
+            if box is None or box.w <= 0 or box.h <= 0:
+                return False
+            point = (box.x + box.w // 2, box.y + box.h // 2)
+        else:
+            return False
+        return context.tasker.controller.post_click(*point).wait().succeeded
 
 
 @AgentServer.custom_action("manicure_review_click")

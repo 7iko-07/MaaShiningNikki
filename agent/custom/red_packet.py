@@ -6,12 +6,14 @@ import time
 from maa.agent.agent_server import AgentServer
 from maa.context import ContextEventSink
 from maa.custom_action import CustomAction
-from maa.pipeline import JClick
 from utils import debug_exception, logger
+from utils.ocr import extract_ocr_text
 
 
 ICON = "红包提示图标"
 HEADER = "红包详情标题"
+PERSONAL_TITLE = "获得个人红包"
+CONFIRM = "红包个人确认按钮"
 REWARD = "红包领取奖励层"
 THANK = "红包感谢好友按钮"
 DIALOG = "红包感谢对话框"
@@ -55,11 +57,41 @@ class RedPacketRunner:
         box = result.box
         if box is None or box.w <= 0 or box.h <= 0:
             raise RuntimeError("未找到有效点击位置")
-        action = self.context.run_action_direct(
-            "Click", JClick(target=(box.x, box.y, box.w, box.h)),
-        )
-        if action is None or not action.success:
+        # 控制器点击不会再次触发红包监测监听的 Node.Action.Starting。
+        x = box.x + box.w // 2
+        y = box.y + box.h // 2
+        if not self.controller.post_click(x, y).wait().succeeded:
             raise RuntimeError("点击失败")
+
+    def confirm_personal(self):
+        clicks = 0
+        closed_frames = 0
+        deadline = self.deadline
+        while not self.context.tasker.stopping and time.monotonic() < deadline:
+            image = self.frame()
+            header = self.hit(HEADER, image)
+            if header is None and clicks:
+                closed_frames += 1
+                if closed_frames == 2:
+                    logger.info("个人红包已确认，继续任务")
+                    return True
+            else:
+                closed_frames = 0
+                if clicks < 2 and PERSONAL_TITLE in extract_ocr_text(header):
+                    confirm = self.hit(CONFIRM, image)
+                    if confirm is not None:
+                        self.click(confirm)
+                        clicks += 1
+                        if clicks == 2:
+                            deadline = min(deadline, time.monotonic() + 2)
+                        time.sleep(.5)
+                        continue
+            time.sleep(.1)
+        if self.context.tasker.stopping:
+            raise InterruptedError
+        if clicks:
+            raise RuntimeError("等待个人红包关闭超时")
+        raise RuntimeError("等待个人红包确定按钮超时")
 
     def run(self):
         # 命中缓存帧后再次截图，避免点击已经消失或位置发生变化的提示。
@@ -68,7 +100,8 @@ class RedPacketRunner:
             return True
         logger.info("发现红包，正在领取")
         self.click(icon)
-        self.wait(HEADER)
+        if PERSONAL_TITLE in extract_ocr_text(self.wait(HEADER)):
+            return self.confirm_personal()
         self.wait(REWARD)
         # 用户确认：点击下方「感谢好友」的位置可以收起奖励层。
         self.click(self.wait(THANK))

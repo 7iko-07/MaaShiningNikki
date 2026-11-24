@@ -23,7 +23,16 @@
             "type": "OCR",
             "param": {
                 "roi": [130, 335, 470, 80],
-                "expected": ["的红包"]
+                "expected": ["的红包", "获得个人红包"]
+            }
+        }
+    },
+    "红包个人确认按钮": {
+        "recognition": {
+            "type": "OCR",
+            "param": {
+                "roi": [240, 920, 240, 76],
+                "expected": ["^确定$"]
             }
         }
     },
